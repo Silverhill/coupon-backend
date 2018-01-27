@@ -17,5 +17,6 @@ module.exports = {
     appId: 'L1Xoi0yaENMepWuh0mKVUWMWU',
     secret: 'gn44gkPT8W8JeVjWVgFtq8cEBXYT7qxFYBo24iYnAK2Tm5Zfka',
     callbackURL: 'http://localhost:3000/auth/twitter/callback'
-  }
+  },
+  seedDB: true
 };

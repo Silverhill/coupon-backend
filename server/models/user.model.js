@@ -38,6 +38,9 @@ var UserSchema = new Schema({
   salt: String,
   facebook: {},
   github: {}
+}, {
+  collection : 'users',
+  discriminatorKey : '_type'
 });
 
 /**

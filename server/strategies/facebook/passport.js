@@ -27,7 +27,7 @@ export function setup(User, config) {
         user = new User({
           name: profile.displayName,
           email: profile.emails[0].value,
-          role: 'user',
+          role: 'hunter',
           provider: 'facebook',
           facebook: profile._json
         });
