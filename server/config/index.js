@@ -9,6 +9,11 @@ export default {
     secret: process.env.GoogleSecret ||'VInnQimkPxfurIeBGWY0m6V4',
     callbackURL: process.env.GooglecallbackURL ||'http://localhost:3000/auth/google/callback'
   },
+  twitter: {
+    appId: process.env.TwitterId || 'L1Xoi0yaENMepWuh0mKVUWMWU',
+    secret: process.env.TwitterSecret || 'gn44gkPT8W8JeVjWVgFtq8cEBXYT7qxFYBo24iYnAK2Tm5Zfka',
+    callbackURL: process.env.TwittercallbackURL || 'http://localhost:3000/auth/twitter/callback'
+  },
   mailToken: process.env.MailToken ||'dfksaldjfklsajfdklasddkfjas',
   secrets: {
     session: process.env.secretSession ||'backend-secret'
