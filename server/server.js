@@ -5,13 +5,22 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import home from './routes/home';
 import user from './routes/user';
+import auth from './routes/auth';
 import path from 'path';
+import session from 'express-session'
 
 /* eslint-disable no-console */
 
 const port = 3000;
 const mongoURL = process.env.MONGO_URL || 'mongodb://localhost:27017/coupon-db';
 const app = express();
+
+
+app.use(session({
+  secret: 'couponsecret123',
+  resave: false,
+  saveUninitialized: true
+}));
 
 app.set('port', port)
 app.use(bodyParser.json());
@@ -42,7 +51,7 @@ v1.use('/', home);
 v1.use('/users', user);
 
 //Auth
-v1.use('/auth', require('./auth').default);
+v1.use('/auth', auth);
 
 ////////////////////////////////////////////
 
