@@ -37,7 +37,11 @@ var UserSchema = new Schema({
   provider: String,
   salt: String,
   facebook: {},
-  github: {}
+  github: {},
+  coupons: [{
+    type: Schema.ObjectId,
+    ref: 'Coupon'
+  }]
 }, {
   collection : 'users',
   discriminatorKey : '_type'
