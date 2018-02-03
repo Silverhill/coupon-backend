@@ -8,6 +8,7 @@ import user from './routes/user';
 import auth from './routes/auth';
 import path from 'path';
 import session from 'express-session'
+import seedDatabaseIfNeeded from './config/seed';
 
 /* eslint-disable no-console */
 
@@ -42,6 +43,7 @@ mongoose.connect(mongoURL, { useMongoClient: true }, (error) => {
 
 mongoose.connection.once('open', function () {
   console.log('Mongodb: connection successful!!');
+  seedDatabaseIfNeeded();
 });
 
 //////////////// API ROUTES ////////////////
