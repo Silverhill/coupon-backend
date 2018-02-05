@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import home from './routes/home';
 import user from './routes/user';
+import plan from './routes/plan';
 import auth from './routes/auth';
 import path from 'path';
 import session from 'express-session'
@@ -51,6 +52,7 @@ mongoose.connection.once('open', function () {
 //Users
 v1.use('/', home);
 v1.use('/users', user);
+v1.use('/plans', plan);
 
 //Auth
 v1.use('/auth', auth);

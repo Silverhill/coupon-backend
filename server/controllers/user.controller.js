@@ -3,13 +3,7 @@
 import User from '../models/user.model';
 import config from '../config';
 import jwt from 'jsonwebtoken';
-
-function validationError(res, statusCode) {
-  statusCode = statusCode || 422;
-  return function(err) {
-    return res.status(statusCode).json(err);
-  };
-}
+import * as common from '../services/common.service';
 
 function handleError(res, statusCode) {
   statusCode = statusCode || 500;
@@ -40,7 +34,7 @@ export function create(req, res) {
       });
       res.json({ token });
     })
-    .catch(validationError(res));
+    .catch(common.validationError(res));
 }
 
 /**
@@ -87,7 +81,7 @@ export function changePassword(req, res) {
           .then(() => {
             res.status(204).end();
           })
-          .catch(validationError(res));
+          .catch(common.validationError(res));
       } else {
         return res.status(403).end();
       }
