@@ -18,5 +18,6 @@ module.exports = {
     secret: process.env.TwitterSecret,
     callbackURL: process.env.TwitterCallbackURL
   },
+  mongoUrl: process.env.MONGO_URL,
   seedDB: false
 };
