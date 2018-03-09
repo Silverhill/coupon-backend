@@ -1,9 +1,18 @@
 export default `
   type Plan {
-    quantity: Float
+    _id: ID!
+    quantity: Int
     couponPrice: Float
     name: String!
     totalPrice: Float
     validity: Int
+  }
+
+  input NewPlan {
+    quantity: Int
+    couponPrice: Float
+    name: String!
+    totalPrice: Float
+    validity: String
   }
 `;
