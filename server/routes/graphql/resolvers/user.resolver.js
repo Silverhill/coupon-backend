@@ -49,7 +49,7 @@ export const me = requiresAuth(async (parent, args, { models, request }) => {
   const user = await models.User.findOne({ _id: userInfo._id }, '-salt -password');
 
   return user;
-});
+}, ['maker', 'hunter']);
 
 /**
  * MUTATIONS
@@ -92,3 +92,25 @@ export const login = async (parent, { email, password }, { models }) => {
 
   return token;
 };
+
+export const changePassword = requiresAuth(async (parent, args, { models, request }) => {
+  const { oldPass, newPass } = args;
+  const { headers: { authentication } } = request;
+  if(!authentication) throw new Error('You need logged to changue password');
+
+  oldPass.toString();
+  newPass.toString();
+
+  const { _id } = jwt.verify(authentication, config.secrets.session);
+  let user = await models.User.findById(_id);
+
+
+  if (user.authenticate(oldPass)) {
+    user.password = newPass;
+    user = await user.save();
+  } else {
+    throw new Error('Problem to changue the password');
+  }
+
+  return user;
+});

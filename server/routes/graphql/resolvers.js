@@ -1,5 +1,6 @@
 import * as userResolver from './resolvers/user.resolver';
 import * as planResolver from './resolvers/plan.resolver';
+import * as campaignResolver from './resolvers/campaign.resolver';
 
 export default {
   Query: {
@@ -9,11 +10,14 @@ export default {
     getUser: userResolver.getUser,
     me: userResolver.me,
     allPlans: planResolver.allPlans,
+    allCampaigns: campaignResolver.allCampaigns,
+    myCampaigns: campaignResolver.myCampaigns,
   },
 
   Mutation: {
     register: userResolver.register,
     login: userResolver.login,
     createPlan: planResolver.createPlan,
+    changePassword: userResolver.changePassword,
   },
 }
