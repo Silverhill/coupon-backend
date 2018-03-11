@@ -3,6 +3,7 @@
 import express from 'express';
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import { makeExecutableSchema } from 'graphql-tools';
+import config from '../../config';
 
 const router = express.Router();
 
@@ -36,8 +37,8 @@ router.use('/graphql', ...helperMiddleware, graphqlExpress(request => ({
   }
 })));
 
-router.use('/graphiql', graphiqlExpress({
-  endpointURL: '/graphql'
-}));
+if (config.env === 'development') {
+  router.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
+}
 
 export default router;

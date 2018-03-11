@@ -15,7 +15,7 @@ export default `
     # Get all campaigns
     allCampaigns: [Campaign!]!
 
-    # Get my campaigns
+    # Get my campaigns only makers
     myCampaigns: [Campaign]!
 
     # Get user by id
@@ -23,6 +23,9 @@ export default `
 
     # Get current user
     me: User!
+
+    # Get coupon by id
+    getCoupon(id: String!): Coupon!
   }
 
   type Mutation {

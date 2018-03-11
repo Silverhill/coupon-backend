@@ -1,20 +1,20 @@
 import jwt from 'jsonwebtoken';
 import config from '../../../config';
-import { requiresAuth, filterUsersByRole, roleExist } from '../../../services/graphql.service';
+import { filterUsersByRole, roleExist } from '../../../services/graphql.service';
 
 /**
  * QUERY
  */
-export const allUsers = requiresAuth( async (parent, args, { models }) => {
+export const allUsers = async (parent, args, { models }) => {
   const users = await models.User.find({}, '-salt -password');
   return users.map(user => {
     user._id = user._id.toString();
 
     return user;
   });
-});
+};
 
-export const allMakers = requiresAuth( async (parent, args, { models }) => {
+export const allMakers = async (parent, args, { models }) => {
   const users = await models.Maker.find({}, '-salt -password');
 
   const makers = filterUsersByRole(users, 'maker');
@@ -22,9 +22,9 @@ export const allMakers = requiresAuth( async (parent, args, { models }) => {
     maker._id = maker._id.toString();
     return maker;
   });
-}, ['maker']);
+};
 
-export const allHunters = requiresAuth( async (parent, args, { models }) => {
+export const allHunters = async (parent, args, { models }) => {
   const users = await models.Hunter.find({}, '-salt -password');
 
   const hunters = filterUsersByRole(users, 'hunter');
@@ -32,24 +32,24 @@ export const allHunters = requiresAuth( async (parent, args, { models }) => {
     hunter._id = hunter._id.toString();
     return hunter;
   });
-}, ['maker', 'hunter']);
+};
 
-export const getUser = requiresAuth( async (parent, args, { models }) => {
+export const getUser = async (parent, args, { models }) => {
   const { id } = args;
   const user = await models.User.findOne({ _id: id }, '-salt -password');
   user._id = user._id.toString();
 
   return user;
-});
+};
 
-export const me = requiresAuth(async (parent, args, { models, request }) => {
+export const me = async (parent, args, { models, request }) => {
   const { headers: { authentication } } = request;
   const userInfo = jwt.verify(authentication, config.secrets.session);
 
   const user = await models.User.findOne({ _id: userInfo._id }, '-salt -password');
 
   return user;
-}, ['maker', 'hunter']);
+};
 
 /**
  * MUTATIONS
@@ -93,7 +93,7 @@ export const login = async (parent, { email, password }, { models }) => {
   return token;
 };
 
-export const changePassword = requiresAuth(async (parent, args, { models, request }) => {
+export const changePassword = async (parent, args, { models, request }) => {
   const { oldPass, newPass } = args;
   const { headers: { authentication } } = request;
   if(!authentication) throw new Error('You need logged to changue password');
@@ -113,4 +113,4 @@ export const changePassword = requiresAuth(async (parent, args, { models, reques
   }
 
   return user;
-});
+};
