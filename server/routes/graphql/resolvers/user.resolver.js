@@ -1,44 +1,28 @@
 import jwt from 'jsonwebtoken';
 import config from '../../../config';
-import { filterUsersByRole, roleExist } from '../../../services/graphql.service';
+import { roleExist } from '../../../services/graphql.service';
 
 /**
  * QUERY
  */
 export const allUsers = async (parent, args, { models }) => {
   const users = await models.User.find({}, '-salt -password');
-  return users.map(user => {
-    user._id = user._id.toString();
-
-    return user;
-  });
+  return users;
 };
 
 export const allMakers = async (parent, args, { models }) => {
-  const users = await models.Maker.find({}, '-salt -password');
-
-  const makers = filterUsersByRole(users, 'maker');
-  return makers.map(maker => {
-    maker._id = maker._id.toString();
-    return maker;
-  });
+  const users = await models.User.find({'_type': 'Maker'}, '-salt -password');
+  return users;
 };
 
 export const allHunters = async (parent, args, { models }) => {
-  const users = await models.Hunter.find({}, '-salt -password');
-
-  const hunters = filterUsersByRole(users, 'hunter');
-  return hunters.map(hunter => {
-    hunter._id = hunter._id.toString();
-    return hunter;
-  });
+  const users = await models.User.find({'_type': 'Hunter'}, '-salt -password');
+  return users;
 };
 
 export const getUser = async (parent, args, { models }) => {
   const { id } = args;
   const user = await models.User.findOne({ _id: id }, '-salt -password');
-  user._id = user._id.toString();
-
   return user;
 };
 
@@ -57,13 +41,14 @@ export const me = async (parent, args, { models, request }) => {
 
 export const register = async (parent, { user: _user }, { models }) => {
   const hasValidRole = roleExist(_user.role);
-  _user.role = (_user.role || '').toLowerCase();
+  _user.role = (_user.role || 'hunter').toLowerCase();
 
-  if (!_user.role) _user.role = 'hunter';
-  else if (!hasValidRole) throw new Error('Role is incorrect for the correct creation');
+  if (!hasValidRole) throw new Error('Role is incorrect for the correct creation');
   else if (_user.role === 'admin') throw new Error('You can not create users with admin role');
 
-  let user = await new models.User(_user);
+  let user;
+  if(_user.role === 'hunter')user = await new models.Hunter(_user);
+  if(_user.role === 'maker')user = await new models.Maker(_user);
   user.provider = 'local';
   user = await user.save();
 
