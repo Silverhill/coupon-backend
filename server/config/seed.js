@@ -6,8 +6,10 @@ import Hunter from '../models/hunter.model';
 import Maker from '../models/maker.model';
 import config from './';
 
-export default function seedDatabaseIfNeeded() {
-  if(config.seedDB) {
+const seedDatabaseIfNeeded = async () => {
+  const users = await User.find();
+
+  if(config.seedDB && !users.length) {
     User.find({}).remove()
       .then(() => {
         User.create({
@@ -44,3 +46,5 @@ export default function seedDatabaseIfNeeded() {
       });
   }
 }
+
+export default seedDatabaseIfNeeded;
