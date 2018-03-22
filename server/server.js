@@ -49,7 +49,16 @@ mongoose.connection.once('open', function () {
 });
 
 //////////////// API ROUTES ////////////////
-
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  if ('OPTIONS' === req.method) {
+    res.send(200);
+  }
+  else {
+    next();
+  }
+});
 //Users
 v1.use('/', home);
 v1.use('/users', user);
