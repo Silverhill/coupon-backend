@@ -20,7 +20,9 @@ export default {
   Mutation: {
     register: userResolver.register,
     login: userResolver.login,
-    createPlan: requiresAuth(planResolver.createPlan),
-    changePassword: requiresAuth(userResolver.changePassword, ['maker', 'hunter']),
+    signIn: userResolver.signIn,
+    signUp: userResolver.signUp,
+    addPlan: requiresAuth(planResolver.addPlan),
+    updatePassword: requiresAuth(userResolver.updatePassword, ['maker', 'hunter']),
   },
 }

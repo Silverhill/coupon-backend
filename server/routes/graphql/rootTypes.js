@@ -29,16 +29,21 @@ export default `
   }
 
   type Mutation {
-    # Register user but not login
-    register(user: NewUser): User!
 
-    # Login user with email and password
-    login(email: String!, password: String!): String!
+    register(input: AddUserInput): User! @deprecated(reason:"Please use 'signUn' mutation")
+
+    login(email: String!, password: String!): String! @deprecated(reason:"Please use 'signIn' mutation")
+
+    # Login user
+    signIn(input: CredentialsInput): String!
+
+    # Register new user
+    signUp(input: AddUserInput): User!
 
     # Only admin user can create a plan
-    createPlan(plan: NewPlan): Plan!
+    addPlan(input: AddPlanInput): Plan!
 
     # Only current user can change password
-    changePassword(oldPass: String!, newPass: String!): User!
+    updatePassword(input: UpdatePasswordInput): User!
   }
 `;

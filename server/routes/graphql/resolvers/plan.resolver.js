@@ -1,11 +1,15 @@
-export const createPlan = async (parent, args, context) => {
+export const addPlan = async (parent, args, context) => {
   const { models } = context;
-  const { plan } = args;
+  const { input } = args;
 
-  const newPlan = await new models.Plan(plan);
-  newPlan.save();
+  const newPlan = await new models.Plan(input);
 
-  return newPlan;
+  try {
+    await newPlan.save();
+    return newPlan;
+  } catch (err) {
+    return err;
+  }
 };
 
 export const allPlans = async (parent, args, context) => {

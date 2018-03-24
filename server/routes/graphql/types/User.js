@@ -22,10 +22,20 @@ export default `
     coupons: [Coupon]
   }
 
-  input NewUser {
+  input AddUserInput {
     email: String!
     password: String!
     name: String!
     role: String
+  }
+
+  input UpdatePasswordInput {
+    oldPass: String!
+    newPass: String!
+  }
+
+  input CredentialsInput {
+    email: String!
+    password: String!
   }
 `;
