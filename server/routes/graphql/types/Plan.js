@@ -6,6 +6,7 @@ export default `
     name: String!
     totalPrice: Float
     validity: Int
+    deleted: Boolean
   }
 
   input AddPlanInput {
@@ -14,5 +15,18 @@ export default `
     name: String!
     totalPrice: Float
     validity: Int
+  }
+
+  input UpdatePlanInput {
+    id: String!
+    quantity: Int
+    couponPrice: Float
+    name: String!
+    totalPrice: Float
+    validity: Int
+  }
+
+  input DeletePlanInput {
+    id: String!
   }
 `;

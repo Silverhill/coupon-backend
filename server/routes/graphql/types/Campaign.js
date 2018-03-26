@@ -4,7 +4,7 @@ export default `
     expirationDate: String!
     location: String
     image: String
-    couponsNumer: Int
+    couponsNumber: Int
     title: String!
     description: String
     caption: String
