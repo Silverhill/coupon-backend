@@ -10,12 +10,12 @@ import auth from './routes/auth';
 import graphql from './routes/graphql';
 import path from 'path';
 import session from 'express-session'
+import config from './config'
 import seedDatabaseIfNeeded from './config/seed';
 
 /* eslint-disable no-console */
 
 const port = 3000;
-const mongoURL = process.env.MONGO_URL || 'mongodb://localhost:27017/coupon-db';
 const app = express();
 
 
@@ -36,7 +36,7 @@ let v1 = express.Router()
 
 mongoose.Promise = global.Promise;
 
-mongoose.connect(mongoURL, { useMongoClient: true }, (error) => {
+mongoose.connect(config.mongoUrl, { useMongoClient: true }, (error) => {
   if (error) {
     console.error('Please make sure Mongodb is installed and running!');
     throw error;

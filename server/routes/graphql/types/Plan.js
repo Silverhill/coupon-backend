@@ -8,11 +8,11 @@ export default `
     validity: Int
   }
 
-  input NewPlan {
+  input AddPlanInput {
     quantity: Int
     couponPrice: Float
     name: String!
     totalPrice: Float
-    validity: String
+    validity: Int
   }
 `;

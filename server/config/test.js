@@ -18,5 +18,6 @@ module.exports = {
     secret: 'gn44gkPT8W8JeVjWVgFtq8cEBXYT7qxFYBo24iYnAK2Tm5Zfka',
     callbackURL: 'http://localhost:3000/auth/twitter/callback'
   },
+  mongoUrl: 'mongodb://localhost:27017/coupon-db-test',
   seedDB: false
 };

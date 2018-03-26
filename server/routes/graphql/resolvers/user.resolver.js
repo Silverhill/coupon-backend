@@ -40,22 +40,65 @@ export const me = async (parent, args, { models, request }) => {
  */
 
 export const register = async (parent, { user: _user }, { models }) => {
-  const hasValidRole = roleExist(_user.role);
-  _user.role = (_user.role || 'hunter').toLowerCase();
+  try {
+    const res = await registerUser(_user, models);
+    return res;
+  } catch (error) {
+    return error;
+  }
+};
 
-  if (!hasValidRole) throw new Error('Role is incorrect for the correct creation');
-  else if (_user.role === 'admin') throw new Error('You can not create users with admin role');
+export const signUp = async (parent, args, { models }) => {
+  const { input: _user } = args;
+  try {
+    const res = await registerUser(_user, models);
+    return res;
+  } catch (error) {
+    return error;
+  }
+};
 
-  let user;
-  if(_user.role === 'hunter')user = await new models.Hunter(_user);
-  if(_user.role === 'maker')user = await new models.Maker(_user);
-  user.provider = 'local';
-  user = await user.save();
+export const login = async (parent, { email, password }, { models }) => {
+  try {
+    const token = await loginUser(email, password, models);
+    return token;
+  } catch (error) {
+    return error;
+  }
+};
+
+export const signIn = async (parent, args, { models }) => {
+  const { email, password } = args.input;
+  try {
+    const token = await loginUser(email, password, models);
+    return token;
+  } catch (error) {
+    return error;
+  }
+};
+
+export const updatePassword = async (parent, args, { models, request }) => {
+  const { input } = args;
+  const { headers: { authentication } } = request;
+  if(!authentication) throw new Error('You need logged to changue password');
+
+  const oldPass = input.oldPass.toString().trim();
+  const newPass = input.newPass.toString().trim();
+
+  const { _id } = jwt.verify(authentication, config.secrets.session);
+  let user = await models.User.findById(_id);
+
+  if (user.authenticate(oldPass)) {
+    user.password = newPass;
+    user = await user.save();
+  } else {
+    throw new Error('Problem to changue the password');
+  }
 
   return user;
 };
 
-export const login = async (parent, { email, password }, { models }) => {
+async function loginUser(email, password, models) {
   const user = await models.User.findOne({ email: email.toLowerCase() });
   if (!user) {
     throw new Error('Not user with that email.');
@@ -76,26 +119,19 @@ export const login = async (parent, { email, password }, { models }) => {
   });
 
   return token;
-};
+}
 
-export const changePassword = async (parent, args, { models, request }) => {
-  const { oldPass, newPass } = args;
-  const { headers: { authentication } } = request;
-  if(!authentication) throw new Error('You need logged to changue password');
+async function registerUser(_user, models) {
+  const hasValidRole = roleExist(_user.role);
+  _user.role = (_user.role || 'hunter').toLowerCase();
 
-  oldPass.toString();
-  newPass.toString();
-
-  const { _id } = jwt.verify(authentication, config.secrets.session);
-  let user = await models.User.findById(_id);
-
-
-  if (user.authenticate(oldPass)) {
-    user.password = newPass;
-    user = await user.save();
-  } else {
-    throw new Error('Problem to changue the password');
-  }
+  if (!hasValidRole) throw new Error('Role is incorrect for the correct creation');
+  else if (_user.role === 'admin') throw new Error('You can not create users with admin role');
+  let user;
+  if (_user.role === 'hunter') user = await new models.Hunter(_user);
+  if (_user.role === 'maker') user = await new models.Maker(_user);
+  user.provider = 'local';
+  user = await user.save();
 
   return user;
-};
+}
