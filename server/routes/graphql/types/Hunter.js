@@ -5,5 +5,7 @@ export default `
     email: String!
     provider: String
     role: UserRole!
+    coupons: [Coupon]
+    couponCount: Int
   }
 `
