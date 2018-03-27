@@ -5,7 +5,6 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import home from './routes/home';
 import user from './routes/user';
-import plan from './routes/plan';
 import auth from './routes/auth';
 import graphql from './routes/graphql';
 import path from 'path';
@@ -62,7 +61,6 @@ app.use(function(req, res, next) {
 //Users
 v1.use('/', home);
 v1.use('/users', user);
-v1.use('/plans', plan);
 v1.use('/', graphql);
 
 //Auth

@@ -1,5 +1,8 @@
 export default `
   type Query {
+    # Login user
+    signIn(email: String!, password: String!): Token!
+
     # Get all users only with admin role
     allUsers: [User!]!
 
@@ -11,6 +14,8 @@ export default `
 
     # Get all plans
     allPlans: [Plan!]!
+
+    plan(id: String!): Plan!
 
     # Get all campaigns
     allCampaigns: [Campaign!]!
@@ -34,14 +39,15 @@ export default `
 
     login(email: String!, password: String!): String! @deprecated(reason:"Please use 'signIn' mutation")
 
-    # Login user
-    signIn(input: CredentialsInput): String!
-
     # Register new user
     signUp(input: AddUserInput): User!
 
     # Only admin user can create a plan
     addPlan(input: AddPlanInput): Plan!
+
+    updatePlan(input: UpdatePlanInput): Plan!
+
+    deletePlan(input: DeletePlanInput): Plan!
 
     # Only current user can change password
     updatePassword(input: UpdatePasswordInput): User!

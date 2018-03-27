@@ -38,4 +38,8 @@ export default `
     email: String!
     password: String!
   }
+
+  type Token {
+    token: String!
+  }
 `;

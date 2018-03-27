@@ -68,10 +68,12 @@ export const login = async (parent, { email, password }, { models }) => {
 };
 
 export const signIn = async (parent, args, { models }) => {
-  const { email, password } = args.input;
+  const { email, password } = args;
   try {
     const token = await loginUser(email, password, models);
-    return token;
+    return {
+      token
+    };
   } catch (error) {
     return error;
   }

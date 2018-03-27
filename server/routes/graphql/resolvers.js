@@ -6,11 +6,13 @@ import { requiresAuth } from '../../services/graphql.service';
 
 export default {
   Query: {
+    signIn: userResolver.signIn,
     allUsers: requiresAuth(userResolver.allUsers),
     allMakers: requiresAuth(userResolver.allMakers, ['maker']),
     allHunters: requiresAuth(userResolver.allHunters, ['maker', 'hunter']),
     getUser: requiresAuth(userResolver.getUser),
     me: requiresAuth(userResolver.me, ['maker', 'hunter']),
+    plan: requiresAuth(planResolver.getPlan),
     allPlans: requiresAuth(planResolver.allPlans),
     allCampaigns: requiresAuth(campaignResolver.allCampaigns),
     myCampaigns: requiresAuth(campaignResolver.myCampaigns, ['maker']),
@@ -20,9 +22,10 @@ export default {
   Mutation: {
     register: userResolver.register,
     login: userResolver.login,
-    signIn: userResolver.signIn,
     signUp: userResolver.signUp,
     addPlan: requiresAuth(planResolver.addPlan),
+    updatePlan: requiresAuth(planResolver.updatePlan),
+    deletePlan: requiresAuth(planResolver.deletePlan),
     updatePassword: requiresAuth(userResolver.updatePassword, ['maker', 'hunter']),
   },
 }
