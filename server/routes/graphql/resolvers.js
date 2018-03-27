@@ -6,6 +6,7 @@ import { requiresAuth } from '../../services/graphql.service';
 
 export default {
   Query: {
+    signIn: userResolver.signIn,
     allUsers: requiresAuth(userResolver.allUsers),
     allMakers: requiresAuth(userResolver.allMakers, ['maker']),
     allHunters: requiresAuth(userResolver.allHunters, ['maker', 'hunter']),
@@ -21,7 +22,6 @@ export default {
   Mutation: {
     register: userResolver.register,
     login: userResolver.login,
-    signIn: userResolver.signIn,
     signUp: userResolver.signUp,
     addPlan: requiresAuth(planResolver.addPlan),
     updatePlan: requiresAuth(planResolver.updatePlan),

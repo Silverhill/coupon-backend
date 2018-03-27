@@ -3,9 +3,19 @@ import { connectDB, dropDB } from '../mocks/db';
 import request from 'supertest';
 import app from '../../server/server';
 import User from '../../server/models/user.model';
+import utils from '../utils/test.utils'
+const adminLoginQuery = {
+  query: `
+    {
+      signIn(email: "admin@example.com", password: "admin") {
+        token
+      }
+    }
+  `
+};
 
 
-test.beforeEach('connect with mongodb', async (t) => {
+test.beforeEach('connect with mongodb', async () => {
   await connectDB();
   await User.create({
     provider: 'local',
@@ -14,211 +24,259 @@ test.beforeEach('connect with mongodb', async (t) => {
     email: 'admin@example.com',
     password: 'admin'
   })
+  await User.create({
+    provider: 'local',
+    role: 'hunter',
+    name: 'Hunter',
+    email: 'hunter@example.com',
+    password: 'hunter'
+  })
+  await User.create({
+    provider: 'local',
+    role: 'maker',
+    name: 'Maker',
+    email: 'maker@example.com',
+    password: 'maker'
+  })
 });
 
-test.afterEach.always(async (t) => {
+test.afterEach.always(async () => {
   await dropDB();
 });
 
 test('Should create a Plan', async t => {
-  t.plan(2)
+  t.plan(7)
 
-  let requestPlan = request(app)
+  let serverRequest = request(app)
 
-  const req = await requestPlan
-    .post('/auth/local')
-    .send({
-      password: 'admin',
-      email: 'admin@example.com'
-    })
-    .set('Accept', 'application/json');
+  const loginResponse = await utils.callToQraphql(serverRequest, adminLoginQuery);
 
-  const res = await requestPlan
-    .post('/plans')
-    .send({
-      name: 'Plan 1'
-    })
-    .set('authorization', `Bearer ${req.body.token}`)
-    .set('Accept', 'application/json');
+  const { data: { signIn: { token } } } = loginResponse.body
 
-  t.is(res.status, 201);
-  t.is(res.body.deleted, false);
+  const addPlanResponse = await utils.callToQraphql(serverRequest, getAddPlanQuery(), token);
+
+  t.is(addPlanResponse.status, 200);
+
+  const { body: { data: { addPlan } } } = addPlanResponse
+
+  t.is(addPlan.deleted, false);
+  t.is(addPlan.name, 'Plan test 1');
+  t.is(addPlan.quantity, 10);
+  t.is(addPlan.couponPrice, 10);
+  t.is(addPlan.totalPrice, 100);
+  t.is(addPlan.validity, 20);
 });
-
 
 test('Should update a Plan', async t => {
   t.plan(4)
 
-  let requestPlan = request(app)
+  function getUpdatePlanQuery(id) {
+    return {
+      query: `
+        mutation {
+          updatePlan(input: {
+            id: "${id}"
+            name: "New Plan Name"
+          }){
+            _id
+            name
+            quantity
+            couponPrice
+            totalPrice
+            validity
+            deleted
+          }
+        }
+      `
+    }
+  }
 
-  const resUser = await requestPlan
-    .post('/auth/local')
-    .send({
-      password: 'admin',
-      email: 'admin@example.com'
-    })
-    .set('Accept', 'application/json');
+  let serverRequest = request(app);
 
-  const resCreate = await requestPlan
-    .post('/plans')
-    .send({
-      name: 'Plan 1'
-    })
-    .set('authorization', `Bearer ${resUser.body.token}`)
-    .set('Accept', 'application/json');
+  const loginResponse = await utils.callToQraphql(serverRequest, adminLoginQuery);
 
-  let plan = resCreate.body;
+  const { data: { signIn: { token } } } = loginResponse.body;
 
-  const resUpdate = await requestPlan
-    .put(`/plans/${plan._id}`)
-    .send({
-      name: 'Plan Updated'
-    })
-    .set('authorization', `Bearer ${resUser.body.token}`)
-    .set('Accept', 'application/json');
+  const addPlanResponse = await utils.callToQraphql(serverRequest, getAddPlanQuery(), token);
 
-  const planUpdated = resUpdate.body;
+  const { body: { data: { addPlan } } } = addPlanResponse;
+  const { _id: id } = addPlan;
 
-  t.is(resUpdate.status, 201);
-  t.is(planUpdated._id, plan._id);
-  t.is(planUpdated.name, 'Plan Updated');
-  t.is(planUpdated.deleted, false);
+  const updatePlanQuery = getUpdatePlanQuery(id);
+
+  const updatePlanResponse = await utils.callToQraphql(serverRequest, updatePlanQuery, token);
+
+  const { body: { data: { updatePlan } } } = updatePlanResponse;
+
+  t.is(updatePlanResponse.status, 200);
+  t.is(updatePlan._id, addPlan._id);
+  t.is(updatePlan.name, 'New Plan Name');
+  t.is(updatePlan.deleted, false);
 });
 
 test('Should delete/disable a Plan', async t => {
   t.plan(3)
 
-  let requestPlan = request(app)
+  function getDeletePlanQuery(id) {
+    return {
+      query: `
+        mutation {
+          deletePlan(input: {
+            id: "${id}"
+          }){
+            _id
+            name
+            quantity
+            couponPrice
+            totalPrice
+            validity
+            deleted
+          }
+        }
+      `
+    }
+  }
 
-  const resUser = await requestPlan
-    .post('/auth/local')
-    .send({
-      password: 'admin',
-      email: 'admin@example.com'
-    })
-    .set('Accept', 'application/json');
+  let serverRequest = request(app);
 
-  const resCreate = await requestPlan
-    .post('/plans')
-    .send({
-      name: 'Plan 1'
-    })
-    .set('authorization', `Bearer ${resUser.body.token}`)
-    .set('Accept', 'application/json');
+  const loginResponse = await utils.callToQraphql(serverRequest, adminLoginQuery);
 
-  let plan = resCreate.body;
+  const { data: { signIn: { token } } } = loginResponse.body;
 
-  const resDeleted = await requestPlan
-    .delete(`/plans/${plan._id}`)
-    .set('authorization', `Bearer ${resUser.body.token}`)
-    .set('Accept', 'application/json');
+  const addPlanResponse = await utils.callToQraphql(serverRequest, getAddPlanQuery(), token);
 
-  const planDeleted = resDeleted.body;
+  const { body: { data: { addPlan } } } = addPlanResponse;
+  const { _id: id } = addPlan;
 
-  t.is(resDeleted.status, 200);
-  t.is(planDeleted._id, plan._id);
-  t.is(planDeleted.deleted, true);
+  const deletePlanQuery = getDeletePlanQuery(id);
 
+  const deletePlanResponse = await utils.callToQraphql(serverRequest, deletePlanQuery, token)
+
+  const { body: { data: { deletePlan } } } = deletePlanResponse;
+
+  t.is(deletePlanResponse.status, 200);
+  t.is(deletePlan._id, addPlan._id);
+  t.is(deletePlan.deleted, true);
 });
-
 
 test('Should get all Plans', async t => {
   t.plan(5)
 
-  let requestPlan = request(app)
+  const allPlansQuery = {
+    query: `{
+      allPlans {
+        _id
+        quantity
+        couponPrice
+        name
+        totalPrice
+        validity
+        deleted
+      }
+    }
+    `
+  }
 
-  const resUser = await requestPlan
-    .post('/auth/local')
-    .send({
-      password: 'admin',
-      email: 'admin@example.com'
-    })
-    .set('Accept', 'application/json');
+  let serverRequest = request(app);
 
-  await requestPlan
-    .post('/plans')
-    .send({
-      name: 'Plan 1'
-    })
-    .set('authorization', `Bearer ${resUser.body.token}`)
-    .set('Accept', 'application/json');
+  const loginResponse = await utils.callToQraphql(serverRequest, adminLoginQuery);
 
-  await requestPlan
-    .post('/plans')
-    .send({
-      name: 'Plan 2'
-    })
-    .set('authorization', `Bearer ${resUser.body.token}`)
-    .set('Accept', 'application/json');
+  const { data: { signIn: { token } } } = loginResponse.body;
 
-  await requestPlan
-    .post('/plans')
-    .send({
-      name: 'Plan 3'
-    })
-    .set('authorization', `Bearer ${resUser.body.token}`)
-    .set('Accept', 'application/json');
+  // Add three plans
+  await addPlan(serverRequest, getAddPlanQuery('Plan 1'), token)
+  await addPlan(serverRequest, getAddPlanQuery('Plan 2'), token)
+  await addPlan(serverRequest, getAddPlanQuery('Plan 3'), token)
 
+  const allPlansResponse = await utils.callToQraphql(serverRequest, allPlansQuery, token);
 
-  const res = await requestPlan
-    .get('/plans')
-    .set('authorization', `Bearer ${resUser.body.token}`)
-    .set('Accept', 'application/json');
+  const { body: { data: { allPlans } } } = allPlansResponse;
 
-  const plans = res.body;
-
-  t.is(res.status, 200);
-  t.is(plans.length, 3);
-  t.is(plans[0].name, 'Plan 1');
-  t.is(plans[1].name, 'Plan 2');
-  t.is(plans[2].name, 'Plan 3');
+  t.is(allPlansResponse.status, 200);
+  t.is(allPlans.length, 3);
+  t.is(allPlans[0].name, 'Plan 1');
+  t.is(allPlans[1].name, 'Plan 2');
+  t.is(allPlans[2].name, 'Plan 3');
 
 });
 
 test('Should get an specific Plan', async t => {
   t.plan(6)
 
-  let requestPlan = request(app)
+  function getPlanQuery(id) {
+    return {
+      query: `{
+        plan(id: "${id}"){
+          _id
+          name
+        }
+      }
+      `
+    }
+  }
 
-  const resUser = await requestPlan
-    .post('/auth/local')
-    .send({
-      password: 'admin',
-      email: 'admin@example.com'
-    })
-    .set('Accept', 'application/json');
+  let serverRequest = request(app);
 
-  const res1 = await requestPlan
-    .post('/plans')
-    .send({
-      name: 'Plan 1'
-    })
-    .set('authorization', `Bearer ${resUser.body.token}`)
-    .set('Accept', 'application/json');
+  const loginResponse = await utils.callToQraphql(serverRequest, adminLoginQuery);
 
-  const res2 = await requestPlan
-    .post('/plans')
-    .send({
-      name: 'Plan 2'
-    })
-    .set('authorization', `Bearer ${resUser.body.token}`)
-    .set('Accept', 'application/json');
+  const { data: { signIn: { token } } } = loginResponse.body;
 
-  const resForPlan1 = await requestPlan
-    .get(`/plans/${res1.body._id}`)
-    .set('authorization', `Bearer ${resUser.body.token}`)
-    .set('Accept', 'application/json');
+  // Add four plans
+  const res1 = await addPlan(serverRequest, getAddPlanQuery('Plan 1'), token)
+  await addPlan(serverRequest, getAddPlanQuery('Plan 2'), token)
+  const res2 = await addPlan(serverRequest, getAddPlanQuery('Plan 3'), token)
+  await addPlan(serverRequest, getAddPlanQuery('Plan 4'), token)
 
-  const resForPlan2 = await requestPlan
-    .get(`/plans/${res2.body._id}`)
-    .set('authorization', `Bearer ${resUser.body.token}`)
-    .set('Accept', 'application/json');
+  const { body: { data: { addPlan: plan1 } } } = res1;
+
+  const { _id: id1 } = plan1;
+
+  const { body: { data: { addPlan: plan2 } } } = res2;
+  const { _id: id2 } = plan2;
+
+  const resForPlan1 = await utils.callToQraphql(serverRequest, getPlanQuery(id1), token);
+
+  const resForPlan2 = await utils.callToQraphql(serverRequest, getPlanQuery(id2), token);
+
+  const { body: { data: { plan: _plan1 } } } = resForPlan1;
+  const { body: { data: { plan: _plan2 } } } = resForPlan2;
 
   t.is(resForPlan1.status, 200);
   t.is(resForPlan2.status, 200);
-  t.is(resForPlan1.body._id, res1.body._id);
-  t.is(resForPlan2.body._id, res2.body._id);
-  t.is(resForPlan1.body.name, 'Plan 1');
-  t.is(resForPlan2.body.name, 'Plan 2');
-
+  t.is(_plan1._id, id1);
+  t.is(_plan2._id, id2);
+  t.is(_plan1.name, 'Plan 1');
+  t.is(_plan2.name, 'Plan 3');
 });
+
+function getAddPlanQuery(name = 'Plan test 1') {
+  return {
+    query: `
+      mutation {
+        addPlan(input: {
+          name: "${name}"
+          quantity: 10
+          couponPrice: 10
+          totalPrice: 100
+          validity: 20
+        }) {
+          _id
+          name
+          quantity
+          couponPrice
+          totalPrice
+          validity
+          deleted
+        }
+      }
+    `
+  }
+}
+
+async function addPlan(request, query, token) {
+  const res = await request.post('/graphql')
+    .set('Accept', 'application/json')
+    .set('authentication', `${token}`)
+    .send(query);
+  return res;
+}

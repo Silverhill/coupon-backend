@@ -1,5 +1,8 @@
 export default `
   type Query {
+    # Login user
+    signIn(email: String!, password: String!): Token!
+
     # Get all users only with admin role
     allUsers: [User!]!
 
@@ -35,9 +38,6 @@ export default `
     register(input: AddUserInput): User! @deprecated(reason:"Please use 'signUn' mutation")
 
     login(email: String!, password: String!): String! @deprecated(reason:"Please use 'signIn' mutation")
-
-    # Login user
-    signIn(input: CredentialsInput): String!
 
     # Register new user
     signUp(input: AddUserInput): User!
