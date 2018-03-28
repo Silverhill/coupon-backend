@@ -3,8 +3,11 @@ import * as planResolver from './resolvers/plan.resolver';
 import * as campaignResolver from './resolvers/campaign.resolver';
 import * as couponResolver from './resolvers/coupon.resolver';
 import { requiresAuth } from '../../services/graphql.service';
+import { timestampScalar } from './scalars/timestamp.scalar'
 
 export default {
+  Timestamp: timestampScalar,
+
   Query: {
     signIn: userResolver.signIn,
     allUsers: requiresAuth(userResolver.allUsers),
@@ -27,5 +30,6 @@ export default {
     updatePlan: requiresAuth(planResolver.updatePlan),
     deletePlan: requiresAuth(planResolver.deletePlan),
     updatePassword: requiresAuth(userResolver.updatePassword, ['maker', 'hunter']),
+    addCampaign: requiresAuth(campaignResolver.addCampaign)
   },
 }

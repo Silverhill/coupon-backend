@@ -24,3 +24,17 @@ export const createCampaign = async (parent, args, { models }) => {
 
   return newCampaign;
 };
+
+export const addCampaign = async (parent, args, context) => {
+  const { models } = context;
+  const { input } = args;
+
+  const newCampaign = await new models.Campaign(input);
+
+  try {
+    await newCampaign.save();
+    return newCampaign;
+  } catch (error) {
+    return error;
+  }
+}

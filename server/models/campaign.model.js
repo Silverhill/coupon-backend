@@ -4,15 +4,17 @@ mongoose.Promise = require('bluebird');
 import mongoose, {Schema} from 'mongoose';
 
 var CampaignSchema = new Schema({
-  creationDate: {
-    type: Date,
-    required: true,
+  startAt: {
+    type: Number,
+    required: true
   },
-  expirationDate: {
-    type: Date,
-    required: true,
+  endAt: {
+    type: Number,
+    required: true
   },
-  location: String,
+  country: String,
+  city: String,
+  address: String,
   image: String,
   couponsNumber: {
     type: Number,

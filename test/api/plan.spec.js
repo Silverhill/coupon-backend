@@ -2,42 +2,13 @@ import test from 'ava';
 import { connectDB, dropDB } from '../mocks/db';
 import request from 'supertest';
 import app from '../../server/server';
-import User from '../../server/models/user.model';
 import utils from '../utils/test.utils'
-const adminLoginQuery = {
-  query: `
-    {
-      signIn(email: "admin@example.com", password: "admin") {
-        token
-      }
-    }
-  `
-};
 
+const adminLoginQuery = utils.getAdminLoginQuery()
 
 test.beforeEach('connect with mongodb', async () => {
   await connectDB();
-  await User.create({
-    provider: 'local',
-    role: 'admin',
-    name: 'Admin',
-    email: 'admin@example.com',
-    password: 'admin'
-  })
-  await User.create({
-    provider: 'local',
-    role: 'hunter',
-    name: 'Hunter',
-    email: 'hunter@example.com',
-    password: 'hunter'
-  })
-  await User.create({
-    provider: 'local',
-    role: 'maker',
-    name: 'Maker',
-    email: 'maker@example.com',
-    password: 'maker'
-  })
+  await utils.createDefaultUsers();
 });
 
 test.afterEach.always(async () => {
@@ -184,9 +155,9 @@ test('Should get all Plans', async t => {
   const { data: { signIn: { token } } } = loginResponse.body;
 
   // Add three plans
-  await addPlan(serverRequest, getAddPlanQuery('Plan 1'), token)
-  await addPlan(serverRequest, getAddPlanQuery('Plan 2'), token)
-  await addPlan(serverRequest, getAddPlanQuery('Plan 3'), token)
+  await utils.callToQraphql(serverRequest, getAddPlanQuery('Plan 1'), token)
+  await utils.callToQraphql(serverRequest, getAddPlanQuery('Plan 2'), token)
+  await utils.callToQraphql(serverRequest, getAddPlanQuery('Plan 3'), token)
 
   const allPlansResponse = await utils.callToQraphql(serverRequest, allPlansQuery, token);
 
@@ -222,10 +193,10 @@ test('Should get an specific Plan', async t => {
   const { data: { signIn: { token } } } = loginResponse.body;
 
   // Add four plans
-  const res1 = await addPlan(serverRequest, getAddPlanQuery('Plan 1'), token)
-  await addPlan(serverRequest, getAddPlanQuery('Plan 2'), token)
-  const res2 = await addPlan(serverRequest, getAddPlanQuery('Plan 3'), token)
-  await addPlan(serverRequest, getAddPlanQuery('Plan 4'), token)
+  const res1 = await utils.callToQraphql(serverRequest, getAddPlanQuery('Plan 1'), token)
+  await utils.callToQraphql(serverRequest, getAddPlanQuery('Plan 2'), token)
+  const res2 = await utils.callToQraphql(serverRequest, getAddPlanQuery('Plan 3'), token)
+  await utils.callToQraphql(serverRequest, getAddPlanQuery('Plan 4'), token)
 
   const { body: { data: { addPlan: plan1 } } } = res1;
 
@@ -271,12 +242,4 @@ function getAddPlanQuery(name = 'Plan test 1') {
       }
     `
   }
-}
-
-async function addPlan(request, query, token) {
-  const res = await request.post('/graphql')
-    .set('Accept', 'application/json')
-    .set('authentication', `${token}`)
-    .send(query);
-  return res;
 }

@@ -45,11 +45,15 @@ export default `
     # Only admin user can create a plan
     addPlan(input: AddPlanInput): Plan!
 
+    # Update a plan
     updatePlan(input: UpdatePlanInput): Plan!
 
+    # Delete a plan
     deletePlan(input: DeletePlanInput): Plan!
 
     # Only current user can change password
     updatePassword(input: UpdatePasswordInput): User!
+
+    addCampaign(input: AddCampaignInput): Campaign!
   }
 `;
