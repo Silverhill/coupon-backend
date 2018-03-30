@@ -1,3 +1,5 @@
+import User from '../../server/models/user.model';
+
 const utils = {
   async callToQraphql(request, query, token) {
     let post = null;
@@ -13,6 +15,66 @@ const utils = {
     }
 
     return post;
+  },
+
+  async createDefaultUsers() {
+    await User.create({
+      provider: 'local',
+      role: 'admin',
+      name: 'Admin',
+      email: 'admin@example.com',
+      password: 'admin'
+    })
+    await User.create({
+      provider: 'local',
+      role: 'hunter',
+      name: 'Hunter',
+      email: 'hunter@example.com',
+      password: 'hunter'
+    })
+    await User.create({
+      provider: 'local',
+      role: 'maker',
+      name: 'Maker',
+      email: 'maker@example.com',
+      password: 'maker'
+    })
+  },
+
+  getAdminLoginQuery() {
+    return {
+      query: `
+        {
+          signIn(email: "admin@example.com", password: "admin") {
+            token
+          }
+        }
+      `
+    };
+  },
+
+  getHunterLoginQuery() {
+    return {
+      query: `
+        {
+          signIn(email: "hunter@example.com", password: "hunter") {
+            token
+          }
+        }
+      `
+    };
+  },
+
+  getMakerLoginQuery() {
+    return {
+      query: `
+        {
+          signIn(email: "maker@example.com", password: "maker") {
+            token
+          }
+        }
+      `
+    };
   }
 }
 

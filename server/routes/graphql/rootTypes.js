@@ -1,35 +1,39 @@
 export default `
   type Query {
-    # Login user
+    # User login
     signIn(email: String!, password: String!): Token!
 
-    # Get all users only with admin role
+    # Get all users. Access: Admin
     allUsers: [User!]!
 
-    # Get all makers
+    # Get all makers. Access: Admin, Maker
     allMakers: [Maker!]!
 
-    # Get all hunters
+    # Get all hunters. Access: Admin, Maker, Hunter
     allHunters: [Hunter!]!
 
-    # Get all plans
+    # Get all plans. Access: Admin
     allPlans: [Plan!]!
 
+    # Get Plan. Access: Admin, Maker
     plan(id: String!): Plan!
 
-    # Get all campaigns
+    # Get Campaign. Access: Admin, Maker
+    campaign(id: String!): Campaign!
+
+    # Get all campaigns. Access: Admin, Maker
     allCampaigns: [Campaign!]!
 
-    # Get my campaigns only makers
+    # Get my campaigns. Access: Admin, Maker
     myCampaigns: [Campaign]!
 
-    # Get user by id
+    # Get user by id. Access: Admin
     getUser(id: String!): User!
 
-    # Get current user
+    # Get current user. Access: Admin, Maker, Hunter
     me: User!
 
-    # Get coupon by id
+    # Get coupon by id. Access: Admin, Maker, Hunter
     getCoupon(id: String!): Coupon!
   }
 
@@ -37,19 +41,30 @@ export default `
 
     register(input: AddUserInput): User! @deprecated(reason:"Please use 'signUn' mutation")
 
-    login(email: String!, password: String!): String! @deprecated(reason:"Please use 'signIn' mutation")
+    login(email: String!, password: String!): String! @deprecated(reason:"Please use 'signIn' query")
 
-    # Register new user
+    # User register
     signUp(input: AddUserInput): User!
 
-    # Only admin user can create a plan
+    # Create new plan. Access: Admin
     addPlan(input: AddPlanInput): Plan!
 
+    # Update plan. Access: Admin
     updatePlan(input: UpdatePlanInput): Plan!
 
+    # Delete plan. Access: Admin
     deletePlan(input: DeletePlanInput): Plan!
 
-    # Only current user can change password
+    # Update user password. Access: Admin, Maker, Hunter
     updatePassword(input: UpdatePasswordInput): User!
+
+    # Create new Campaign. Access: Admin, Maker
+    addCampaign(input: AddCampaignInput): Campaign!
+
+    # Update an existing Campaign. Access: Admin, Maker
+    updateCampaign(input: UpdateCampaignInput): Campaign!
+
+    # Delete an existing Campaign. Access: Admin, Maker
+    deleteCampaign(input: DeleteCampaignInput): Campaign!
   }
 `;
