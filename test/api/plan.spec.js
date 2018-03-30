@@ -15,7 +15,7 @@ test.afterEach.always(async () => {
   await dropDB();
 });
 
-test('Should create a Plan', async t => {
+test('Plan: Should create a Plan', async t => {
   t.plan(7)
 
   let serverRequest = request(app)
@@ -38,7 +38,7 @@ test('Should create a Plan', async t => {
   t.is(addPlan.validity, 20);
 });
 
-test('Should update a Plan', async t => {
+test('Plan: Should update a Plan', async t => {
   t.plan(4)
 
   function getUpdatePlanQuery(id) {
@@ -85,7 +85,7 @@ test('Should update a Plan', async t => {
   t.is(updatePlan.deleted, false);
 });
 
-test('Should delete/disable a Plan', async t => {
+test('Plan: Should delete/disable a Plan', async t => {
   t.plan(3)
 
   function getDeletePlanQuery(id) {
@@ -130,7 +130,7 @@ test('Should delete/disable a Plan', async t => {
   t.is(deletePlan.deleted, true);
 });
 
-test('Should get all Plans', async t => {
+test('Plan: Should get all Plans', async t => {
   t.plan(5)
 
   const allPlansQuery = {
@@ -171,7 +171,7 @@ test('Should get all Plans', async t => {
 
 });
 
-test('Should get an specific Plan', async t => {
+test('Plan: Should get a Plan', async t => {
   t.plan(6)
 
   function getPlanQuery(id) {

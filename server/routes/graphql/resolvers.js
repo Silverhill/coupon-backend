@@ -16,6 +16,7 @@ export default {
     getUser: requiresAuth(userResolver.getUser),
     me: requiresAuth(userResolver.me, ['maker', 'hunter']),
     plan: requiresAuth(planResolver.getPlan),
+    campaign: requiresAuth(campaignResolver.getCampaign, ['maker']),
     allPlans: requiresAuth(planResolver.allPlans),
     allCampaigns: requiresAuth(campaignResolver.allCampaigns),
     myCampaigns: requiresAuth(campaignResolver.myCampaigns, ['maker']),
@@ -30,6 +31,8 @@ export default {
     updatePlan: requiresAuth(planResolver.updatePlan),
     deletePlan: requiresAuth(planResolver.deletePlan),
     updatePassword: requiresAuth(userResolver.updatePassword, ['maker', 'hunter']),
-    addCampaign: requiresAuth(campaignResolver.addCampaign)
+    addCampaign: requiresAuth(campaignResolver.addCampaign, ['maker']),
+    updateCampaign: requiresAuth(campaignResolver.updateCampaign, ['maker']),
+    deleteCampaign: requiresAuth(campaignResolver.deleteCampaign, ['maker'])
   },
 }

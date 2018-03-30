@@ -14,6 +14,7 @@ export default `
     description: String
     caption: String
     coupons: [Coupon!]
+    deleted: Boolean
   }
 
   input AddCampaignInput {
@@ -27,5 +28,22 @@ export default `
     title: String!
     description: String
     caption: String
+  }
+
+  input UpdateCampaignInput {
+    id: String!
+    startAt: Timestamp
+    endAt: Timestamp
+    address: String
+    country: String
+    city: String
+    image: String
+    title: String
+    description: String
+    caption: String
+  }
+
+  input DeleteCampaignInput {
+    id: String!
   }
 `;

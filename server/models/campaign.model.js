@@ -28,7 +28,11 @@ var CampaignSchema = new Schema({
   coupons: [{
     type: Schema.ObjectId,
     ref: 'Coupon'
-  }]
+  }],
+  deleted: {
+    type: Boolean,
+    default: false
+  }
 })
 
 export default mongoose.model('Campaign', CampaignSchema);
