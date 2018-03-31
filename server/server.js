@@ -14,7 +14,7 @@ import seedDatabaseIfNeeded from './config/seed';
 
 /* eslint-disable no-console */
 
-const port = 3000;
+const port = 7001;
 const app = express();
 
 
@@ -81,7 +81,7 @@ app.use((req, res) => {
   })
 })
 
-app.listen(3000, function (error) {
+app.listen(app.get('port'), function (error) {
   if (error) {
     console.log(error);
   } else {
