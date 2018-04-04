@@ -2,19 +2,20 @@ export default `
   scalar Timestamp
 
   type Campaign {
-    _id: ID!
+    id: ID!
     startAt: Timestamp!
     endAt: Timestamp!
     address: String
     country: String
     city: String
     image: String
-    couponsNumber: Int!
+    totalCoupons: Int!
+    capturedCoupons: Int!
+    redeemedCoupons: Int!
     title: String!
     description: String
-    caption: String
-    coupons: [Coupon!]
     deleted: Boolean
+    coupons: [Coupon!]
   }
 
   input AddCampaignInput {
@@ -27,7 +28,8 @@ export default `
     couponsNumber: Int!
     title: String!
     description: String
-    caption: String
+    initialAgeRange: Int
+    finalAgeRange: Int
   }
 
   input UpdateCampaignInput {
@@ -40,7 +42,8 @@ export default `
     image: String
     title: String
     description: String
-    caption: String
+    initialAgeRange: Int
+    finalAgeRange: Int
   }
 
   input DeleteCampaignInput {

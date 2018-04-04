@@ -1,5 +1,4 @@
 import * as userResolver from './resolvers/user.resolver';
-import * as planResolver from './resolvers/plan.resolver';
 import * as campaignResolver from './resolvers/campaign.resolver';
 import * as couponResolver from './resolvers/coupon.resolver';
 import { requiresAuth } from '../../services/graphql.service';
@@ -15,9 +14,7 @@ export default {
     allHunters: requiresAuth(userResolver.allHunters, ['maker', 'hunter']),
     getUser: requiresAuth(userResolver.getUser),
     me: requiresAuth(userResolver.me, ['maker', 'hunter']),
-    plan: requiresAuth(planResolver.getPlan),
     campaign: requiresAuth(campaignResolver.getCampaign, ['maker']),
-    allPlans: requiresAuth(planResolver.allPlans),
     allCampaigns: requiresAuth(campaignResolver.allCampaigns),
     myCampaigns: requiresAuth(campaignResolver.myCampaigns, ['maker']),
     getCoupon: requiresAuth(couponResolver.getCoupon, ['hunter', 'maker']),
@@ -27,9 +24,6 @@ export default {
     register: userResolver.register,
     login: userResolver.login,
     signUp: userResolver.signUp,
-    addPlan: requiresAuth(planResolver.addPlan),
-    updatePlan: requiresAuth(planResolver.updatePlan),
-    deletePlan: requiresAuth(planResolver.deletePlan),
     updatePassword: requiresAuth(userResolver.updatePassword, ['maker', 'hunter']),
     addCampaign: requiresAuth(campaignResolver.addCampaign, ['maker']),
     updateCampaign: requiresAuth(campaignResolver.updateCampaign, ['maker']),

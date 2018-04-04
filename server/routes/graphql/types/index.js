@@ -6,7 +6,6 @@ import campaignTypes from './Campaign';
 import companyTypes from './Company';
 import couponTypes from './Coupon';
 import officeTypes from './Office';
-import planTypes from './Plan';
 
 export default [
   rootTypes,
@@ -16,6 +15,5 @@ export default [
   campaignTypes,
   companyTypes,
   couponTypes,
-  officeTypes,
-  planTypes,
+  officeTypes
 ];

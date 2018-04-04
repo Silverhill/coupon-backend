@@ -4,33 +4,26 @@ mongoose.Promise = require('bluebird');
 import mongoose, {Schema} from 'mongoose';
 
 var CompanySchema = new Schema({
-  ruc: {
-    type: String,
-    required: 'Ruc field is required',
-  },
-  contributorType: {
-    type: String,
-    required: true
-  },
   businessName: {
     type: String,
     required: true
   },
-  legalRepresentative: {
-    type: String,
+  createdAt: {
+    type: Date,
     required: true
   },
-  economicActivity: {
-    type: String,
+  updatedAt: {
+    type: Date,
+    required: true
+  },
+  maker: {
+    type: Schema.ObjectId,
+    ref: 'Maker',
     required: true
   },
   offices: [{
     type: Schema.ObjectId,
     ref: 'Office'
-  }],
-  campaigns: [{
-    type: Schema.ObjectId,
-    ref: 'Campaign'
   }]
 })
 

@@ -38,10 +38,14 @@ var UserSchema = new Schema({
   salt: String,
   facebook: {},
   github: {},
-  coupons: [{
-    type: Schema.ObjectId,
-    ref: 'Coupon'
-  }]
+  createdAt: {
+    type: Date,
+    required: true
+  },
+  updatedAt: {
+    type: Date,
+    required: true
+  }
 }, {
   collection : 'users',
   discriminatorKey : '_type'
