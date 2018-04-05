@@ -1,6 +1,6 @@
 export default `
   interface UserBase {
-    _id: String!
+    id: String!
     name: String
     email: String!
     provider: String
@@ -14,7 +14,7 @@ export default `
   }
 
   type User implements UserBase {
-    _id: String!
+    id: String!
     name: String
     email: String!
     provider: String

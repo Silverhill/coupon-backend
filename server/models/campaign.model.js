@@ -50,6 +50,7 @@ var CampaignSchema = new Schema({
     required: true
   },
   description: String,
+  customMessage: String,
   deleted: {
     type: Boolean,
     default: false
