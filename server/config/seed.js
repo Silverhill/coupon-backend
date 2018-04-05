@@ -17,7 +17,9 @@ const seedDatabaseIfNeeded = async () => {
           role: 'admin',
           name: 'Admin',
           email: 'admin@example.com',
-          password: 'admin'
+          password: 'admin',
+          createdAt: new Date(),
+          updatedAt: new Date()
         })
         .then(() => console.log('finished populating users'))
         .catch(err => console.log('error populating users', err));
@@ -28,7 +30,9 @@ const seedDatabaseIfNeeded = async () => {
           provider: 'local',
           name: 'Hunter',
           email: 'hunter@example.com',
-          password: 'hunter'
+          password: 'hunter',
+          createdAt: new Date(),
+          updatedAt: new Date()
         })
         .then(() => console.log('finished populating hunters'))
         .catch(err => console.log('error populating hunters', err));
@@ -39,7 +43,9 @@ const seedDatabaseIfNeeded = async () => {
           provider: 'local',
           name: 'Maker',
           email: 'maker@example.com',
-          password: 'maker'
+          password: 'maker',
+          createdAt: new Date(),
+          updatedAt: new Date()
         })
         .then(() => console.log('finished populating makers'))
         .catch(err => console.log('error populating makers', err));

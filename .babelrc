@@ -4,6 +4,7 @@
     "env"
   ],
   "plugins": [
-    "transform-async-to-generator"
+    "transform-async-to-generator",
+    "transform-object-rest-spread"
   ]
 }

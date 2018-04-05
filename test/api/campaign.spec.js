@@ -32,8 +32,10 @@ test('Campaign: Should get access only maker role', async t => {
           startAt: 1521178272153
           endAt: 1522188672153
           couponsNumber: 20
+          initialAgeRange: 18
+          finalAgeRange: 50
         }) {
-          _id
+          id
           title
         }
       }
@@ -68,7 +70,7 @@ test('Campaign: Should get access only maker role', async t => {
 });
 
 test('Campaign: Should create a Campaign', async t => {
-  t.plan(10)
+  t.plan(12)
 
   const addCampaignQuery = {
     query: `
@@ -82,8 +84,10 @@ test('Campaign: Should create a Campaign', async t => {
           startAt: 1521178272153
           endAt: 1522188672153
           couponsNumber: 20
+          initialAgeRange: 18
+          finalAgeRange: 50
         }) {
-          _id
+          id
           title
           country
           city
@@ -91,7 +95,9 @@ test('Campaign: Should create a Campaign', async t => {
           address
           startAt
           endAt
-          couponsNumber
+          totalCoupons
+          capturedCoupons
+          redeemedCoupons
           deleted
         }
       }
@@ -116,7 +122,9 @@ test('Campaign: Should create a Campaign', async t => {
   t.is(addCampaign.address, 'Av. Pio Jaramillo');
   t.is(addCampaign.startAt, 1521178272153);
   t.is(addCampaign.endAt, 1522188672153);
-  t.is(addCampaign.couponsNumber, 20);
+  t.is(addCampaign.totalCoupons, 20);
+  t.is(addCampaign.capturedCoupons, 0);
+  t.is(addCampaign.redeemedCoupons, 0);
   t.is(addCampaign.deleted, false);
 });
 
@@ -135,8 +143,10 @@ test('Campaign: endAt should be greater than startAt', async t => {
           startAt: 1522188672153
           endAt: 1521178272153
           couponsNumber: 20
+          initialAgeRange: 18
+          finalAgeRange: 50
         }) {
-          _id
+          id
           title
         }
       }
@@ -169,8 +179,10 @@ test('Campaign: Should update a Campaign', async t => {
           startAt: 1521178272153
           endAt: 1522188672153
           couponsNumber: 20
+          initialAgeRange: 18
+          finalAgeRange: 50
         }) {
-          _id
+          id
           title
           deleted
         }
@@ -187,7 +199,7 @@ test('Campaign: Should update a Campaign', async t => {
             id: "${id}"
             title: "Campaign updated"
           }) {
-            _id
+            id
             title
             deleted
           }
@@ -201,7 +213,7 @@ test('Campaign: Should update a Campaign', async t => {
   const { data: { signIn: { token } } } = loginResponse.body
   const addCampaignResponse = await utils.callToQraphql(serverRequest, addCampaignQuery, token);
   const { body: { data: { addCampaign } } } = addCampaignResponse;
-  const updateCampaignResponse = await utils.callToQraphql(serverRequest, getUpdateCampaignQuery(addCampaign._id), token);
+  const updateCampaignResponse = await utils.callToQraphql(serverRequest, getUpdateCampaignQuery(addCampaign.id), token);
   t.is(updateCampaignResponse.status, 200);
 
   const { body: { data: { updateCampaign } } } = updateCampaignResponse;
@@ -224,8 +236,10 @@ test('Campaign: Should delete a Campaign', async t => {
           startAt: 1521178272153
           endAt: 1522188672153
           couponsNumber: 20
+          initialAgeRange: 18
+          finalAgeRange: 50
         }) {
-          _id
+          id
           title
         }
       }
@@ -239,7 +253,7 @@ test('Campaign: Should delete a Campaign', async t => {
           deleteCampaign(input: {
             id: "${id}"
           }) {
-            _id
+            id
             deleted
           }
         }
@@ -252,7 +266,7 @@ test('Campaign: Should delete a Campaign', async t => {
   const { data: { signIn: { token } } } = loginResponse.body
   const addCampaignResponse = await utils.callToQraphql(serverRequest, addCampaignQuery, token);
   const { body: { data: { addCampaign } } } = addCampaignResponse;
-  const deleteCampaignResponse = await utils.callToQraphql(serverRequest, getDeleteCampaignQuery(addCampaign._id), token);
+  const deleteCampaignResponse = await utils.callToQraphql(serverRequest, getDeleteCampaignQuery(addCampaign.id), token);
   t.is(deleteCampaignResponse.status, 200);
 
   const { body: { data: { deleteCampaign } } } = deleteCampaignResponse;
@@ -276,8 +290,10 @@ test('Campaign: Should get a Campaign', async t => {
           startAt: 1521178272153
           endAt: 1522188672153
           couponsNumber: 20
+          initialAgeRange: 18
+          finalAgeRange: 50
         }) {
-          _id
+          id
           title
           deleted
         }
@@ -290,7 +306,7 @@ test('Campaign: Should get a Campaign', async t => {
       query: `
         {
           campaign(id: "${id}") {
-            _id
+            id
             title
           }
         }
@@ -303,7 +319,7 @@ test('Campaign: Should get a Campaign', async t => {
   const { data: { signIn: { token } } } = loginResponse.body
   const addCampaignResponse = await utils.callToQraphql(serverRequest, addCampaignQuery, token);
   const { body: { data: { addCampaign } } } = addCampaignResponse;
-  const campaignResponse = await utils.callToQraphql(serverRequest, getCampaignQuery(addCampaign._id), token);
+  const campaignResponse = await utils.callToQraphql(serverRequest, getCampaignQuery(addCampaign.id), token);
 
   t.is(campaignResponse.status, 200);
 

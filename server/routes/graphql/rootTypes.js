@@ -12,12 +12,6 @@ export default `
     # Get all hunters. Access: Admin, Maker, Hunter
     allHunters: [Hunter!]!
 
-    # Get all plans. Access: Admin
-    allPlans: [Plan!]!
-
-    # Get Plan. Access: Admin, Maker
-    plan(id: String!): Plan!
-
     # Get Campaign. Access: Admin, Maker
     campaign(id: String!): Campaign!
 
@@ -45,15 +39,6 @@ export default `
 
     # User register
     signUp(input: AddUserInput): User!
-
-    # Create new plan. Access: Admin
-    addPlan(input: AddPlanInput): Plan!
-
-    # Update plan. Access: Admin
-    updatePlan(input: UpdatePlanInput): Plan!
-
-    # Delete plan. Access: Admin
-    deletePlan(input: DeletePlanInput): Plan!
 
     # Update user password. Access: Admin, Maker, Hunter
     updatePassword(input: UpdatePasswordInput): User!

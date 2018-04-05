@@ -92,6 +92,7 @@ export const updatePassword = async (parent, args, { models, request }) => {
 
   if (user.authenticate(oldPass)) {
     user.password = newPass;
+    user.updatedAt = new Date()
     user = await user.save();
   } else {
     throw new Error('Problem to changue the password');
@@ -133,6 +134,8 @@ async function registerUser(_user, models) {
   if (_user.role === 'hunter') user = await new models.Hunter(_user);
   if (_user.role === 'maker') user = await new models.Maker(_user);
   user.provider = 'local';
+  user.createdAt = new Date();
+  user.updatedAt = new Date();
   user = await user.save();
 
   return user;

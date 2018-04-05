@@ -6,6 +6,5 @@ export default `
     location: String
     email: String!
     company: Company
-    plan: Plan
   }
 `

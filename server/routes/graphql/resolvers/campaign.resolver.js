@@ -18,12 +18,22 @@ export const myCampaigns = async (parent, args, { models, request }) => {
 };
 
 export const addCampaign = async (parent, args, context) => {
-  const { models } = context;
+  const { models, request } = context;
   const { input } = args;
-
+  const { headers: { authentication } } = request;
   validateRange(input);
+  const makerId = await extractUserIdFromToken(authentication);
+  const { couponsNumber } = input;
+  const campaign = {
+    ...input,
+    age: 30,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    totalCoupons: couponsNumber,
+    maker: makerId
+  }
 
-  const newCampaign = await new models.Campaign(input);
+  const newCampaign = await new models.Campaign(campaign);
 
   try {
     await newCampaign.save();
@@ -40,8 +50,12 @@ export const updateCampaign = async (parent, args, context) => {
   validateRange(input);
 
   try {
+    const campaign = {
+      ...input,
+      updatedAt: new Date()
+    }
     const updatedCampaign = await models.Campaign.findByIdAndUpdate(input.id,
-      input,
+      campaign,
       { new: true }
     )
     return updatedCampaign;
@@ -56,7 +70,8 @@ export const deleteCampaign = async (parent, args, context) => {
 
   try {
     const updatedCampaign = await models.Campaign.findByIdAndUpdate(id, {
-      deleted: true
+      deleted: true,
+      updatedAt: new Date()
     }, { new: true });
     return updatedCampaign;
   } catch (error) {
@@ -75,10 +90,18 @@ export const getCampaign = async (parent, args, context) => {
   }
 };
 
-
 function validateRange(input) {
   if (input.endAt <= input.startAt) {
     throw new Error('endAt should be greater than startAt.');
   }
   return
+}
+
+async function extractUserIdFromToken(token) {
+  try {
+    const { _id } = await jwt.verify(token, config.secrets.session);
+    return _id;
+  } catch (error) {
+    return null;
+  }
 }

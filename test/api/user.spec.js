@@ -2,7 +2,6 @@ import test from 'ava';
 import { connectDB, dropDB } from '../mocks/db';
 import request from 'supertest';
 import app from '../../server/server';
-import User from '../../server/models/user.model';
 
 
 test.beforeEach('connect with mongodb', async (t) => {

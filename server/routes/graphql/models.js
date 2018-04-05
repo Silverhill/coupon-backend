@@ -6,7 +6,6 @@ import Campaign from '../../models/campaign.model';
 import Company from '../../models/company.model';
 import Coupon from '../../models/coupon.model';
 import Office from '../../models/office.model';
-import Plan from '../../models/plan.model';
 
 const models = {
   User,
@@ -15,8 +14,7 @@ const models = {
   Campaign,
   Company,
   Coupon,
-  Office,
-  Plan
+  Office
 };
 
 export default models;
