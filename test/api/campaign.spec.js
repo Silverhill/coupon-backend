@@ -29,6 +29,7 @@ test('Campaign: Should get access only maker role', async t => {
           city: "Loja"
           description: "Description 1"
           address: "Av. Pio Jaramillo"
+          customMessage: "a custom message"
           startAt: 1521178272153
           endAt: 1522188672153
           couponsNumber: 20
@@ -70,7 +71,7 @@ test('Campaign: Should get access only maker role', async t => {
 });
 
 test('Campaign: Should create a Campaign', async t => {
-  t.plan(12)
+  t.plan(13)
 
   const addCampaignQuery = {
     query: `
@@ -81,6 +82,7 @@ test('Campaign: Should create a Campaign', async t => {
           city: "Loja"
           description: "Description 1"
           address: "Av. Pio Jaramillo"
+          customMessage: "a custom message"
           startAt: 1521178272153
           endAt: 1522188672153
           couponsNumber: 20
@@ -92,6 +94,7 @@ test('Campaign: Should create a Campaign', async t => {
           country
           city
           description
+          customMessage
           address
           startAt
           endAt
@@ -119,6 +122,7 @@ test('Campaign: Should create a Campaign', async t => {
   t.is(addCampaign.country, 'Ecuador');
   t.is(addCampaign.city, 'Loja');
   t.is(addCampaign.description, 'Description 1');
+  t.is(addCampaign.customMessage, 'a custom message');
   t.is(addCampaign.address, 'Av. Pio Jaramillo');
   t.is(addCampaign.startAt, 1521178272153);
   t.is(addCampaign.endAt, 1522188672153);

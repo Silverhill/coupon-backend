@@ -14,6 +14,7 @@ export default `
     redeemedCoupons: Int!
     title: String!
     description: String
+    customMessage: String
     deleted: Boolean
     coupons: [Coupon!]
   }
@@ -28,6 +29,7 @@ export default `
     couponsNumber: Int!
     title: String!
     description: String
+    customMessage: String
     initialAgeRange: Int
     finalAgeRange: Int
   }
@@ -42,6 +44,7 @@ export default `
     image: String
     title: String
     description: String
+    customMessage: String
     initialAgeRange: Int
     finalAgeRange: Int
   }
