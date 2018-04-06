@@ -13,7 +13,10 @@ export const myCampaigns = async (parent, args, { models, request }) => {
   if (!authentication) throw new Error('You need logged to get campaigns');
 
   const { _id } = await jwt.verify(authentication, config.secrets.session);
-  const { campaigns } = await models.Maker.findOne({ _id });
+  const { campaigns } = await models.Maker.findOne({ _id })
+                                          .populate('campaigns')
+                                          .exec();
+
   return campaigns;
 };
 
@@ -37,8 +40,18 @@ export const addCampaign = async (parent, args, context) => {
 
   try {
     await newCampaign.save();
+  } catch (error) {
+    return error;
+  }
+
+  try {
+    await models.Maker.findByIdAndUpdate(makerId,
+      { "$push": { "campaigns": newCampaign._id } },
+      { new: true }
+    );
     return newCampaign;
   } catch (error) {
+    newCampaign.remove();
     return error;
   }
 }

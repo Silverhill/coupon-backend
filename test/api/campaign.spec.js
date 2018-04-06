@@ -332,3 +332,79 @@ test('Campaign: Should get a Campaign', async t => {
   t.is(campaign.title, 'Campaign test 1');
 
 })
+
+test('Campaign: Should get all campaigns', async t => {
+  t.plan(4);
+
+  const addCampaignQuery1 = {
+    query: `
+      mutation {
+        addCampaign(input: {
+          title: "Campaign 1"
+          country: "Ecuador"
+          city: "Loja"
+          description: "Description 1"
+          address: "Av. Pio Jaramillo"
+          startAt: 1521178272153
+          endAt: 1522188672153
+          couponsNumber: 20
+          initialAgeRange: 18
+          finalAgeRange: 50
+        }) {
+          id
+          title
+        }
+      }
+    `
+  };
+
+  const addCampaignQuery2 = {
+    query: `
+      mutation {
+        addCampaign(input: {
+          title: "Campaign 2"
+          country: "Ecuador"
+          city: "Loja"
+          description: "Description 1"
+          address: "Av. Pio Jaramillo"
+          startAt: 1521178272153
+          endAt: 1522188672153
+          couponsNumber: 20
+          initialAgeRange: 18
+          finalAgeRange: 50
+        }) {
+          id
+          title
+        }
+      }
+    `
+  };
+
+  const myCampaignsQuery = {
+    query: `
+      {
+        myCampaigns {
+          id
+          title
+        }
+      }
+    `
+  };
+
+  let serverRequest = request(app)
+  const loginResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { data: { signIn: { token } } } = loginResponse.body
+  await utils.callToQraphql(serverRequest, addCampaignQuery1, token);
+  await utils.callToQraphql(serverRequest, addCampaignQuery2, token);
+
+  const myCampaignsResponse = await utils.callToQraphql(serverRequest, myCampaignsQuery, token);
+
+  t.is(myCampaignsResponse.status, 200);
+
+  const { body: { data: { myCampaigns } } } = myCampaignsResponse;
+
+  t.is(myCampaigns.length, 2);
+  t.is(myCampaigns[0].title, 'Campaign 1');
+  t.is(myCampaigns[1].title, 'Campaign 2');
+
+})
