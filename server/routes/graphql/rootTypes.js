@@ -21,6 +21,9 @@ export default `
     # Get my campaigns. Access: Admin, Maker
     myCampaigns: [Campaign]!
 
+    # Get coupons from a specific campaign. Access: Admin, Maker
+    couponsFromCampaign(campaignId: String!): [Coupon]!
+
     # Get user by id. Access: Admin
     getUser(id: String!): User!
 
@@ -51,5 +54,8 @@ export default `
 
     # Delete an existing Campaign. Access: Admin, Maker
     deleteCampaign(input: DeleteCampaignInput): Campaign!
+
+    # Capture a coupon from a specific Campaign. Access: Admin, Hunter
+    captureCoupon(input: CaptureCouponInput!): Coupon!
   }
 `;

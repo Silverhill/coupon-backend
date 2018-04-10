@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import config from '../../../config';
+import crypto from 'crypto';
 
 export const allCampaigns = async (parent, args, context) => {
   const { models } = context;
@@ -40,13 +41,17 @@ export const addCampaign = async (parent, args, context) => {
 
   try {
     await newCampaign.save();
+    await addCouponsToCampaign(couponsNumber, models, newCampaign._id)
   } catch (error) {
     return error;
   }
 
   try {
     await models.Maker.findByIdAndUpdate(makerId,
-      { "$push": { "campaigns": newCampaign._id } },
+      {
+        '$push': { 'campaigns': newCampaign._id },
+        updateAt: new Date()
+      },
       { new: true }
     );
     return newCampaign;
@@ -82,11 +87,21 @@ export const deleteCampaign = async (parent, args, context) => {
   const { input: { id } } = args;
 
   try {
-    const updatedCampaign = await models.Campaign.findByIdAndUpdate(id, {
-      deleted: true,
-      updatedAt: new Date()
-    }, { new: true });
-    return updatedCampaign;
+
+    const campaign = await models.Campaign.findOne({ _id: id });
+
+    if (campaign.capturedCoupons == 0) {
+      const updatedCampaign = await models.Campaign.findByIdAndUpdate(id, {
+        deleted: true,
+        updatedAt: new Date()
+      }, { new: true });
+
+      return updatedCampaign;
+
+    } else {
+      throw new Error('This campaign can not be deleted because there are coupons captured.');
+    }
+
   } catch (error) {
     return error;
   }
@@ -98,6 +113,19 @@ export const getCampaign = async (parent, args, context) => {
   try {
     const campaign = await models.Campaign.findOne({ _id: id });
     return campaign;
+  } catch (error) {
+    return error;
+  }
+};
+
+export const getCouponsFromCampaign = async (parent, args, context) => {
+  const { campaignId } = args;
+  const { models } = context;
+  try {
+    const { coupons } = await models.Campaign.findOne({ _id: campaignId })
+                                                  .populate('coupons')
+                                                  .exec();
+    return coupons;
   } catch (error) {
     return error;
   }
@@ -116,5 +144,40 @@ async function extractUserIdFromToken(token) {
     return _id;
   } catch (error) {
     return null;
+  }
+}
+
+async function addCouponsToCampaign(quantity, models, campaignId) {
+  await createCouponsRecursively(quantity, models, campaignId);
+}
+
+async function createCouponsRecursively(maxQuantity, models, campaignId) {
+  if (maxQuantity > 0) {
+    const code = crypto.randomBytes(10).toString('hex')
+    const coupon = {
+      code,
+      status: 'available',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      campaign: campaignId
+    }
+    try {
+      const newCoupon = await new models.Coupon(coupon);
+      await newCoupon.save();
+
+      await models.Campaign.findByIdAndUpdate(campaignId,
+        {
+          '$push': { 'coupons': newCoupon._id },
+          updateAt: new Date()
+        },
+        { new: true }
+      );
+
+      maxQuantity = maxQuantity - 1;
+      await createCouponsRecursively(maxQuantity, models, campaignId);
+
+    } catch (error) {
+      return null;
+    }
   }
 }

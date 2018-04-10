@@ -408,3 +408,133 @@ test('Campaign: Should get all campaigns', async t => {
   t.is(myCampaigns[1].title, 'Campaign 2');
 
 })
+
+test('Campaign: Should add coupons to campaign', async t => {
+  t.plan(4);
+
+  const addCampaignQuery = {
+    query: `
+      mutation {
+        addCampaign(input: {
+          title: "Campaign test 1"
+          country: "Ecuador"
+          city: "Loja"
+          description: "Description 1"
+          address: "Av. Pio Jaramillo"
+          startAt: 1521178272153
+          endAt: 1522188672153
+          couponsNumber: 10
+          initialAgeRange: 18
+          finalAgeRange: 50
+        }) {
+          id
+          title
+          deleted
+        }
+      }
+    `
+  };
+
+  function getCouponsFromCampaignQuery(id) {
+    return {
+      query: `
+        {
+          couponsFromCampaign(campaignId: "${id}") {
+            id
+            code
+            status
+          }
+        }
+      `
+    }
+  }
+
+  let serverRequest = request(app)
+  const loginResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { data: { signIn: { token } } } = loginResponse.body
+  const addCampaignResponse = await utils.callToQraphql(serverRequest, addCampaignQuery, token);
+  const { body: { data: { addCampaign } } } = addCampaignResponse;
+  const couponsFromCampaignResponse = await utils.callToQraphql(serverRequest, getCouponsFromCampaignQuery(addCampaign.id), token);
+  t.is(couponsFromCampaignResponse.status, 200);
+
+  const { body: { data: { couponsFromCampaign } } } = couponsFromCampaignResponse;
+  t.is(couponsFromCampaign.length, 10);
+  t.truthy(couponsFromCampaign[0].id);
+  t.truthy(couponsFromCampaign[9].id);
+
+})
+
+test('Campaign: Should validate if there are captured coupons and prevent delete the campaign', async t => {
+  t.plan(3);
+
+  const addCampaignQuery = {
+    query: `
+      mutation {
+        addCampaign(input: {
+          title: "Campaign test 1"
+          country: "Ecuador"
+          city: "Loja"
+          description: "Description 1"
+          address: "Av. Pio Jaramillo"
+          startAt: 1521178272153
+          endAt: 1522188672153
+          couponsNumber: 20
+          initialAgeRange: 18
+          finalAgeRange: 50
+        }) {
+          id
+          title
+          deleted
+        }
+      }
+    `
+  };
+
+  function getCaptureCouponQuery(id) {
+    return {
+      query: `
+        mutation {
+          captureCoupon(input: {
+            campaignId: "${id}"
+          }) {
+            id
+            code
+            status
+          }
+        }
+      `
+    }
+  }
+
+  function getDeleteCampaignQuery(id) {
+    return {
+      query: `
+        mutation {
+          deleteCampaign(input: {
+            id: "${id}"
+          }) {
+            id
+            deleted
+          }
+        }
+      `
+    };
+  }
+
+  let serverRequest = request(app)
+  const loginResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { data: { signIn: { token: tokenMaker } } } = loginResponse.body
+  const loginResponse2 = await utils.callToQraphql(serverRequest, hunterLoginQuery);
+  const { data: { signIn: { token: tokenHunter } } } = loginResponse2.body
+
+  const addCampaignResponse = await utils.callToQraphql(serverRequest, addCampaignQuery, tokenMaker);
+  const { body: { data: { addCampaign } } } = addCampaignResponse;
+  const captureCouponResponse = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
+  t.is(captureCouponResponse.status, 200);
+
+  const deleteCampaignResponse = await utils.callToQraphql(serverRequest, getDeleteCampaignQuery(addCampaign.id), tokenMaker);
+  t.is(deleteCampaignResponse.status, 200);
+
+  const { body: { errors } } = deleteCampaignResponse;
+  t.is(errors[0].message, 'This campaign can not be deleted because there are coupons captured.');
+})
