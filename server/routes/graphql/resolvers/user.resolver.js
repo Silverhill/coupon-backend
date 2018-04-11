@@ -5,18 +5,24 @@ import { roleExist } from '../../../services/graphql.service';
 /**
  * QUERY
  */
-export const allUsers = async (parent, args, { models }) => {
-  const users = await models.User.find({}, '-salt -password');
+export const allUsers = async (parent, {limit = null, skip = null}, { models }) => {
+  const users = await models.User.find({}, '-salt -password')
+                                 .limit(limit)
+                                 .skip(skip);
   return users;
 };
 
-export const allMakers = async (parent, args, { models }) => {
-  const users = await models.User.find({'_type': 'Maker'}, '-salt -password');
+export const allMakers = async (parent, {limit = null, skip = null}, { models }) => {
+  const users = await models.User.find({'_type': 'Maker'}, '-salt -password')
+                                 .limit(limit)
+                                 .skip(skip);
   return users;
 };
 
-export const allHunters = async (parent, args, { models }) => {
-  const users = await models.User.find({'_type': 'Hunter'}, '-salt -password');
+export const allHunters = async (parent, {limit = null, skip = null}, { models }) => {
+  const users = await models.User.find({'_type': 'Hunter'}, '-salt -password')
+                                 .limit(limit)
+                                 .skip(skip);
   return users;
 };
 
