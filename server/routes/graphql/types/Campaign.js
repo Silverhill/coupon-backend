@@ -21,7 +21,7 @@ export default `
   }
 
   input AddCampaignInput {
-    startAt: Timestamp
+    startAt: Timestamp!
     endAt: Timestamp!
     address: String
     country: String
