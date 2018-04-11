@@ -10,8 +10,9 @@ export default `
     city: String
     image: String
     totalCoupons: Int!
-    capturedCoupons: Int!
+    huntedCoupons: Int!
     redeemedCoupons: Int!
+    status: String!
     title: String!
     description: String
     customMessage: String

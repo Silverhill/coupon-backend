@@ -10,7 +10,7 @@ var CouponSchema = new Schema({
   },
   status: {
     type: String,
-    default: 'available' //posible status: available, captured, redeemed
+    default: 'available' //POSIBLE STATUS: available, hunted, expired, redeemed
   },
   createdAt: {
     type: Date,

@@ -17,6 +17,7 @@ export default {
     campaign: requiresAuth(campaignResolver.getCampaign, ['maker']),
     allCampaigns: requiresAuth(campaignResolver.allCampaigns),
     myCampaigns: requiresAuth(campaignResolver.myCampaigns, ['maker']),
+    couponsFromCampaign: requiresAuth(campaignResolver.getCouponsFromCampaign, ['maker']),
     getCoupon: requiresAuth(couponResolver.getCoupon, ['hunter', 'maker']),
   },
 
@@ -27,6 +28,7 @@ export default {
     updatePassword: requiresAuth(userResolver.updatePassword, ['maker', 'hunter']),
     addCampaign: requiresAuth(campaignResolver.addCampaign, ['maker']),
     updateCampaign: requiresAuth(campaignResolver.updateCampaign, ['maker']),
-    deleteCampaign: requiresAuth(campaignResolver.deleteCampaign, ['maker'])
+    deleteCampaign: requiresAuth(campaignResolver.deleteCampaign, ['maker']),
+    captureCoupon: requiresAuth(couponResolver.captureCoupon, ['hunter'])
   },
 }

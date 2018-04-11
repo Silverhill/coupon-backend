@@ -29,7 +29,7 @@ var CampaignSchema = new Schema({
     type: Number,
     default: 0
   },
-  capturedCoupons: {
+  huntedCoupons: {
     type: Number,
     default: 0
   },
@@ -48,6 +48,10 @@ var CampaignSchema = new Schema({
   title: {
     type: String,
     required: true
+  },
+  status: {
+    type: String,
+    default: 'unavailable' //POSIBLE STATUS: available, expired, soldout
   },
   description: String,
   customMessage: String,
