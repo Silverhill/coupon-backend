@@ -169,7 +169,7 @@ test('Coupon > captureCoupon: Should return a coupon', async t => {
   const { body: { data: { captureCoupon: coupon1 } } } = captureCouponResponse;
   t.truthy(coupon1.id);
   t.truthy(coupon1.code);
-  t.is(coupon1.status, 'huntered');
+  t.is(coupon1.status, 'hunted');
 });
 
 
@@ -245,7 +245,7 @@ test('Coupon > captureCoupon: Should update the campaign counters', async t => {
             id
             title
             totalCoupons
-            capturedCoupons
+            huntedCoupons
             redeemedCoupons
           }
         }
@@ -273,6 +273,6 @@ test('Coupon > captureCoupon: Should update the campaign counters', async t => {
   const { body: { data: { campaign } } } = campaignResponse;
 
   t.is(campaign.totalCoupons, 15);
-  t.is(campaign.capturedCoupons, 1);
+  t.is(campaign.huntedCoupons, 1);
   t.is(campaign.redeemedCoupons, 0);
 });

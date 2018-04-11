@@ -23,6 +23,8 @@ export const myCampaigns = async (parent, args, { models, request }) => {
   return campaigns;
 };
 
+
+// TODO: Actualizar el estado (status) de la campaña acorde a las necesidades
 export const addCampaign = async (parent, args, context) => {
   const { models, request } = context;
   const { input } = args;
@@ -45,21 +47,21 @@ export const addCampaign = async (parent, args, context) => {
     await newCampaign.save();
     await addCouponsToCampaign(couponsNumber, models, newCampaign._id)
   } catch (error) {
-    return error;
+    throw new Error(error.message || error);
   }
 
   try {
     await models.Maker.findByIdAndUpdate(makerId,
       {
         '$push': { 'campaigns': newCampaign._id },
-        updateAt: new Date()
+        updatedAt: new Date()
       },
       { new: true }
     );
     return newCampaign;
   } catch (error) {
     newCampaign.remove();
-    return error;
+    throw new Error(error.message || error);
   }
 }
 
@@ -80,7 +82,7 @@ export const updateCampaign = async (parent, args, context) => {
     )
     return updatedCampaign;
   } catch (error) {
-    return error;
+    throw new Error(error.message || error);
   }
 }
 
@@ -92,7 +94,7 @@ export const deleteCampaign = async (parent, args, context) => {
 
     const campaign = await models.Campaign.findOne({ _id: id });
 
-    if (campaign.capturedCoupons == 0) {
+    if (campaign.huntedCoupons == 0) {
       const updatedCampaign = await models.Campaign.findByIdAndUpdate(id, {
         deleted: true,
         updatedAt: new Date()
@@ -101,11 +103,11 @@ export const deleteCampaign = async (parent, args, context) => {
       return updatedCampaign;
 
     } else {
-      throw new Error('This campaign can not be deleted because there are coupons captured.');
+      throw new Error('This campaign can not be deleted because there are coupons hunted.');
     }
 
   } catch (error) {
-    return error;
+    throw new Error(error.message || error);
   }
 }
 
@@ -116,7 +118,7 @@ export const getCampaign = async (parent, args, context) => {
     const campaign = await models.Campaign.findOne({ _id: id });
     return campaign;
   } catch (error) {
-    return error;
+    throw new Error(error.message || error);
   }
 };
 
@@ -129,7 +131,7 @@ export const getCouponsFromCampaign = async (parent, args, context) => {
                                                   .exec();
     return coupons;
   } catch (error) {
-    return error;
+    throw new Error(error.message || error);
   }
 };
 
@@ -170,7 +172,7 @@ async function createCouponsRecursively(maxQuantity, models, campaignId) {
       await models.Campaign.findByIdAndUpdate(campaignId,
         {
           '$push': { 'coupons': newCoupon._id },
-          updateAt: new Date()
+          updatedAt: new Date()
         },
         { new: true }
       );
@@ -179,7 +181,7 @@ async function createCouponsRecursively(maxQuantity, models, campaignId) {
       await createCouponsRecursively(maxQuantity, models, campaignId);
 
     } catch (error) {
-      return null;
+      throw new Error(error.message || error);
     }
   }
 }

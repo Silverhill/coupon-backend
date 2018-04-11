@@ -15,33 +15,30 @@ export const captureCoupon = async (parent, args, { models, request }) => {
 
   //TODO: Validar que la campaña tenga cupones disponibles
   //TODO: Validar que la campaña este activa
+  //TODO: Actualizar el estado (status) del cupon acorde a las necesidades
 
   try {
 
-    const { coupons: hunterCoupons } = await models.Campaign.findOne({ _id: campaignId }).populate({
-      path: 'coupons',
-      match: {
-        hunter: hunterId,
-        status: 'huntered'
-      }
+    const { coupons: hunterCoupons } = await getCouponsFromCampaign(models, campaignId, {
+      hunter: hunterId,
+      status: 'hunted'
     });
 
     if (hunterCoupons.length === 1) {
       throw new Error('You can only capture one coupon for this campaign.');
     }
 
-    const { coupons, capturedCoupons } = await models.Campaign.findOne({ _id: campaignId }).populate({
-      path: 'coupons',
-      match: { status: 'available'}
+    const { coupons, huntedCoupons } = await getCouponsFromCampaign(models, campaignId, {
+      status: 'available'
     });
 
-    const coupon = coupons.pop();
+    const coupon = getLastItem(coupons);
 
     const updatedCoupon = await models.Coupon.findByIdAndUpdate(coupon._id,
       {
         hunter: hunterId,
-        status: 'huntered',
-        updateAt: new Date()
+        status: 'hunted',
+        updatedAt: new Date()
       },
       { new: true }
     );
@@ -49,15 +46,15 @@ export const captureCoupon = async (parent, args, { models, request }) => {
     await models.Hunter.findByIdAndUpdate(hunterId,
       {
         '$push': { 'coupons': updatedCoupon.id },
-        updateAt: new Date()
+        updatedAt: new Date()
       },
       { new: true }
     );
 
     await models.Campaign.findByIdAndUpdate(campaignId,
       {
-        capturedCoupons: capturedCoupons + 1,
-        updateAt: new Date()
+        huntedCoupons: huntedCoupons + 1,
+        updatedAt: new Date()
       },
       { new: true }
     );
@@ -68,3 +65,14 @@ export const captureCoupon = async (parent, args, { models, request }) => {
   }
 
 };
+
+async function getCouponsFromCampaign(models, campaignId, match) {
+  return await models.Campaign.findOne({ _id: campaignId }).populate({
+    path: 'coupons',
+    match
+  });
+}
+
+function getLastItem(items) {
+  return items.pop();
+}

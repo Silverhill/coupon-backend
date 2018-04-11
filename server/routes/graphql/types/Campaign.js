@@ -10,8 +10,9 @@ export default `
     city: String
     image: String
     totalCoupons: Int!
-    capturedCoupons: Int!
+    huntedCoupons: Int!
     redeemedCoupons: Int!
+    status: String!
     title: String!
     description: String
     customMessage: String
@@ -20,7 +21,7 @@ export default `
   }
 
   input AddCampaignInput {
-    startAt: Timestamp!
+    startAt: Timestamp
     endAt: Timestamp!
     address: String
     country: String

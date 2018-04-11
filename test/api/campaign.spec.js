@@ -99,7 +99,7 @@ test('Campaign: Should create a Campaign', async t => {
           startAt
           endAt
           totalCoupons
-          capturedCoupons
+          huntedCoupons
           redeemedCoupons
           deleted
         }
@@ -127,11 +127,10 @@ test('Campaign: Should create a Campaign', async t => {
   t.is(addCampaign.startAt, 1521178272153);
   t.is(addCampaign.endAt, 1522188672153);
   t.is(addCampaign.totalCoupons, 20);
-  t.is(addCampaign.capturedCoupons, 0);
+  t.is(addCampaign.huntedCoupons, 0);
   t.is(addCampaign.redeemedCoupons, 0);
   t.is(addCampaign.deleted, false);
 });
-
 
 test('Campaign: endAt should be greater than startAt', async t => {
   t.plan(2)
@@ -280,7 +279,7 @@ test('Campaign: Should delete a Campaign', async t => {
 })
 
 test('Campaign: Should get a Campaign', async t => {
-  t.plan(2);
+  t.plan(3);
 
   const addCampaignQuery = {
     query: `
@@ -312,6 +311,7 @@ test('Campaign: Should get a Campaign', async t => {
           campaign(id: "${id}") {
             id
             title
+            status
           }
         }
       `
@@ -330,6 +330,7 @@ test('Campaign: Should get a Campaign', async t => {
   const { body: { data: { campaign } } } = campaignResponse;
 
   t.is(campaign.title, 'Campaign test 1');
+  t.is(campaign.status, 'unavailable');
 
 })
 
@@ -464,7 +465,7 @@ test('Campaign: Should add coupons to campaign', async t => {
 
 })
 
-test('Campaign: Should validate if there are captured coupons and prevent delete the campaign', async t => {
+test('Campaign: Should validate if there are hunted coupons and prevent delete the campaign', async t => {
   t.plan(3);
 
   const addCampaignQuery = {
@@ -536,5 +537,5 @@ test('Campaign: Should validate if there are captured coupons and prevent delete
   t.is(deleteCampaignResponse.status, 200);
 
   const { body: { errors } } = deleteCampaignResponse;
-  t.is(errors[0].message, 'This campaign can not be deleted because there are coupons captured.');
+  t.is(errors[0].message, 'This campaign can not be deleted because there are coupons hunted.');
 })
