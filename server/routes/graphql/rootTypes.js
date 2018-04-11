@@ -4,19 +4,19 @@ export default `
     signIn(email: String!, password: String!): Token!
 
     # Get all users. Access: Admin
-    allUsers: [User!]!
+    allUsers(limit: Int, skip: Int): [User!]!
 
     # Get all makers. Access: Admin, Maker
-    allMakers: [Maker!]!
+    allMakers(limit: Int, skip: Int): [Maker!]!
 
     # Get all hunters. Access: Admin, Maker, Hunter
-    allHunters: [Hunter!]!
+    allHunters(limit: Int, skip: Int): [Hunter!]!
 
     # Get Campaign. Access: Admin, Maker
     campaign(id: String!): Campaign!
 
     # Get all campaigns. Access: Admin, Maker
-    allCampaigns: [Campaign!]!
+    allCampaigns(limit: Int, skip: Int): [Campaign!]!
 
     # Get my campaigns. Access: Admin, Maker
     myCampaigns: [Campaign]!

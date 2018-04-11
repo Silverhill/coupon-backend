@@ -2,9 +2,11 @@ import jwt from 'jsonwebtoken';
 import config from '../../../config';
 import crypto from 'crypto';
 
-export const allCampaigns = async (parent, args, context) => {
+export const allCampaigns = async (parent, {limit = null, skip = null}, context) => {
   const { models } = context;
-  const campaigns = await models.Campaign.find({});
+  const campaigns = await models.Campaign.find({})
+                                .limit(limit)
+                                .skip(skip);
 
   return campaigns;
 };
