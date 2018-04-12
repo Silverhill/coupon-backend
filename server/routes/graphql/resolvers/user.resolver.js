@@ -56,8 +56,28 @@ export const register = async (parent, { user: _user }, { models }) => {
 
 export const signUp = async (parent, args, { models }) => {
   const { input: _user } = args;
+  const { company: companyName } = _user;
+
+  if (_user.company) {
+    delete _user.company;
+  }
+
   try {
-    const res = await registerUser(_user, models);
+
+    let res = await registerUser(_user, models);
+
+    if (res.role == 'maker') {
+      const newCompany = await createCompany(companyName, res._id, models);
+      res = await models.Maker.findByIdAndUpdate(res._id,
+        {
+          company: newCompany._id,
+          updatedAt: new Date()
+        },
+        { new: true }
+      );
+
+    }
+
     return res;
   } catch (error) {
     return error;
@@ -145,4 +165,35 @@ async function registerUser(_user, models) {
   user = await user.save();
 
   return user;
+}
+
+async function createCompany(companyName, makerId, models) {
+  if (companyName) {
+    const company = {
+      businessName: companyName,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      maker: makerId
+    }
+
+    const newCompany = await new models.Company(company);
+
+    try {
+      await newCompany.save();
+      await addCompanyToMaker(makerId, newCompany._id, models)
+      return newCompany;
+    } catch (error) {
+      throw new Error(error.message || error);
+    }
+  }
+}
+
+async function addCompanyToMaker(makerId, companyId, models) {
+  await models.Maker.findByIdAndUpdate(makerId,
+    {
+      company: companyId,
+      updatedAt: new Date()
+    },
+    { new: true }
+  );
 }
