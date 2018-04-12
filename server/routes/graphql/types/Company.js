@@ -1,11 +1,12 @@
 export default `
   type Company {
-    ruc: String!
-    contributorType: String!
+    id: ID!
     businessName: String!
-    legalRepresentative: String!
-    economicActivity: String!
     offices: [Office!]
     campaigns: [Campaign!]
+  }
+
+  input CompanyInput {
+    businessName: String!
   }
 `;

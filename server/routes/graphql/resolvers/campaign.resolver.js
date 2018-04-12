@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import config from '../../../config';
 import crypto from 'crypto';
-
+import { extractUserIdFromToken } from '../../../services/model.service';
 export const allCampaigns = async (parent, {limit = null, skip = null}, context) => {
   const { models } = context;
   const campaigns = await models.Campaign.find({})
@@ -25,6 +25,7 @@ export const myCampaigns = async (parent, args, { models, request }) => {
 
 
 // TODO: Actualizar el estado (status) de la campaña acorde a las necesidades
+// TODO: getHuntersByCampaign(campaignId''')
 export const addCampaign = async (parent, args, context) => {
   const { models, request } = context;
   const { input } = args;
@@ -140,15 +141,6 @@ function validateRange(input) {
     throw new Error('endAt should be greater than startAt.');
   }
   return
-}
-
-async function extractUserIdFromToken(token) {
-  try {
-    const { _id } = await jwt.verify(token, config.secrets.session);
-    return _id;
-  } catch (error) {
-    return null;
-  }
 }
 
 async function addCouponsToCampaign(quantity, models, campaignId) {

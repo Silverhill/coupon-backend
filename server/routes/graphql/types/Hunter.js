@@ -6,6 +6,8 @@ export default `
     provider: String
     role: UserRole!
     coupons: [Coupon]
-    couponCount: Int
+
   }
+
+
 `

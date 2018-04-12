@@ -57,5 +57,11 @@ export default `
 
     # Capture a coupon from a specific Campaign. Access: Admin, Hunter
     captureCoupon(input: CaptureCouponInput!): Coupon!
+
+    # Create new Company. Access: Admin, Maker
+    addCompany(input: CompanyInput!): Company!
+
+    # Create new Office. Access: Admin, Maker
+    addOffice(input: OfficeInput!): Office!
   }
 `;

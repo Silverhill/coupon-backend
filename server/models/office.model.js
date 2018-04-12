@@ -24,8 +24,8 @@ var OfficeSchema = new Schema({
     type: String,
     required: true,
   },
-  officePhone: Number,
-  cellPhone: Number,
+  officePhone: String,
+  cellPhone: String,
   address: {
     type: String,
     required: true
