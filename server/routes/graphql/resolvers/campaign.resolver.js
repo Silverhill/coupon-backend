@@ -26,6 +26,7 @@ export const myCampaigns = async (parent, args, { models, request }) => {
 
 // TODO: Actualizar el estado (status) de la campaña acorde a las necesidades
 // TODO: getHuntersByCampaign(campaignId''')
+// TODO: Pendiente pasar officeId como parametro al momento de crear Campaña
 export const addCampaign = async (parent, args, context) => {
   const { models, request } = context;
   const { input } = args;
