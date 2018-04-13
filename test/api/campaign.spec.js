@@ -65,7 +65,7 @@ test('Campaign: Should get access only maker role', async t => {
 });
 
 test('Campaign: Should create a Campaign', async t => {
-  t.plan(13)
+  t.plan(16)
 
   const addCampaignQuery = {
     query: `
@@ -95,6 +95,9 @@ test('Campaign: Should create a Campaign', async t => {
           totalCoupons
           huntedCoupons
           redeemedCoupons
+          initialAgeRange
+          finalAgeRange
+          createdAt
           deleted
         }
       }
@@ -123,6 +126,9 @@ test('Campaign: Should create a Campaign', async t => {
   t.is(addCampaign.totalCoupons, 20);
   t.is(addCampaign.huntedCoupons, 0);
   t.is(addCampaign.redeemedCoupons, 0);
+  t.is(addCampaign.initialAgeRange, 18);
+  t.is(addCampaign.finalAgeRange, 50);
+  t.truthy(addCampaign.createdAt);
   t.is(addCampaign.deleted, false);
 });
 
