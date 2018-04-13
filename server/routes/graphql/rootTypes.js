@@ -35,6 +35,9 @@ export default `
 
     # Get my company. Access: Maker
     myCompany: Company!
+
+    # Get my offices. Access: Maker
+    myOffices: [Office!]
   }
 
   type Mutation {

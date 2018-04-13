@@ -86,7 +86,7 @@ test('Company: addCompany > Should get access only maker role', async t => {
   t.is(errors[0].message, 'Not have permissions for hunter role.');
 });
 
-test('Office: addOffice > Should get access only maker role', async t => {
+test('Office: addOffice > Should create a new Office', async t => {
   t.plan(6)
 
   const addCompanyQuery = {
@@ -147,4 +147,77 @@ test('Office: addOffice > Should get access only maker role', async t => {
   t.is(addOffice.legalRepresentative, 'Juan Perez');
   t.is(addOffice.economicActivity, 'Comida');
 
+});
+
+test('Office: myOffices > Should get my Offices', async t => {
+  t.plan(3)
+
+  const addCompanyQuery = {
+    query: `
+      mutation {
+        addCompany(input: {
+          businessName: "Fogon Grill"
+        }) {
+          id
+          businessName
+        }
+      }
+    `
+  };
+
+  const myOfficesQuery = {
+    query: `
+      {
+        myOffices {
+          id
+          ruc
+        }
+      }
+    `
+  };
+
+  function getAddOfficeQuery(companyId, name) {
+    return {
+      query: `
+        mutation {
+          addOffice(input: {
+            ruc: "1132569976001"
+            economicActivity: "Comida"
+            contributorType: "Natural"
+            legalRepresentative: "Juan Perez"
+            name: "${name}"
+            officePhone: "2567476"
+            cellPhone: "0968755643"
+            address: "Rocafuerte y Sucre"
+            email: "fogongrill1@test.com"
+            companyId: "${companyId}"
+          }) {
+            id
+            ruc
+            economicActivity
+            legalRepresentative
+            officePhone
+          }
+        }
+      `
+    }
+  }
+
+  let serverRequest = request(app);
+  const loginResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { data: { signIn: { token: tokenMaker } } } = loginResponse.body
+  const addCompanyResponse = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  t.is(addCompanyResponse.status, 200);
+
+  const { body: { data: { addCompany } } } = addCompanyResponse;
+
+  await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id, 'sucursal 1'), tokenMaker);
+  await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id, 'sucursal 2'), tokenMaker);
+
+  const myOfficesResponse = await utils.callToQraphql(serverRequest, myOfficesQuery, tokenMaker);
+
+  const { body: { data: { myOffices } } } = myOfficesResponse;
+
+  t.truthy(myOffices);
+  t.is(myOffices.length, 2);
 });

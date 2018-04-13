@@ -24,7 +24,9 @@ export default {
     couponsFromCampaign: requiresAuth(campaignResolver.getCouponsFromCampaign, ['maker']),
     getCoupon: requiresAuth(couponResolver.getCoupon, ['hunter', 'maker']),
     //Company
-    myCompany: requiresAuth(companyResolver.myCompany, ['maker'])
+    myCompany: requiresAuth(companyResolver.myCompany, ['maker']),
+    //Office
+    myOffices: requiresAuth(officeResolver.myOffices, ['maker'])
   },
 
   Mutation: {
