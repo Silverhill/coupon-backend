@@ -4,7 +4,6 @@ import request from 'supertest';
 import app from '../../server/server';
 import utils from '../utils/test.utils'
 
-const adminLoginQuery = utils.getAdminLoginQuery();
 const hunterLoginQuery = utils.getHunterLoginQuery();
 const makerLoginQuery = utils.getMakerLoginQuery();
 
@@ -18,7 +17,7 @@ test.afterEach.always(async () => {
 });
 
 test('Campaign: Should get access only maker role', async t => {
-  t.plan(4)
+  t.plan(3)
 
   const addCampaignQuery = {
     query: `
@@ -45,23 +44,18 @@ test('Campaign: Should get access only maker role', async t => {
 
   let serverRequest = request(app);
 
-  const adminResponse = await utils.callToQraphql(serverRequest, adminLoginQuery);
   const hunterResponse = await utils.callToQraphql(serverRequest, hunterLoginQuery);
   const makerResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
 
-  const { data: { signIn: { token: token1 } } } = adminResponse.body
   const { data: { signIn: { token: token2 } } } = hunterResponse.body
   const { data: { signIn: { token: token3 } } } = makerResponse.body
 
-  const res1 = await utils.callToQraphql(serverRequest, addCampaignQuery, token1);
   const res2 = await utils.callToQraphql(serverRequest, addCampaignQuery, token2);
   const res3 = await utils.callToQraphql(serverRequest, addCampaignQuery, token3);
 
-  const { body: bodyAdmin } = res1;
   const { body: bodyHunter } = res2;
   const { body: bodyMaker } = res3;
 
-  t.truthy(bodyAdmin.data);
   t.falsy(bodyHunter.data);
   t.truthy(bodyMaker.data);
 

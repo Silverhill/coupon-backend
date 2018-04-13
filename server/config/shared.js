@@ -1,3 +1,4 @@
 exports = module.exports = {
-  userRoles: ['hunter', 'maker', 'admin']
+  userRoles: ['hunter', 'maker'],
+  adminRoles: ['admin']
 };

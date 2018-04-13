@@ -11,11 +11,11 @@ export default {
 
   Query: {
     signIn: userResolver.signIn,
-    allUsers: requiresAuth(userResolver.allUsers),
-    allMakers: requiresAuth(userResolver.allMakers, ['maker']),
-    allHunters: requiresAuth(userResolver.allHunters, ['maker', 'hunter']),
-    getUser: requiresAuth(userResolver.getUser),
-    me: requiresAuth(userResolver.me, ['maker', 'hunter']),
+    allUsers: requiresAuth(userResolver.allUsers, ['admin']),
+    allMakers: requiresAuth(userResolver.allMakers, ['admin', 'maker']),
+    allHunters: requiresAuth(userResolver.allHunters, ['admin', 'maker', 'hunter']),
+    getUser: requiresAuth(userResolver.getUser, ['admin']),
+    me: requiresAuth(userResolver.me, ['admin', 'maker', 'hunter']),
     //Campaign
     campaign: requiresAuth(campaignResolver.getCampaign, ['maker']),
     allCampaigns: requiresAuth(campaignResolver.allCampaigns, ['hunter']),
@@ -23,13 +23,15 @@ export default {
     //Coupon
     couponsFromCampaign: requiresAuth(campaignResolver.getCouponsFromCampaign, ['maker']),
     getCoupon: requiresAuth(couponResolver.getCoupon, ['hunter', 'maker']),
+    //Company
+    myCompany: requiresAuth(companyResolver.myCompany, ['maker'])
   },
 
   Mutation: {
     register: userResolver.register,
     login: userResolver.login,
     signUp: userResolver.signUp,
-    updatePassword: requiresAuth(userResolver.updatePassword, ['maker', 'hunter']),
+    updatePassword: requiresAuth(userResolver.updatePassword, ['admin', 'maker', 'hunter']),
     //Campaign
     addCampaign: requiresAuth(campaignResolver.addCampaign, ['maker']),
     updateCampaign: requiresAuth(campaignResolver.updateCampaign, ['maker']),
@@ -40,5 +42,5 @@ export default {
     addCompany: requiresAuth(companyResolver.addCompany, ['maker']),
     //Office
     addOffice: requiresAuth(officeResolver.addOffice, ['maker'])
-  },
+  }
 }

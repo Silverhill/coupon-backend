@@ -31,6 +31,19 @@ export const addCompany = async (parent, args, { models, request }) => {
 
 };
 
+export const myCompany = async (parent, args, { models, request }) => {
+  const { headers: { authentication } } = request;
+  const makerId = await extractUserIdFromToken(authentication);
+
+  try {
+    const { company } = await models.Maker.findOne({ _id: makerId })
+                                          .populate('company');
+    return company;
+  } catch (error) {
+    return error;
+  }
+}
+
 async function addCompanyToMaker(makerId, companyId, models) {
   await models.Maker.findByIdAndUpdate(makerId,
     {
