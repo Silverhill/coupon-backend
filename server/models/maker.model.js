@@ -12,6 +12,10 @@ var MakerSchema = User.schema.extend({
     type: String,
     default: 'maker'
   },
+  company: {
+    type: Schema.ObjectId,
+    ref: 'Company'
+  },
   campaigns: [{
     type: Schema.ObjectId,
     ref: 'Campaign'

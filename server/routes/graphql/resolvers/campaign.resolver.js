@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken';
 import config from '../../../config';
 import crypto from 'crypto';
-
-export const allCampaigns = async (parent, {limit = null, skip = null}, context) => {
+import { extractUserIdFromToken } from '../../../services/model.service';
+export const allCampaigns = async (parent, { limit = null, skip = null }, context) => {
   const { models } = context;
   const campaigns = await models.Campaign.find({})
-                                .limit(limit)
-                                .skip(skip);
+    .limit(limit)
+    .skip(skip);
 
   return campaigns;
 };
@@ -17,14 +17,15 @@ export const myCampaigns = async (parent, args, { models, request }) => {
 
   const { _id } = await jwt.verify(authentication, config.secrets.session);
   const { campaigns } = await models.Maker.findOne({ _id })
-                                          .populate('campaigns')
-                                          .exec();
+    .populate('campaigns')
+    .exec();
 
   return campaigns;
 };
 
 
 // TODO: Actualizar el estado (status) de la campaña acorde a las necesidades
+// TODO: Pendiente pasar officeId como parametro al momento de crear Campaña
 export const addCampaign = async (parent, args, context) => {
   const { models, request } = context;
   const { input } = args;
@@ -127,9 +128,40 @@ export const getCouponsFromCampaign = async (parent, args, context) => {
   const { models } = context;
   try {
     const { coupons } = await models.Campaign.findOne({ _id: campaignId })
-                                                  .populate('coupons')
-                                                  .exec();
+      .populate('coupons')
+      .exec();
     return coupons;
+  } catch (error) {
+    throw new Error(error.message || error);
+  }
+};
+
+export const getHuntersByCampaign = async (parent, args, context) => {
+  const { campaignId } = args;
+  const { models, request } = context;
+  const { headers: { authentication } } = request;
+  const makerId = await extractUserIdFromToken(authentication);
+
+  try {
+
+    const campaign = await models.Campaign.findOne({
+      _id: campaignId,
+      maker: makerId
+    }).populate({
+      path: 'coupons',
+      match: {
+        hunter: {'$exists': true}
+      }
+    });
+
+    const coupons = await models.Coupon.find({
+      _id: { '$in': campaign.coupons }
+    })
+    .populate('hunter')
+
+    const hunters = coupons.map(item => item.hunter)
+
+    return hunters;
   } catch (error) {
     throw new Error(error.message || error);
   }
@@ -140,15 +172,6 @@ function validateRange(input) {
     throw new Error('endAt should be greater than startAt.');
   }
   return
-}
-
-async function extractUserIdFromToken(token) {
-  try {
-    const { _id } = await jwt.verify(token, config.secrets.session);
-    return _id;
-  } catch (error) {
-    return null;
-  }
 }
 
 async function addCouponsToCampaign(quantity, models, campaignId) {

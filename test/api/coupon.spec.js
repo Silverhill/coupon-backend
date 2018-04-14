@@ -4,7 +4,6 @@ import request from 'supertest';
 import app from '../../server/server';
 import utils from '../utils/test.utils'
 
-const adminLoginQuery = utils.getAdminLoginQuery();
 const hunterLoginQuery = utils.getHunterLoginQuery();
 const makerLoginQuery = utils.getMakerLoginQuery();
 
@@ -41,7 +40,7 @@ const addCampaignQuery = {
 };
 
 test('Coupon > couponsFromCampaign: Should get access only hunter role', async t => {
-  t.plan(4)
+  t.plan(3)
 
   function getCouponsFromCampaignQuery(id) {
     return {
@@ -59,26 +58,21 @@ test('Coupon > couponsFromCampaign: Should get access only hunter role', async t
 
   let serverRequest = request(app);
 
-  const adminResponse = await utils.callToQraphql(serverRequest, adminLoginQuery);
   const hunterResponse = await utils.callToQraphql(serverRequest, hunterLoginQuery);
   const makerResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
 
-  const { data: { signIn: { token: token1 } } } = adminResponse.body
   const { data: { signIn: { token: token2 } } } = hunterResponse.body
   const { data: { signIn: { token: token3 } } } = makerResponse.body
 
   const addCampaignResponse = await utils.callToQraphql(serverRequest, addCampaignQuery, token3);
   const { body: { data: { addCampaign } } } = addCampaignResponse;
 
-  const res1 = await utils.callToQraphql(serverRequest, getCouponsFromCampaignQuery(addCampaign.id), token1);
   const res2 = await utils.callToQraphql(serverRequest, getCouponsFromCampaignQuery(addCampaign.id), token2);
   const res3 = await utils.callToQraphql(serverRequest, getCouponsFromCampaignQuery(addCampaign.id), token3);
 
-  const { body: bodyAdmin } = res1;
   const { body: bodyHunter } = res2;
   const { body: bodyMaker } = res3;
 
-  t.truthy(bodyAdmin.data);
   t.falsy(bodyHunter.data);
   t.truthy(bodyMaker.data);
 
@@ -87,7 +81,7 @@ test('Coupon > couponsFromCampaign: Should get access only hunter role', async t
 });
 
 test('Coupon > captureCoupon: Should get access only hunter role', async t => {
-  t.plan(4)
+  t.plan(3)
 
   function getCaptureCouponQuery(id) {
     return {
@@ -107,26 +101,21 @@ test('Coupon > captureCoupon: Should get access only hunter role', async t => {
 
   let serverRequest = request(app);
 
-  const adminResponse = await utils.callToQraphql(serverRequest, adminLoginQuery);
   const hunterResponse = await utils.callToQraphql(serverRequest, hunterLoginQuery);
   const makerResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
 
-  const { data: { signIn: { token: token1 } } } = adminResponse.body;
   const { data: { signIn: { token: token2 } } } = hunterResponse.body;
   const { data: { signIn: { token: token3 } } } = makerResponse.body;
 
   const addCampaignResponse = await utils.callToQraphql(serverRequest, addCampaignQuery, token3);
   const { body: { data: { addCampaign } } } = addCampaignResponse;
 
-  const res1 = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), token1);
   const res2 = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), token2);
   const res3 = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), token3);
 
-  const { body: bodyAdmin } = res1;
   const { body: bodyHunter } = res2;
   const { body: bodyMaker } = res3;
 
-  t.truthy(bodyAdmin.data);
   t.truthy(bodyHunter.data);
   t.falsy(bodyMaker.data);
 
@@ -172,7 +161,6 @@ test('Coupon > captureCoupon: Should return a coupon', async t => {
   t.is(coupon1.status, 'hunted');
 });
 
-
 test('Coupon > captureCoupon: Should capture only one coupon', async t => {
   t.plan(4)
 
@@ -216,7 +204,6 @@ test('Coupon > captureCoupon: Should capture only one coupon', async t => {
   t.is(errors[0].message, 'You can only capture one coupon for this campaign.');
 
 });
-
 
 test('Coupon > captureCoupon: Should update the campaign counters', async t => {
   t.plan(5);

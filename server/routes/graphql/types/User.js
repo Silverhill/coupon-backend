@@ -25,6 +25,7 @@ export default `
   input AddUserInput {
     email: String!
     password: String!
+    company: String!
     name: String!
     role: String
   }

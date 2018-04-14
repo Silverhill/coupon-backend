@@ -12,16 +12,16 @@ export default `
     # Get all hunters. Access: Admin, Maker, Hunter
     allHunters(limit: Int, skip: Int): [Hunter!]!
 
-    # Get Campaign. Access: Admin, Maker
+    # Get Campaign. Access: Maker
     campaign(id: String!): Campaign!
 
-    # Get all campaigns. Access: Admin, Maker
+    # Get all campaigns. Access: Maker
     allCampaigns(limit: Int, skip: Int): [Campaign!]!
 
-    # Get my campaigns. Access: Admin, Maker
+    # Get my campaigns. Access: Maker
     myCampaigns: [Campaign]!
 
-    # Get coupons from a specific campaign. Access: Admin, Maker
+    # Get coupons from a specific campaign. Access: Maker
     couponsFromCampaign(campaignId: String!): [Coupon]!
 
     # Get user by id. Access: Admin
@@ -30,8 +30,17 @@ export default `
     # Get current user. Access: Admin, Maker, Hunter
     me: User!
 
-    # Get coupon by id. Access: Admin, Maker, Hunter
+    # Get coupon by id. Access: Maker, Hunter
     getCoupon(id: String!): Coupon!
+
+    # Get my company. Access: Maker
+    myCompany: Company!
+
+    # Get my offices. Access: Maker
+    myOffices: [Office!]
+
+    # Get hunters by Campaign. Access: Maker
+    huntersByCampaign(campaignId: String!): [User!]
   }
 
   type Mutation {
@@ -46,16 +55,22 @@ export default `
     # Update user password. Access: Admin, Maker, Hunter
     updatePassword(input: UpdatePasswordInput): User!
 
-    # Create new Campaign. Access: Admin, Maker
+    # Create new Campaign. Access: Maker
     addCampaign(input: AddCampaignInput): Campaign!
 
-    # Update an existing Campaign. Access: Admin, Maker
+    # Update an existing Campaign. Access: Maker
     updateCampaign(input: UpdateCampaignInput): Campaign!
 
-    # Delete an existing Campaign. Access: Admin, Maker
+    # Delete an existing Campaign. Access: Maker
     deleteCampaign(input: DeleteCampaignInput): Campaign!
 
-    # Capture a coupon from a specific Campaign. Access: Admin, Hunter
+    # Capture a coupon from a specific Campaign. Access: Hunter
     captureCoupon(input: CaptureCouponInput!): Coupon!
+
+    # Create new Company. Access: Maker
+    addCompany(input: CompanyInput!): Company!
+
+    # Create new Office. Access: Maker
+    addOffice(input: OfficeInput!): Office!
   }
 `;

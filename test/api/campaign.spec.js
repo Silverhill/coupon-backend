@@ -4,8 +4,8 @@ import request from 'supertest';
 import app from '../../server/server';
 import utils from '../utils/test.utils'
 
-const adminLoginQuery = utils.getAdminLoginQuery();
 const hunterLoginQuery = utils.getHunterLoginQuery();
+const hunterLoginQuery2 = utils.getHunterLoginQuery2();
 const makerLoginQuery = utils.getMakerLoginQuery();
 
 test.beforeEach('connect with mongodb', async () => {
@@ -18,7 +18,7 @@ test.afterEach.always(async () => {
 });
 
 test('Campaign: Should get access only maker role', async t => {
-  t.plan(4)
+  t.plan(3)
 
   const addCampaignQuery = {
     query: `
@@ -45,23 +45,18 @@ test('Campaign: Should get access only maker role', async t => {
 
   let serverRequest = request(app);
 
-  const adminResponse = await utils.callToQraphql(serverRequest, adminLoginQuery);
   const hunterResponse = await utils.callToQraphql(serverRequest, hunterLoginQuery);
   const makerResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
 
-  const { data: { signIn: { token: token1 } } } = adminResponse.body
   const { data: { signIn: { token: token2 } } } = hunterResponse.body
   const { data: { signIn: { token: token3 } } } = makerResponse.body
 
-  const res1 = await utils.callToQraphql(serverRequest, addCampaignQuery, token1);
   const res2 = await utils.callToQraphql(serverRequest, addCampaignQuery, token2);
   const res3 = await utils.callToQraphql(serverRequest, addCampaignQuery, token3);
 
-  const { body: bodyAdmin } = res1;
   const { body: bodyHunter } = res2;
   const { body: bodyMaker } = res3;
 
-  t.truthy(bodyAdmin.data);
   t.falsy(bodyHunter.data);
   t.truthy(bodyMaker.data);
 
@@ -71,7 +66,7 @@ test('Campaign: Should get access only maker role', async t => {
 });
 
 test('Campaign: Should create a Campaign', async t => {
-  t.plan(13)
+  t.plan(16)
 
   const addCampaignQuery = {
     query: `
@@ -101,6 +96,9 @@ test('Campaign: Should create a Campaign', async t => {
           totalCoupons
           huntedCoupons
           redeemedCoupons
+          initialAgeRange
+          finalAgeRange
+          createdAt
           deleted
         }
       }
@@ -129,6 +127,9 @@ test('Campaign: Should create a Campaign', async t => {
   t.is(addCampaign.totalCoupons, 20);
   t.is(addCampaign.huntedCoupons, 0);
   t.is(addCampaign.redeemedCoupons, 0);
+  t.is(addCampaign.initialAgeRange, 18);
+  t.is(addCampaign.finalAgeRange, 50);
+  t.truthy(addCampaign.createdAt);
   t.is(addCampaign.deleted, false);
 });
 
@@ -539,3 +540,100 @@ test('Campaign: Should validate if there are hunted coupons and prevent delete t
   const { body: { errors } } = deleteCampaignResponse;
   t.is(errors[0].message, 'This campaign can not be deleted because there are coupons hunted.');
 })
+
+test('Campaign > huntersByCampaign: should get the hunter list of a specific campaign', async t => {
+  t.plan(4)
+
+  function getHuntersByCampaign(campaignId) {
+    return {
+      query: `
+        {
+          huntersByCampaign(campaignId: "${campaignId}") {
+            id
+            name
+          }
+        }
+      `
+    };
+  }
+
+  const addCampaignQuery1 = {
+    query: `
+      mutation {
+        addCampaign(input: {
+          title: "Campaign 1"
+          country: "Ecuador"
+          city: "Loja"
+          description: "Description 1"
+          address: "Av. Pio Jaramillo"
+          customMessage: "a custom message"
+          startAt: 1521178272153
+          endAt: 1522188672153
+          couponsNumber: 10
+          initialAgeRange: 18
+          finalAgeRange: 50
+        }) {
+          id
+        }
+      }
+    `
+  };
+
+  const addCampaignQuery2 = {
+    query: `
+      mutation {
+        addCampaign(input: {
+          title: "Campaign 2"
+          country: "Ecuador"
+          city: "Loja"
+          description: "Description 1"
+          address: "Av. Pio Jaramillo"
+          customMessage: "a custom message"
+          startAt: 1521178272153
+          endAt: 1522188672153
+          couponsNumber: 20
+          initialAgeRange: 18
+          finalAgeRange: 50
+        }) {
+          id
+        }
+      }
+    `
+  };
+
+  function getCaptureCouponQuery(id) {
+    return {
+      query: `
+        mutation {
+          captureCoupon(input: {
+            campaignId: "${id}"
+          }) {
+            id
+            code
+            status
+          }
+        }
+      `
+    }
+  }
+
+  let serverRequest = request(app)
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { signIn: { token: tokenHunter1 } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
+  const { body: { data: { signIn: { token: tokenHunter2 } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery2);
+
+  const { body: { data: { addCampaign: campaign1 } } } = await utils.callToQraphql(serverRequest, addCampaignQuery1, tokenMaker);
+  const { body: { data: { addCampaign: campaign2 } } } = await utils.callToQraphql(serverRequest, addCampaignQuery2, tokenMaker);
+
+  // capture coupons
+  await utils.callToQraphql(serverRequest, getCaptureCouponQuery(campaign1.id), tokenHunter1);
+  await utils.callToQraphql(serverRequest, getCaptureCouponQuery(campaign2.id), tokenHunter2);
+
+  const { body: { data: { huntersByCampaign: h1 } } } = await utils.callToQraphql(serverRequest, getHuntersByCampaign(campaign1.id), tokenMaker);
+  const { body: { data: { huntersByCampaign: h2 } } } = await utils.callToQraphql(serverRequest, getHuntersByCampaign(campaign2.id), tokenMaker);
+
+  t.is(h1.length, 1)
+  t.is(h1[0].name, 'Hunter')
+  t.is(h2.length, 1)
+  t.is(h2[0].name, 'Hunter2')
+});

@@ -1,13 +1,8 @@
 import jwt from 'jsonwebtoken';
-import _ from 'lodash';
 import config from '../config';
 
 export const requiresAuth = (resolver, permissionsByRole = []) => async (parent, args, context) => {
   if(!resolver) return;
-  // Set config defaults
-  const defaults = {
-    roles: ['admin'],
-  };
 
   // Get headers from the request passed to the context grapqhl schema
   const { request: { headers } } = context;
@@ -21,8 +16,6 @@ export const requiresAuth = (resolver, permissionsByRole = []) => async (parent,
   // Verify if token is valid
   const tokenInfo = await jwt.verify(authentication, config.secrets.session);
 
-  // Set permisions by role
-  permissionsByRole = _.uniq(permissionsByRole.concat(defaults.roles));
   await hasRole(tokenInfo, permissionsByRole);
 
   // Return graphql resolver

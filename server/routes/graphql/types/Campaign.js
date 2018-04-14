@@ -17,6 +17,9 @@ export default `
     description: String
     customMessage: String
     deleted: Boolean
+    initialAgeRange: Int
+    finalAgeRange: Int
+    createdAt: Timestamp!
     coupons: [Coupon!]
   }
 
