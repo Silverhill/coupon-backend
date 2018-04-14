@@ -41,6 +41,7 @@ export default `
 
     # Get hunters by Campaign. Access: Maker
     huntersByCampaign(campaignId: String!): [User!]
+
     # Get my coupons. Access: Hunter
     myCoupons: [CouponBase!]
   }
