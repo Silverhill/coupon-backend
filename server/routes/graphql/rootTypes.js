@@ -38,6 +38,9 @@ export default `
 
     # Get my offices. Access: Maker
     myOffices: [Office!]
+
+    # Get hunters by Campaign. Access: Maker
+    huntersByCampaign(campaignId: String!): [User!]
   }
 
   type Mutation {

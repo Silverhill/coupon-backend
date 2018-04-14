@@ -72,7 +72,7 @@ var CampaignSchema = new Schema({
     ref: 'Maker',
     required: true
   },
-  branchOffices: [{
+  offices: [{
     type: Schema.ObjectId,
     ref: 'Office'
   }],
