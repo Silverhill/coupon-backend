@@ -38,6 +38,15 @@ const utils = {
     })
     await User.create({
       provider: 'local',
+      role: 'hunter',
+      name: 'Hunter2',
+      email: 'hunter2@example.com',
+      password: 'hunter',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    })
+    await User.create({
+      provider: 'local',
       role: 'maker',
       name: 'Maker',
       email: 'maker@example.com',
@@ -64,6 +73,19 @@ const utils = {
       query: `
         {
           signIn(email: "hunter@example.com", password: "hunter") {
+            token
+          }
+        }
+      `
+    };
+  },
+
+
+  getHunterLoginQuery2() {
+    return {
+      query: `
+        {
+          signIn(email: "hunter2@example.com", password: "hunter") {
             token
           }
         }

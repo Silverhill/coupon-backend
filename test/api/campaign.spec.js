@@ -5,6 +5,7 @@ import app from '../../server/server';
 import utils from '../utils/test.utils'
 
 const hunterLoginQuery = utils.getHunterLoginQuery();
+const hunterLoginQuery2 = utils.getHunterLoginQuery2();
 const makerLoginQuery = utils.getMakerLoginQuery();
 
 test.beforeEach('connect with mongodb', async () => {
@@ -539,3 +540,100 @@ test('Campaign: Should validate if there are hunted coupons and prevent delete t
   const { body: { errors } } = deleteCampaignResponse;
   t.is(errors[0].message, 'This campaign can not be deleted because there are coupons hunted.');
 })
+
+test('Campaign > huntersByCampaign: should get the hunter list of a specific campaign', async t => {
+  t.plan(4)
+
+  function getHuntersByCampaign(campaignId) {
+    return {
+      query: `
+        {
+          huntersByCampaign(campaignId: "${campaignId}") {
+            id
+            name
+          }
+        }
+      `
+    };
+  }
+
+  const addCampaignQuery1 = {
+    query: `
+      mutation {
+        addCampaign(input: {
+          title: "Campaign 1"
+          country: "Ecuador"
+          city: "Loja"
+          description: "Description 1"
+          address: "Av. Pio Jaramillo"
+          customMessage: "a custom message"
+          startAt: 1521178272153
+          endAt: 1522188672153
+          couponsNumber: 10
+          initialAgeRange: 18
+          finalAgeRange: 50
+        }) {
+          id
+        }
+      }
+    `
+  };
+
+  const addCampaignQuery2 = {
+    query: `
+      mutation {
+        addCampaign(input: {
+          title: "Campaign 2"
+          country: "Ecuador"
+          city: "Loja"
+          description: "Description 1"
+          address: "Av. Pio Jaramillo"
+          customMessage: "a custom message"
+          startAt: 1521178272153
+          endAt: 1522188672153
+          couponsNumber: 20
+          initialAgeRange: 18
+          finalAgeRange: 50
+        }) {
+          id
+        }
+      }
+    `
+  };
+
+  function getCaptureCouponQuery(id) {
+    return {
+      query: `
+        mutation {
+          captureCoupon(input: {
+            campaignId: "${id}"
+          }) {
+            id
+            code
+            status
+          }
+        }
+      `
+    }
+  }
+
+  let serverRequest = request(app)
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { signIn: { token: tokenHunter1 } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
+  const { body: { data: { signIn: { token: tokenHunter2 } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery2);
+
+  const { body: { data: { addCampaign: campaign1 } } } = await utils.callToQraphql(serverRequest, addCampaignQuery1, tokenMaker);
+  const { body: { data: { addCampaign: campaign2 } } } = await utils.callToQraphql(serverRequest, addCampaignQuery2, tokenMaker);
+
+  // capture coupons
+  await utils.callToQraphql(serverRequest, getCaptureCouponQuery(campaign1.id), tokenHunter1);
+  await utils.callToQraphql(serverRequest, getCaptureCouponQuery(campaign2.id), tokenHunter2);
+
+  const { body: { data: { huntersByCampaign: h1 } } } = await utils.callToQraphql(serverRequest, getHuntersByCampaign(campaign1.id), tokenMaker);
+  const { body: { data: { huntersByCampaign: h2 } } } = await utils.callToQraphql(serverRequest, getHuntersByCampaign(campaign2.id), tokenMaker);
+
+  t.is(h1.length, 1)
+  t.is(h1[0].name, 'Hunter')
+  t.is(h2.length, 1)
+  t.is(h2[0].name, 'Hunter2')
+});
