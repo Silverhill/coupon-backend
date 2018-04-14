@@ -28,7 +28,7 @@ export default `
     getUser(id: String!): User!
 
     # Get current user. Access: Admin, Maker, Hunter
-    me: User!
+    me: UserBase!
 
     # Get coupon by id. Access: Maker, Hunter
     getCoupon(id: String!): Coupon!
@@ -41,6 +41,8 @@ export default `
 
     # Get hunters by Campaign. Access: Maker
     huntersByCampaign(campaignId: String!): [User!]
+    # Get my coupons. Access: Hunter
+    myCoupons: [CouponBase!]
   }
 
   type Mutation {
