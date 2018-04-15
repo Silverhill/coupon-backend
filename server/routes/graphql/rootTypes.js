@@ -18,6 +18,9 @@ export default `
     # Get all campaigns. Access: Maker
     allCampaigns(limit: Int, skip: Int): [Campaign!]!
 
+    # Get all campaigns by Maker. Access: Hunter
+    campaignsByMakerId(makerId: String!): [Campaign]!
+
     # Get my campaigns. Access: Maker
     myCampaigns: [Campaign]!
 
