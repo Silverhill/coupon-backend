@@ -78,5 +78,7 @@ export default `
 
     # Create new Office. Access: Maker
     addOffice(input: OfficeInput!): Office!
+
+    singleUpload(file: Upload!): File!
   }
 `;

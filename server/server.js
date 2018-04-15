@@ -11,6 +11,7 @@ import path from 'path';
 import session from 'express-session'
 import config from './config'
 import seedDatabaseIfNeeded from './config/seed';
+import cloudinary from 'cloudinary';
 
 /* eslint-disable no-console */
 
@@ -87,6 +88,12 @@ app.listen(app.get('port'), function (error) {
   } else {
     console.log('COUPON API is running on port', app.get('port'))
   }
+});
+
+cloudinary.config({
+  cloud_name: 'dkdloz8t2',
+  api_key: '537582774984743',
+  api_secret: 'ZX6HMuhh2tfWJWJfe8kD23WXGzM'
 });
 
 export default app;
