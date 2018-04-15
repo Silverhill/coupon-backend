@@ -168,6 +168,15 @@ export const getHuntersByCampaign = async (parent, args, context) => {
   }
 };
 
+export const campaignsByMakerId = async(parent, { makerId }, { models }) => {
+  try {
+    const campaigns = await models.Campaign.find({ maker: makerId }, '-coupons');
+    return campaigns;
+  } catch (error) {
+    throw new Error('Maker id not exist');
+  }
+}
+
 function validateRange(input) {
   if (input.endAt <= input.startAt) {
     throw new Error('endAt should be greater than startAt.');
