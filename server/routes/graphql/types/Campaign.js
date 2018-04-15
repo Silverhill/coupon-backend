@@ -21,6 +21,7 @@ export default `
     finalAgeRange: Int
     createdAt: Timestamp!
     coupons: [Coupon!]
+    maker: UserBase
   }
 
   input AddCampaignInput {

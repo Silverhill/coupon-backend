@@ -33,13 +33,45 @@ export const getUser = async (parent, args, { models }) => {
 };
 
 export const me = async (parent, args, { models, request }) => {
-  const { headers: { authentication } } = request;
-  const userInfo = jwt.verify(authentication, config.secrets.session);
+  const { headers: { authentication: token } } = request;
+  const { id: userId, role } = await extractUserInfoFromToken(token);
 
-  const user = await models.User.findOne({ _id: userInfo._id }, '-salt -password');
+  let user;
+  if(role === 'hunter') {
+    user = await models.Hunter
+      .findOne({ _id: userId }, '-salt -password')
+      .populate('coupons');
+  }
+  else if(role === 'maker') {
+    user = await models.Maker
+      .findOne({ _id: userId }, '-salt -password')
+      .populate('campaigns');
+  }
+  else if(role === 'admin') {
+    user = await models.User.findOne({ _id: userId }, '-salt -password');
+  }
 
   return user;
 };
+
+
+export const myCoupons = async (parent, args, { models, request }) => {
+  const { headers: { authentication: token } } = request;
+
+  const { id } = await extractUserInfoFromToken(token);
+  const { coupons } = await models.Hunter.findOne({ _id: id });
+  const myCouponsInfo = await models.Coupon.find({ _id: { "$in": coupons } })
+    .populate({
+      path: 'campaign',
+      select: '-coupons',
+      populate: {
+        path: 'maker',
+        select: '-campaigns'
+      }
+    });
+
+  return myCouponsInfo;
+}
 
 /**
  * MUTATIONS
@@ -196,4 +228,13 @@ async function addCompanyToMaker(makerId, companyId, models) {
     },
     { new: true }
   );
+}
+// User utils
+const extractUserInfoFromToken = async (token) => {
+  try {
+    const { _id, role } = await jwt.verify(token, config.secrets.session);
+    return {id: _id, role};
+  } catch (error) {
+    return null;
+  }
 }
