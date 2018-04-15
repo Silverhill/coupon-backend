@@ -1,11 +1,5 @@
 export default `
 
-  scalar Upload
-
-  type File {
-    url: String!
-  }
-
   interface UserBase {
     id: String!
     name: String

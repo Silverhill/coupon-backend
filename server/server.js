@@ -15,9 +15,7 @@ import cloudinary from 'cloudinary';
 
 /* eslint-disable no-console */
 
-const port = 7001;
 const app = express();
-
 
 app.use(session({
   secret: 'couponsecret123',
@@ -25,7 +23,7 @@ app.use(session({
   saveUninitialized: true
 }));
 
-app.set('port', port)
+app.set('port', config.port)
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -90,10 +88,6 @@ app.listen(app.get('port'), function (error) {
   }
 });
 
-cloudinary.config({
-  cloud_name: 'dkdloz8t2',
-  api_key: '537582774984743',
-  api_secret: 'ZX6HMuhh2tfWJWJfe8kD23WXGzM'
-});
+cloudinary.config(config.cloudinary);
 
 export default app;

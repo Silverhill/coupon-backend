@@ -79,6 +79,7 @@ export default `
     # Create new Office. Access: Maker
     addOffice(input: OfficeInput!): Office!
 
+    # Core sample for Image Uploader
     singleUpload(file: Upload!): File!
   }
 `;

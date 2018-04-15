@@ -67,7 +67,7 @@ export default {
     addCompany: requiresAuth(companyResolver.addCompany, ['maker']),
     //Office
     addOffice: requiresAuth(officeResolver.addOffice, ['maker']),
-
-    singleUpload: fileResolver.uploadFile
+    //Core uploader
+    singleUpload: requiresAuth(fileResolver.uploadFile, ['admin', 'maker', 'hunter']),
   }
 }
