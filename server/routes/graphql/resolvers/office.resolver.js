@@ -61,3 +61,21 @@ export const myOffices = async (parent, args, { models, request }) => {
     return error;
   }
 }
+
+export const getOffice = async (parent, args, { models, request }) => {
+  const { id: officeId } = args;
+  const { headers: { authentication } } = request;
+  const makerId = await extractUserIdFromToken(authentication);
+
+  try {
+    const {_id: companyId} = await models.Company.findOne({ maker: makerId });
+    const office = await models.Office.findOne({
+        _id: officeId,
+        company: companyId
+      });
+
+    return office;
+  } catch (error) {
+    return error;
+  }
+}
