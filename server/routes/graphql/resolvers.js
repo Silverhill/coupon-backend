@@ -69,5 +69,7 @@ export default {
     addOffice: requiresAuth(officeResolver.addOffice, ['maker']),
     //Core uploader
     singleUpload: requiresAuth(fileResolver.uploadFile, ['admin', 'maker', 'hunter']),
+    //Core uploader
+    addImageToUser: requiresAuth(userResolver.addImageToUser, ['admin', 'maker', 'hunter']),
   }
 }
