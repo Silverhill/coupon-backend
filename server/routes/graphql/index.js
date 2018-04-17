@@ -4,6 +4,7 @@ import express from 'express';
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import { makeExecutableSchema } from 'graphql-tools';
 import config from '../../config';
+import { apolloUploadExpress } from 'apollo-upload-server';
 
 const router = express.Router();
 
@@ -22,6 +23,7 @@ const schema = makeExecutableSchema({
 
 const helperMiddleware = [
   express.json(),
+  apolloUploadExpress(),
 ];
 
 const formatError = error => ({

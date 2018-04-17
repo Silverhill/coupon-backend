@@ -18,6 +18,12 @@ module.exports = {
     secret: 'gn44gkPT8W8JeVjWVgFtq8cEBXYT7qxFYBo24iYnAK2Tm5Zfka',
     callbackURL: 'http://localhost:3000/auth/twitter/callback'
   },
+  cloudinary:{
+    cloud_name: 'dkdloz8t2',
+    api_key: '537582774984743',
+    api_secret: 'ZX6HMuhh2tfWJWJfe8kD23WXGzM'
+  },
+  port: 7001,
   mongoUrl: 'mongodb://localhost:27017/coupon-db',
   seedDB: true
 };

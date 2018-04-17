@@ -1,4 +1,5 @@
 export default `
+
   interface UserBase {
     id: String!
     name: String
@@ -19,6 +20,7 @@ export default `
     email: String!
     provider: String
     role: UserRole!
+    image: String
   }
 
   input AddUserInput {

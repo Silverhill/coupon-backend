@@ -1,5 +1,7 @@
-import { extractUserIdFromToken } from '../../../services/model.service'
-import _ from 'lodash'
+import { extractUserIdFromToken } from '../../../services/model.service';
+import _ from 'lodash';
+import cloudinary from 'cloudinary';
+
 
 export const addCompany = async (parent, args, { models, request }) => {
   const { input } = args;
@@ -17,6 +19,17 @@ export const addCompany = async (parent, args, { models, request }) => {
     createdAt: new Date(),
     updatedAt: new Date(),
     maker: makerId
+  }
+
+  if(company.logo){
+    const { filename } = await company.logo;
+    await cloudinary.v2.uploader.upload(filename, (error, result) => {
+      if (result) {
+        company.logo = result.url;
+      } else if (error) {
+        return error;
+      }
+    });
   }
 
   const newCompany = await new models.Company(company);
