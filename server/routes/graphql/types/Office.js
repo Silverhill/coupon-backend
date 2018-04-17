@@ -22,6 +22,7 @@ export default `
     officePhone: String
     cellPhone: String
     email: String!
+    company: Company!
   }
 
   input OfficeInput {

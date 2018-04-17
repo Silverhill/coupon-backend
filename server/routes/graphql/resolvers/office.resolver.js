@@ -68,12 +68,12 @@ export const getOffice = async (parent, args, { models, request }) => {
   const makerId = await extractUserIdFromToken(authentication);
 
   try {
-    const {_id: companyId} = await models.Company.findOne({ maker: makerId });
+    const company = await models.Company.findOne({ maker: makerId });
     const office = await models.Office.findOne({
         _id: officeId,
-        company: companyId
+        company: company._id
       });
-
+    office.company = company;
     return office;
   } catch (error) {
     return error;
