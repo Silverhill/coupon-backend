@@ -16,7 +16,7 @@ export default `
     campaign(id: String!): Campaign!
 
     # Get all campaigns. Access: Maker
-    allCampaigns(limit: Int, skip: Int): [Campaign!]!
+    allCampaigns(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedCampaigns!
 
     # Get all campaigns by Maker. Access: Hunter
     campaignsByMakerId(makerId: String!): [Campaign]!
