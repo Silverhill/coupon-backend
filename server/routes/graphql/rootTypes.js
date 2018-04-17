@@ -4,13 +4,13 @@ export default `
     signIn(email: String!, password: String!): Token!
 
     # Get all users. Access: Admin
-    allUsers(limit: Int, skip: Int): [User!]!
+    allUsers(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedUser!
 
     # Get all makers. Access: Admin, Maker
-    allMakers(limit: Int, skip: Int): [Maker!]!
+    allMakers(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedMaker!
 
     # Get all hunters. Access: Admin, Maker, Hunter
-    allHunters(limit: Int, skip: Int): [Hunter!]!
+    allHunters(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedHunter!
 
     # Get Campaign. Access: Maker
     campaign(id: String!): Campaign!
