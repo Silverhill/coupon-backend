@@ -47,6 +47,9 @@ export default `
 
     # Get my coupons. Access: Hunter
     myCoupons: [CouponBase!]
+
+    # Get office. Access: Maker
+    office(id: String!): OfficeBase!
   }
 
   type Mutation {
