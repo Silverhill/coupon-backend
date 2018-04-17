@@ -49,7 +49,7 @@ export default `
     myCoupons: [CouponBase!]
 
     # Get office. Access: Maker
-    office(id: String!): OfficeBase!
+    office(id: String!): Office!
   }
 
   type Mutation {

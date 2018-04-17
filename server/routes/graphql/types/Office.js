@@ -8,19 +8,7 @@ export default `
     name: String!
     officePhone: String
     cellPhone: String
-    email: String!
-    company: Company!
-  }
-
-  type OfficeBase {
-    id: ID!
-    ruc: String!
-    economicActivity: String!
-    contributorType: String!
-    legalRepresentative: String!
-    name: String!
-    officePhone: String
-    cellPhone: String
+    address: String!
     email: String!
     company: Company!
   }
@@ -33,7 +21,7 @@ export default `
     name: String!
     officePhone: String
     cellPhone: String
-    address: String! @deprecated(reason:"Unused address, please use officeId")
+    address: String!
     email: String!
     companyId: String!
   }
