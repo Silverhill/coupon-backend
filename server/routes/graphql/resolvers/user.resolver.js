@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import cloudinary from 'cloudinary';
 import config from '../../../config';
 import { roleExist } from '../../../services/graphql.service';
 
@@ -197,6 +198,26 @@ export const updatePassword = async (parent, args, { models, request }) => {
   } else {
     throw new Error('Problem to changue the password');
   }
+
+  return user;
+};
+
+export const addImageToUser = async (parent, { image } , { models, request }) => {
+  const { filename } = await image;
+  const { headers: { authentication: token } } = request;
+  const { id } = await extractUserInfoFromToken(token);
+
+  let user = await models.User.findOne({ _id: id });
+
+  await cloudinary.v2.uploader.upload(filename, async (error, result) => {
+    if (result) {
+      user.image = result.url;
+      user.updatedAt = new Date();
+      user = await user.save();
+    } else if (error) {
+      return error;
+    }
+  });
 
   return user;
 };

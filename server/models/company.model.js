@@ -24,7 +24,9 @@ var CompanySchema = new Schema({
   offices: [{
     type: Schema.ObjectId,
     ref: 'Office'
-  }]
+  }],
+  logo: String,
+  slogan: String
 })
 
 export default mongoose.model('Company', CompanySchema);

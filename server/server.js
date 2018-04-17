@@ -11,12 +11,11 @@ import path from 'path';
 import session from 'express-session'
 import config from './config'
 import seedDatabaseIfNeeded from './config/seed';
+import cloudinary from 'cloudinary';
 
 /* eslint-disable no-console */
 
-const port = 7001;
 const app = express();
-
 
 app.use(session({
   secret: 'couponsecret123',
@@ -24,7 +23,7 @@ app.use(session({
   saveUninitialized: true
 }));
 
-app.set('port', port)
+app.set('port', config.port)
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -88,5 +87,7 @@ app.listen(app.get('port'), function (error) {
     console.log('COUPON API is running on port', app.get('port'))
   }
 });
+
+cloudinary.config(config.cloudinary);
 
 export default app;
