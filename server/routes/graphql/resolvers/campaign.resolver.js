@@ -3,14 +3,29 @@ import cloudinary from 'cloudinary';
 import config from '../../../config';
 import crypto from 'crypto';
 import { extractUserIdFromToken } from '../../../services/model.service';
-export const allCampaigns = async (parent, { limit = null, skip = null }, context) => {
+export const allCampaigns = async (parent, {
+                                            limit = 10,
+                                            skip = 0,
+                                            sortField = 'createdAt',
+                                            sortDirection = 1
+                                          }, context) => {
   const { models } = context;
+
+  const sortObject = {};
+  sortObject[sortField] = sortDirection;
+  const total = await models.Campaign.count({});
+
   const campaigns = await models.Campaign.find({}, '-coupons')
     .limit(limit)
     .skip(skip)
+    .sort(sortObject)
     .populate('maker');
 
-  return campaigns;
+  const returnObject = {
+    campaigns: campaigns,
+    totalCount: total
+  }
+  return returnObject;
 };
 
 export const myCampaigns = async (parent, args, { models, request }) => {

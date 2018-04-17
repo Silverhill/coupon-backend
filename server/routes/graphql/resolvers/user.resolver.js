@@ -6,25 +6,67 @@ import { roleExist } from '../../../services/graphql.service';
 /**
  * QUERY
  */
-export const allUsers = async (parent, {limit = null, skip = null}, { models }) => {
+export const allUsers = async (parent,
+                              {
+                                limit = 10,
+                                skip = 0,
+                                sortField = 'createdAt',
+                                sortDirection = 1
+                              }, { models }) => {
+  const sortObject = {};
+  sortObject[sortField] = sortDirection;
+  const total = await models.User.count({});
   const users = await models.User.find({}, '-salt -password')
                                  .limit(limit)
-                                 .skip(skip);
-  return users;
+                                 .skip(skip)
+                                 .sort(sortObject);
+  const returnObject = {
+    users: users,
+    totalCount: total
+  }
+  return returnObject;
 };
 
-export const allMakers = async (parent, {limit = null, skip = null}, { models }) => {
+export const allMakers = async (parent, {
+                                          limit = 10,
+                                          skip = 0,
+                                          sortField = 'createdAt',
+                                          sortDirection = 1
+                                        }, { models }) => {
+  const sortObject = {};
+  sortObject[sortField] = sortDirection;
+  const total = await models.User.count({'_type': 'Maker'});
   const users = await models.User.find({'_type': 'Maker'}, '-salt -password')
                                  .limit(limit)
-                                 .skip(skip);
-  return users;
+                                 .skip(skip)
+                                 .sort(sortObject);
+  const returnObject = {
+    makers: users,
+    totalCount: total
+  }
+  return returnObject;
+
 };
 
-export const allHunters = async (parent, {limit = null, skip = null}, { models }) => {
+export const allHunters = async (parent, {
+                                          limit = 10,
+                                          skip = 0,
+                                          sortField = 'createdAt',
+                                          sortDirection = 1
+                                        }, { models }) => {
+
+  const sortObject = {};
+  sortObject[sortField] = sortDirection;
+  const total = await models.User.count({'_type': 'Hunter'});
   const users = await models.User.find({'_type': 'Hunter'}, '-salt -password')
                                  .limit(limit)
-                                 .skip(skip);
-  return users;
+                                 .skip(skip)
+                                 .sort(sortObject);
+  const returnObject = {
+    hunters: users,
+    totalCount: total
+  }
+  return returnObject;
 };
 
 export const getUser = async (parent, args, { models }) => {

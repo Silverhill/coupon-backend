@@ -44,4 +44,19 @@ export default `
   type Token {
     token: String!
   }
+
+  type PaginatedUser {
+    users: [User!]
+    totalCount: Int!
+  }
+
+  type PaginatedMaker {
+    makers: [Maker!]
+    totalCount: Int!
+  }
+
+  type PaginatedHunter {
+    hunters: [Hunter!]
+    totalCount: Int!
+  }
 `;

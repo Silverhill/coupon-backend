@@ -57,4 +57,9 @@ export default `
   input DeleteCampaignInput {
     id: String!
   }
+
+  type PaginatedCampaigns {
+    campaings: [Campaign!]
+    totalCount: Int!
+  }
 `;

@@ -4,19 +4,19 @@ export default `
     signIn(email: String!, password: String!): Token!
 
     # Get all users. Access: Admin
-    allUsers(limit: Int, skip: Int): [User!]!
+    allUsers(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedUser!
 
     # Get all makers. Access: Admin, Maker
-    allMakers(limit: Int, skip: Int): [Maker!]!
+    allMakers(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedMaker!
 
     # Get all hunters. Access: Admin, Maker, Hunter
-    allHunters(limit: Int, skip: Int): [Hunter!]!
+    allHunters(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedHunter!
 
     # Get Campaign. Access: Maker
     campaign(id: String!): Campaign!
 
     # Get all campaigns. Access: Maker
-    allCampaigns(limit: Int, skip: Int): [Campaign!]!
+    allCampaigns(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedCampaigns!
 
     # Get all campaigns by Maker. Access: Hunter
     campaignsByMakerId(makerId: String!): [Campaign]!
