@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import cloudinary from 'cloudinary';
 import config from '../../../config';
 import crypto from 'crypto';
 import { extractUserIdFromToken } from '../../../services/model.service';
@@ -41,6 +42,17 @@ export const addCampaign = async (parent, args, context) => {
     updatedAt: new Date(),
     totalCoupons: couponsNumber,
     maker: makerId
+  }
+
+  if(campaign.image){
+    const { filename } = await campaign.image;
+    await cloudinary.v2.uploader.upload(filename, (error, result) => {
+      if (result) {
+        campaign.image = result.url;
+      } else if (error) {
+        return error;
+      }
+    });
   }
 
   const newCampaign = await new models.Campaign(campaign);
