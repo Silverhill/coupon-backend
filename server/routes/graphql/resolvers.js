@@ -45,6 +45,7 @@ export default {
     myCompany: requiresAuth(companyResolver.myCompany, ['maker']),
     //Office
     myOffices: requiresAuth(officeResolver.myOffices, ['maker']),
+    office: requiresAuth(officeResolver.getOffice, ['maker'])
   },
 
   Mutation: {

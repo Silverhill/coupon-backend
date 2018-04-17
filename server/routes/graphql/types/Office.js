@@ -12,6 +12,18 @@ export default `
     company: Company!
   }
 
+  type OfficeBase {
+    id: ID!
+    ruc: String!
+    economicActivity: String!
+    contributorType: String!
+    legalRepresentative: String!
+    name: String!
+    officePhone: String
+    cellPhone: String
+    email: String!
+  }
+
   input OfficeInput {
     ruc: String!
     economicActivity: String!
