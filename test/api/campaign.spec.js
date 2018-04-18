@@ -3,9 +3,11 @@ import { connectDB, dropDB } from '../mocks/db';
 import request from 'supertest';
 import app from '../../server/server';
 import utils from '../utils/test.utils'
+import sleep from 'then-sleep';
 
 const hunterLoginQuery = utils.getHunterLoginQuery();
 const hunterLoginQuery2 = utils.getHunterLoginQuery2();
+const hunterLoginQuery3 = utils.getHunterLoginQuery3();
 const makerLoginQuery = utils.getMakerLoginQuery();
 
 test.beforeEach('connect with mongodb', async () => {
@@ -17,31 +19,74 @@ test.afterEach.always(async () => {
   await dropDB();
 });
 
-test('Campaign: Should get access only maker role', async t => {
-  t.plan(3)
+const addCompanyQuery = {
+  query: `
+    mutation {
+      addCompany(input: {
+        businessName: "Fogon Grill"
+      }) {
+        id
+        businessName
+      }
+    }
+  `
+};
 
-  const addCampaignQuery = {
+function getAddOfficeQuery(companyId) {
+  return {
     query: `
       mutation {
-        addCampaign(input: {
-          title: "Campaign 1"
-          country: "Ecuador"
-          city: "Loja"
-          description: "Description 1"
-          address: "Av. Pio Jaramillo"
-          customMessage: "a custom message"
-          startAt: 1521178272153
-          endAt: 1522188672153
-          couponsNumber: 20
-          initialAgeRange: 18
-          finalAgeRange: 50
+        addOffice(input: {
+          ruc: "1132569976001"
+          economicActivity: "Comida"
+          contributorType: "Natural"
+          legalRepresentative: "Juan Perez"
+          name: "Fogon Grill sucursal 1"
+          officePhone: "2567476"
+          cellPhone: "0968755643"
+          address: "Rocafuerte y Sucre"
+          email: "fogongrill1@test.com"
+          companyId: "${companyId}"
         }) {
           id
-          title
+          ruc
+          economicActivity
+          legalRepresentative
+          officePhone
         }
       }
     `
-  };
+  }
+}
+
+
+test('Campaign: Should get access only maker role', async t => {
+  t.plan(3)
+
+  function getAddCampaignQuery(officeId) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "Campaign 1"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            customMessage: "a custom message"
+            startAt: 1521178272153
+            endAt: 1522188672153
+            couponsNumber: 20
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+          }
+        }
+      `
+    }
+  }
 
   let serverRequest = request(app);
 
@@ -51,8 +96,11 @@ test('Campaign: Should get access only maker role', async t => {
   const { data: { signIn: { token: token2 } } } = hunterResponse.body
   const { data: { signIn: { token: token3 } } } = makerResponse.body
 
-  const res2 = await utils.callToQraphql(serverRequest, addCampaignQuery, token2);
-  const res3 = await utils.callToQraphql(serverRequest, addCampaignQuery, token3);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, token3);
+  const { body: { data: { addOffice } }  } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), token3);
+
+  const res2 = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), token2);
+  const res3 = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), token3);
 
   const { body: bodyHunter } = res2;
   const { body: bodyMaker } = res3;
@@ -66,52 +114,52 @@ test('Campaign: Should get access only maker role', async t => {
 });
 
 test('Campaign: Should create a Campaign', async t => {
-  t.plan(16)
+  t.plan(15)
 
-  const addCampaignQuery = {
-    query: `
-      mutation {
-        addCampaign(input: {
-          title: "Campaign 1"
-          country: "Ecuador"
-          city: "Loja"
-          description: "Description 1"
-          address: "Av. Pio Jaramillo"
-          customMessage: "a custom message"
-          startAt: 1521178272153
-          endAt: 1522188672153
-          couponsNumber: 20
-          initialAgeRange: 18
-          finalAgeRange: 50
-        }) {
-          id
-          title
-          country
-          city
-          description
-          customMessage
-          address
-          startAt
-          endAt
-          totalCoupons
-          huntedCoupons
-          redeemedCoupons
-          initialAgeRange
-          finalAgeRange
-          createdAt
-          deleted
+  function getAddCampaignQuery(officeId) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "Campaign 1"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            customMessage: "a custom message"
+            startAt: 1521178272153
+            endAt: 1522188672153
+            couponsNumber: 20
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+            country
+            city
+            description
+            customMessage
+            startAt
+            endAt
+            totalCoupons
+            huntedCoupons
+            redeemedCoupons
+            initialAgeRange
+            finalAgeRange
+            createdAt
+            deleted
+          }
         }
-      }
-    `
-  };
+      `
+    }
+  }
 
   let serverRequest = request(app)
-  const loginResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
 
-  const { data: { signIn: { token } } } = loginResponse.body
-
-  const addCampaignResponse = await utils.callToQraphql(serverRequest, addCampaignQuery, token);
-
+  const addCampaignResponse = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
   t.is(addCampaignResponse.status, 200);
 
   const { body: { data: { addCampaign } } } = addCampaignResponse;
@@ -121,7 +169,6 @@ test('Campaign: Should create a Campaign', async t => {
   t.is(addCampaign.city, 'Loja');
   t.is(addCampaign.description, 'Description 1');
   t.is(addCampaign.customMessage, 'a custom message');
-  t.is(addCampaign.address, 'Av. Pio Jaramillo');
   t.is(addCampaign.startAt, 1521178272153);
   t.is(addCampaign.endAt, 1522188672153);
   t.is(addCampaign.totalCoupons, 20);
@@ -135,64 +182,68 @@ test('Campaign: Should create a Campaign', async t => {
 
 test('Campaign: endAt should be greater than startAt', async t => {
   t.plan(2)
-  const addCampaignQuery = {
-    query: `
-      mutation {
-        addCampaign(input: {
-          title: "Campaign 1"
-          country: "Ecuador"
-          city: "Loja"
-          description: "Description 1"
-          address: "Av. Pio Jaramillo"
-          startAt: 1522188672153
-          endAt: 1521178272153
-          couponsNumber: 20
-          initialAgeRange: 18
-          finalAgeRange: 50
-        }) {
-          id
-          title
+  function getAddCampaignQuery(officeId) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "Campaign 1"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            startAt: 1522188672153
+            endAt: 1521178272153
+            couponsNumber: 20
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+          }
         }
-      }
-    `
-  };
+      `
+    }
+  }
 
   let serverRequest = request(app)
-  const loginResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { data: { signIn: { token } } } = loginResponse.body
-  const addCampaignResponse = await utils.callToQraphql(serverRequest, addCampaignQuery, token);
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
 
+  const addCampaignResponse = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
   t.is(addCampaignResponse.status, 200);
 
   const { body: { errors } } = addCampaignResponse;
-
   t.is(errors[0].message, 'endAt should be greater than startAt.');
 });
 
 test('Campaign: Should update a Campaign', async t => {
   t.plan(3);
-  const addCampaignQuery = {
-    query: `
-      mutation {
-        addCampaign(input: {
-          title: "Campaign 1"
-          country: "Ecuador"
-          city: "Loja"
-          description: "Description 1"
-          address: "Av. Pio Jaramillo"
-          startAt: 1521178272153
-          endAt: 1522188672153
-          couponsNumber: 20
-          initialAgeRange: 18
-          finalAgeRange: 50
-        }) {
-          id
-          title
-          deleted
+  function getAddCampaignQuery(officeId) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "Campaign 1"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            startAt: 1521178272153
+            endAt: 1522188672153
+            couponsNumber: 20
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+            deleted
+          }
         }
-      }
-    `
-  };
+      `
+    }
+  }
 
   function getUpdateCampaignQuery(id) {
 
@@ -213,11 +264,12 @@ test('Campaign: Should update a Campaign', async t => {
   }
 
   let serverRequest = request(app)
-  const loginResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { data: { signIn: { token } } } = loginResponse.body
-  const addCampaignResponse = await utils.callToQraphql(serverRequest, addCampaignQuery, token);
-  const { body: { data: { addCampaign } } } = addCampaignResponse;
-  const updateCampaignResponse = await utils.callToQraphql(serverRequest, getUpdateCampaignQuery(addCampaign.id), token);
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
+
+  const updateCampaignResponse = await utils.callToQraphql(serverRequest, getUpdateCampaignQuery(addCampaign.id), tokenMaker);
   t.is(updateCampaignResponse.status, 200);
 
   const { body: { data: { updateCampaign } } } = updateCampaignResponse;
@@ -228,27 +280,29 @@ test('Campaign: Should update a Campaign', async t => {
 
 test('Campaign: Should delete a Campaign', async t => {
   t.plan(2);
-  const addCampaignQuery = {
-    query: `
-      mutation {
-        addCampaign(input: {
-          title: "Campaign 1"
-          country: "Ecuador"
-          city: "Loja"
-          description: "Description 1"
-          address: "Av. Pio Jaramillo"
-          startAt: 1521178272153
-          endAt: 1522188672153
-          couponsNumber: 20
-          initialAgeRange: 18
-          finalAgeRange: 50
-        }) {
-          id
-          title
+  function getAddCampaignQuery(officeId) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "Campaign 1"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            startAt: 1521178272153
+            endAt: 1522188672153
+            couponsNumber: 20
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+          }
         }
-      }
-    `
-  };
+      `
+    }
+  }
 
   function getDeleteCampaignQuery(id) {
     return {
@@ -266,44 +320,44 @@ test('Campaign: Should delete a Campaign', async t => {
   }
 
   let serverRequest = request(app)
-  const loginResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { data: { signIn: { token } } } = loginResponse.body
-  const addCampaignResponse = await utils.callToQraphql(serverRequest, addCampaignQuery, token);
-  const { body: { data: { addCampaign } } } = addCampaignResponse;
-  const deleteCampaignResponse = await utils.callToQraphql(serverRequest, getDeleteCampaignQuery(addCampaign.id), token);
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
+  const deleteCampaignResponse = await utils.callToQraphql(serverRequest, getDeleteCampaignQuery(addCampaign.id), tokenMaker);
   t.is(deleteCampaignResponse.status, 200);
 
   const { body: { data: { deleteCampaign } } } = deleteCampaignResponse;
-
   t.is(deleteCampaign.deleted, true);
-
 })
 
 test('Campaign: Should get a Campaign', async t => {
   t.plan(3);
 
-  const addCampaignQuery = {
-    query: `
-      mutation {
-        addCampaign(input: {
-          title: "Campaign test 1"
-          country: "Ecuador"
-          city: "Loja"
-          description: "Description 1"
-          address: "Av. Pio Jaramillo"
-          startAt: 1521178272153
-          endAt: 1522188672153
-          couponsNumber: 20
-          initialAgeRange: 18
-          finalAgeRange: 50
-        }) {
-          id
-          title
-          deleted
+  function getAddCampaignQuery(officeId) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "Campaign test 1"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            startAt: 1521178272153
+            endAt: 1522188672153
+            couponsNumber: 20
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+            deleted
+          }
         }
-      }
-    `
-  };
+      `
+    }
+  }
 
   function getCampaignQuery(id) {
     return {
@@ -312,7 +366,6 @@ test('Campaign: Should get a Campaign', async t => {
           campaign(id: "${id}") {
             id
             title
-            status
           }
         }
       `
@@ -320,67 +373,44 @@ test('Campaign: Should get a Campaign', async t => {
   }
 
   let serverRequest = request(app)
-  const loginResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { data: { signIn: { token } } } = loginResponse.body
-  const addCampaignResponse = await utils.callToQraphql(serverRequest, addCampaignQuery, token);
-  const { body: { data: { addCampaign } } } = addCampaignResponse;
-  const campaignResponse = await utils.callToQraphql(serverRequest, getCampaignQuery(addCampaign.id), token);
-
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
+  const campaignResponse = await utils.callToQraphql(serverRequest, getCampaignQuery(addCampaign.id), tokenMaker);
   t.is(campaignResponse.status, 200);
 
   const { body: { data: { campaign } } } = campaignResponse;
-
+  t.truthy(campaign.id)
   t.is(campaign.title, 'Campaign test 1');
-  t.is(campaign.status, 'unavailable');
-
 })
 
 test('Campaign: Should get all campaigns', async t => {
   t.plan(4);
 
-  const addCampaignQuery1 = {
-    query: `
-      mutation {
-        addCampaign(input: {
-          title: "Campaign 1"
-          country: "Ecuador"
-          city: "Loja"
-          description: "Description 1"
-          address: "Av. Pio Jaramillo"
-          startAt: 1521178272153
-          endAt: 1522188672153
-          couponsNumber: 20
-          initialAgeRange: 18
-          finalAgeRange: 50
-        }) {
-          id
-          title
+  function getAddCampaignQuery(officeId, title) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "${title}"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            startAt: 1521178272153
+            endAt: 1522188672153
+            couponsNumber: 20
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+          }
         }
-      }
-    `
-  };
-
-  const addCampaignQuery2 = {
-    query: `
-      mutation {
-        addCampaign(input: {
-          title: "Campaign 2"
-          country: "Ecuador"
-          city: "Loja"
-          description: "Description 1"
-          address: "Av. Pio Jaramillo"
-          startAt: 1521178272153
-          endAt: 1522188672153
-          couponsNumber: 20
-          initialAgeRange: 18
-          finalAgeRange: 50
-        }) {
-          id
-          title
-        }
-      }
-    `
-  };
+      `
+    }
+  }
 
   const myCampaignsQuery = {
     query: `
@@ -394,17 +424,16 @@ test('Campaign: Should get all campaigns', async t => {
   };
 
   let serverRequest = request(app)
-  const loginResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { data: { signIn: { token } } } = loginResponse.body
-  await utils.callToQraphql(serverRequest, addCampaignQuery1, token);
-  await utils.callToQraphql(serverRequest, addCampaignQuery2, token);
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 1'), tokenMaker);
+  await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 2'), tokenMaker);
 
-  const myCampaignsResponse = await utils.callToQraphql(serverRequest, myCampaignsQuery, token);
-
+  const myCampaignsResponse = await utils.callToQraphql(serverRequest, myCampaignsQuery, tokenMaker);
   t.is(myCampaignsResponse.status, 200);
 
   const { body: { data: { myCampaigns } } } = myCampaignsResponse;
-
   t.is(myCampaigns.length, 2);
   t.is(myCampaigns[0].title, 'Campaign 1');
   t.is(myCampaigns[1].title, 'Campaign 2');
@@ -414,28 +443,30 @@ test('Campaign: Should get all campaigns', async t => {
 test('Campaign: Should add coupons to campaign', async t => {
   t.plan(4);
 
-  const addCampaignQuery = {
-    query: `
-      mutation {
-        addCampaign(input: {
-          title: "Campaign test 1"
-          country: "Ecuador"
-          city: "Loja"
-          description: "Description 1"
-          address: "Av. Pio Jaramillo"
-          startAt: 1521178272153
-          endAt: 1522188672153
-          couponsNumber: 10
-          initialAgeRange: 18
-          finalAgeRange: 50
-        }) {
-          id
-          title
-          deleted
+  function getAddCampaignQuery(officeId) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "Campaign test 1"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            startAt: 1521178272153
+            endAt: 1522188672153
+            couponsNumber: 10
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+            deleted
+          }
         }
-      }
-    `
-  };
+      `
+    }
+  }
 
   function getCouponsFromCampaignQuery(id) {
     return {
@@ -452,11 +483,11 @@ test('Campaign: Should add coupons to campaign', async t => {
   }
 
   let serverRequest = request(app)
-  const loginResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { data: { signIn: { token } } } = loginResponse.body
-  const addCampaignResponse = await utils.callToQraphql(serverRequest, addCampaignQuery, token);
-  const { body: { data: { addCampaign } } } = addCampaignResponse;
-  const couponsFromCampaignResponse = await utils.callToQraphql(serverRequest, getCouponsFromCampaignQuery(addCampaign.id), token);
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
+  const couponsFromCampaignResponse = await utils.callToQraphql(serverRequest, getCouponsFromCampaignQuery(addCampaign.id), tokenMaker);
   t.is(couponsFromCampaignResponse.status, 200);
 
   const { body: { data: { couponsFromCampaign } } } = couponsFromCampaignResponse;
@@ -469,28 +500,30 @@ test('Campaign: Should add coupons to campaign', async t => {
 test('Campaign: Should validate if there are hunted coupons and prevent delete the campaign', async t => {
   t.plan(3);
 
-  const addCampaignQuery = {
-    query: `
-      mutation {
-        addCampaign(input: {
-          title: "Campaign test 1"
-          country: "Ecuador"
-          city: "Loja"
-          description: "Description 1"
-          address: "Av. Pio Jaramillo"
-          startAt: 1521178272153
-          endAt: 1522188672153
-          couponsNumber: 20
-          initialAgeRange: 18
-          finalAgeRange: 50
-        }) {
-          id
-          title
-          deleted
+  function getAddCampaignQuery(officeId) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "Campaign test 1"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            startAt: 1521178272153
+            endAt: 1522188672153
+            couponsNumber: 20
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+            deleted
+          }
         }
-      }
-    `
-  };
+      `
+    }
+  }
 
   function getCaptureCouponQuery(id) {
     return {
@@ -524,13 +557,12 @@ test('Campaign: Should validate if there are hunted coupons and prevent delete t
   }
 
   let serverRequest = request(app)
-  const loginResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { data: { signIn: { token: tokenMaker } } } = loginResponse.body
-  const loginResponse2 = await utils.callToQraphql(serverRequest, hunterLoginQuery);
-  const { data: { signIn: { token: tokenHunter } } } = loginResponse2.body
 
-  const addCampaignResponse = await utils.callToQraphql(serverRequest, addCampaignQuery, tokenMaker);
-  const { body: { data: { addCampaign } } } = addCampaignResponse;
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { signIn: { token: tokenHunter } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
   const captureCouponResponse = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
   t.is(captureCouponResponse.status, 200);
 
@@ -557,49 +589,29 @@ test('Campaign > huntersByCampaign: should get the hunter list of a specific cam
     };
   }
 
-  const addCampaignQuery1 = {
-    query: `
-      mutation {
-        addCampaign(input: {
-          title: "Campaign 1"
-          country: "Ecuador"
-          city: "Loja"
-          description: "Description 1"
-          address: "Av. Pio Jaramillo"
-          customMessage: "a custom message"
-          startAt: 1521178272153
-          endAt: 1522188672153
-          couponsNumber: 10
-          initialAgeRange: 18
-          finalAgeRange: 50
-        }) {
-          id
+  function getAddCampaignQuery(officeId, title, couponsNumber) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "${title}"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            customMessage: "a custom message"
+            startAt: 1521178272153
+            endAt: 1522188672153
+            couponsNumber: ${couponsNumber}
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+          }
         }
-      }
-    `
-  };
-
-  const addCampaignQuery2 = {
-    query: `
-      mutation {
-        addCampaign(input: {
-          title: "Campaign 2"
-          country: "Ecuador"
-          city: "Loja"
-          description: "Description 1"
-          address: "Av. Pio Jaramillo"
-          customMessage: "a custom message"
-          startAt: 1521178272153
-          endAt: 1522188672153
-          couponsNumber: 20
-          initialAgeRange: 18
-          finalAgeRange: 50
-        }) {
-          id
-        }
-      }
-    `
-  };
+      `
+    }
+  }
 
   function getCaptureCouponQuery(id) {
     return {
@@ -621,9 +633,10 @@ test('Campaign > huntersByCampaign: should get the hunter list of a specific cam
   const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
   const { body: { data: { signIn: { token: tokenHunter1 } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
   const { body: { data: { signIn: { token: tokenHunter2 } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery2);
-
-  const { body: { data: { addCampaign: campaign1 } } } = await utils.callToQraphql(serverRequest, addCampaignQuery1, tokenMaker);
-  const { body: { data: { addCampaign: campaign2 } } } = await utils.callToQraphql(serverRequest, addCampaignQuery2, tokenMaker);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign: campaign1 } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 1', 10), tokenMaker);
+  const { body: { data: { addCampaign: campaign2 } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 2', 20), tokenMaker);
 
   // capture coupons
   await utils.callToQraphql(serverRequest, getCaptureCouponQuery(campaign1.id), tokenHunter1);
@@ -636,4 +649,213 @@ test('Campaign > huntersByCampaign: should get the hunter list of a specific cam
   t.is(h1[0].name, 'Hunter')
   t.is(h2.length, 1)
   t.is(h2[0].name, 'Hunter2')
+});
+
+test('Campaign: should have status: unavailable', async t => {
+  function getAddCampaignQuery(officeId) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "Campaign 1"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            customMessage: "a custom message"
+            startAt: ${Date.now() + 3600000 /* 1 hour */}
+            endAt: ${Date.now() + 7200000 /* 2 hours */}
+            couponsNumber: 10
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            status
+          }
+        }
+      `
+    };
+  }
+
+  let serverRequest = request(app)
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
+  t.is(addCampaign.status, 'unavailable')
+});
+
+test('Campaign: should have status: available', async t => {
+  t.plan(1);
+  function getAddCampaignQuery(officeId) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "Campaign 1"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            customMessage: "a custom message"
+            startAt: ${Date.now()}
+            endAt: ${Date.now() + 7200000 /* 2 hours */}
+            couponsNumber: 10
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            status
+          }
+        }
+      `
+    };
+  }
+
+  function getCampaignQuery(id) {
+    return {
+      query: `
+        {
+          campaign(id: "${id}") {
+            id
+            status
+          }
+        }
+      `
+    }
+  }
+
+  let serverRequest = request(app)
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
+  await sleep(1000);
+  const { body: { data: { campaign } } } = await utils.callToQraphql(serverRequest, getCampaignQuery(addCampaign.id), tokenMaker);
+  t.is(campaign.status, 'available');
+});
+
+test('Campaign: should have status: expired', async t => {
+  t.plan(1);
+  function getAddCampaignQuery(officeId) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "Campaign 1"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            customMessage: "a custom message"
+            startAt: ${Date.now()}
+            endAt: ${Date.now() + 1}
+            couponsNumber: 10
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            status
+          }
+        }
+      `
+    };
+  }
+
+  function getCampaignQuery(id) {
+    return {
+      query: `
+        {
+          campaign(id: "${id}") {
+            id
+            status
+          }
+        }
+      `
+    }
+  }
+
+  let serverRequest = request(app)
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
+  await sleep(1000);
+  const { body: { data: { campaign } } } = await utils.callToQraphql(serverRequest, getCampaignQuery(addCampaign.id), tokenMaker);
+  t.is(campaign.status, 'expired');
+});
+
+test('Campaign: should have status: soldout', async t => {
+  t.plan(1);
+  function getAddCampaignQuery(officeId) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "Campaign 1"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            customMessage: "a custom message"
+            startAt: ${Date.now()}
+            endAt: ${Date.now() + 7200000}
+            couponsNumber: 3
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            status
+          }
+        }
+      `
+    };
+  }
+
+  function getCampaignQuery(id) {
+    return {
+      query: `
+        {
+          campaign(id: "${id}") {
+            id
+            status
+          }
+        }
+      `
+    }
+  }
+
+  function getCaptureCouponQuery(id) {
+    return {
+      query: `
+        mutation {
+          captureCoupon(input: {
+            campaignId: "${id}"
+          }) {
+            id
+            code
+            status
+          }
+        }
+      `
+    }
+  }
+
+  let serverRequest = request(app)
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { signIn: { token: tokenHunter1 } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
+  const { body: { data: { signIn: { token: tokenHunter2 } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery2);
+  const { body: { data: { signIn: { token: tokenHunter3 } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery3);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
+  // capture coupon 1
+  await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter1);
+  // capture coupon 2
+  await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter2);
+  // capture coupon 3
+  await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter3);
+
+  const { body: { data: { campaign } } } = await utils.callToQraphql(serverRequest, getCampaignQuery(addCampaign.id), tokenMaker);
+  t.is(campaign.status, 'soldout');
 });

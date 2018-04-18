@@ -2,6 +2,7 @@
 
 mongoose.Promise = require('bluebird');
 import mongoose, {Schema} from 'mongoose';
+import config from '../config';
 
 var CampaignSchema = new Schema({
   startAt: {
@@ -17,10 +18,6 @@ var CampaignSchema = new Schema({
     required: true
   },
   city: {
-    type: String,
-    required: true
-  },
-  address: {
     type: String,
     required: true
   },
@@ -49,10 +46,6 @@ var CampaignSchema = new Schema({
     type: String,
     required: true
   },
-  status: {
-    type: String,
-    default: 'unavailable' //POSIBLE STATUS: available, expired, soldout
-  },
   description: String,
   customMessage: String,
   deleted: {
@@ -72,14 +65,33 @@ var CampaignSchema = new Schema({
     ref: 'Maker',
     required: true
   },
-  offices: [{
+  office: {
     type: Schema.ObjectId,
     ref: 'Office'
-  }],
+  },
   coupons: [{
     type: Schema.ObjectId,
     ref: 'Coupon'
   }]
 })
+
+
+CampaignSchema.virtual('status')
+  .get(function () {
+    const now = Date.now();
+    if (now < this.startAt.getTime()) {
+      return config.campaignStatus.UNAVAILABLE;
+    }
+    if (now >= this.startAt.getTime() && now < this.endAt.getTime()) {
+      if (this.huntedCoupons < this.totalCoupons) {
+        return config.campaignStatus.AVAILABLE;
+      } else {
+        return config.campaignStatus.SOLDOUT;
+      }
+    }
+    if (now >= this.endAt.getTime()) {
+      return config.campaignStatus.EXPIRED;
+    }
+  });
 
 export default mongoose.model('Campaign', CampaignSchema);

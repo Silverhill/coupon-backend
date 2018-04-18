@@ -33,22 +33,24 @@ export const myCampaigns = async (parent, args, { models, request }) => {
   if (!authentication) throw new Error('You need logged to get campaigns');
 
   const { _id } = await jwt.verify(authentication, config.secrets.session);
-  const { campaigns } = await models.Maker.findOne({ _id })
-    .populate('campaigns')
-    .exec();
+  const campaigns = await models.Campaign.find({ maker: _id },  '-coupons')
+    .populate('office');
 
   return campaigns;
 };
 
-
 // TODO: Actualizar el estado (status) de la campaña acorde a las necesidades
-// TODO: Pendiente pasar officeId como parametro al momento de crear Campaña
 export const addCampaign = async (parent, args, context) => {
   const { models, request } = context;
   const { input } = args;
   const { headers: { authentication } } = request;
   validateRange(input);
   const makerId = await extractUserIdFromToken(authentication);
+  const office = await getOffice(makerId, input.officeId, models);
+  if (!office) {
+    throw Error('Invalid office Id');
+  }
+
   const { couponsNumber } = input;
   const campaign = {
     ...input,
@@ -56,7 +58,8 @@ export const addCampaign = async (parent, args, context) => {
     createdAt: new Date(),
     updatedAt: new Date(),
     totalCoupons: couponsNumber,
-    maker: makerId
+    maker: makerId,
+    office: office._id
   }
 
   if(campaign.image){
@@ -74,20 +77,14 @@ export const addCampaign = async (parent, args, context) => {
 
   try {
     await newCampaign.save();
-    await addCouponsToCampaign(couponsNumber, models, newCampaign._id)
-  } catch (error) {
-    throw new Error(error.message || error);
-  }
-
-  try {
-    await models.Maker.findByIdAndUpdate(makerId,
-      {
-        '$push': { 'campaigns': newCampaign._id },
-        updatedAt: new Date()
-      },
-      { new: true }
-    );
-    return newCampaign;
+    const { _id: campaignId } = newCampaign;
+    await addCouponsToCampaign(couponsNumber, campaignId, models)
+    await addCampaignToOffice(office._id, campaignId, models)
+    await addCampaignsToMaker(makerId, campaignId, models)
+    const campaignUpdated = await models.Campaign
+      .findOne({ _id: campaignId },  '-coupons')
+      .populate('office');
+    return campaignUpdated;
   } catch (error) {
     newCampaign.remove();
     throw new Error(error.message || error);
@@ -211,7 +208,7 @@ function validateRange(input) {
   return
 }
 
-async function addCouponsToCampaign(quantity, models, campaignId) {
+async function addCouponsToCampaign(quantity, campaignId, models) {
   await createCouponsRecursively(quantity, models, campaignId);
 }
 
@@ -244,4 +241,33 @@ async function createCouponsRecursively(maxQuantity, models, campaignId) {
       throw new Error(error.message || error);
     }
   }
+}
+
+async function getOffice(makerId, officeId, models) {
+  const company = await models.Company.findOne({ maker: makerId });
+  const office = await models.Office.findOne({
+    _id: officeId,
+    company: company._id
+  });
+  return office;
+}
+
+async function addCampaignToOffice(officeId, campaignId, models) {
+  await models.Office.findByIdAndUpdate(officeId,
+    {
+      '$push': { 'campaigns': campaignId },
+      updatedAt: new Date()
+    },
+    { new: true }
+  );
+}
+
+async function addCampaignsToMaker(makerId, campaignId, models){
+  await models.Maker.findByIdAndUpdate(makerId,
+    {
+      '$push': { 'campaigns': campaignId },
+      updatedAt: new Date()
+    },
+    { new: true }
+  );
 }

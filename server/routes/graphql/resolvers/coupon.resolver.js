@@ -16,7 +16,8 @@ export const captureCoupon = async (parent, args, { models, request }) => {
   //TODO: Validar que la campaña tenga cupones disponibles
   //TODO: Validar que la campaña este activa
   //TODO: Actualizar el estado (status) del cupon acorde a las necesidades
-
+  //TODO: Al momento que se capturan todos los cupones disponibles se debe
+  //emitir un evento por sockets para actualizar la campaña en el frontend
   try {
 
     const { coupons: hunterCoupons } = await getCouponsFromCampaign(models, campaignId, {
