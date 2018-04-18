@@ -1,8 +1,11 @@
 import jwt from 'jsonwebtoken';
+import fs from 'fs';
 import cloudinary from 'cloudinary';
 import config from '../../../config';
 import crypto from 'crypto';
 import { extractUserIdFromToken } from '../../../services/model.service';
+import { storeFile } from './file.resolver';
+
 export const allCampaigns = async (parent, {
                                             limit = 10,
                                             skip = 0,
@@ -62,11 +65,13 @@ export const addCampaign = async (parent, args, context) => {
     office: office._id
   }
 
-  if(campaign.image){
-    const { filename } = await campaign.image;
-    await cloudinary.v2.uploader.upload(filename, (error, result) => {
+  if(campaign.upload){
+    const { stream, filename } = await campaign.upload;
+    const { path } = await storeFile({ stream, filename });
+    await cloudinary.v2.uploader.upload(path, (error, result) => {
       if (result) {
         campaign.image = result.url;
+        fs.unlinkSync(path);
       } else if (error) {
         return error;
       }
