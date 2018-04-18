@@ -39,7 +39,7 @@ export default `
     initialAgeRange: Int
     finalAgeRange: Int
     officeId: String!
-    upload: Upload!
+    upload: Upload
   }
 
   input UpdateCampaignInput {
