@@ -23,7 +23,7 @@ export const addCompany = async (parent, args, { models, request }) => {
   }
 
   if(company.upload){
-    const { stream, filename } = await company.logo;
+    const { stream, filename } = await company.upload;
     const { path } = await storeFile({ stream, filename });
     await cloudinary.v2.uploader.upload(path, (error, result) => {
       if (result) {
