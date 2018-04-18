@@ -77,21 +77,14 @@ export const addCampaign = async (parent, args, context) => {
 
   try {
     await newCampaign.save();
-    await addCouponsToCampaign(couponsNumber, newCampaign._id, models)
-    await addCampaignToOffice(office._id, newCampaign._id, models)
-  } catch (error) {
-    throw new Error(error.message || error);
-  }
-
-  try {
-    await models.Maker.findByIdAndUpdate(makerId,
-      {
-        '$push': { 'campaigns': newCampaign._id },
-        updatedAt: new Date()
-      },
-      { new: true }
-    );
-    return newCampaign;
+    const { _id: campaignId } = newCampaign;
+    await addCouponsToCampaign(couponsNumber, campaignId, models)
+    await addCampaignToOffice(office._id, campaignId, models)
+    await addCampaignsToMaker(makerId, campaignId, models)
+    const campaignUpdated = await models.Campaign
+      .findOne({ _id: campaignId },  '-coupons')
+      .populate('office');
+    return campaignUpdated;
   } catch (error) {
     newCampaign.remove();
     throw new Error(error.message || error);
@@ -261,6 +254,16 @@ async function getOffice(makerId, officeId, models) {
 
 async function addCampaignToOffice(officeId, campaignId, models) {
   await models.Office.findByIdAndUpdate(officeId,
+    {
+      '$push': { 'campaigns': campaignId },
+      updatedAt: new Date()
+    },
+    { new: true }
+  );
+}
+
+async function addCampaignsToMaker(makerId, campaignId, models){
+  await models.Maker.findByIdAndUpdate(makerId,
     {
       '$push': { 'campaigns': campaignId },
       updatedAt: new Date()
