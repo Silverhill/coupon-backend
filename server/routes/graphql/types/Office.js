@@ -13,6 +13,19 @@ export default `
     company: Company!
   }
 
+  type OfficeSimple {
+    id: ID!
+    ruc: String!
+    economicActivity: String!
+    contributorType: String!
+    legalRepresentative: String!
+    name: String!
+    officePhone: String
+    cellPhone: String
+    address: String!
+    email: String!
+  }
+
   input OfficeInput {
     ruc: String!
     economicActivity: String!

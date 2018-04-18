@@ -5,7 +5,7 @@ export default `
     id: ID!
     startAt: Timestamp!
     endAt: Timestamp!
-    address: String
+    address: String @deprecated(reason:"Please use 'address' in the 'Campaign.office' attribute")
     country: String
     city: String
     image: String
@@ -22,12 +22,13 @@ export default `
     createdAt: Timestamp!
     coupons: [Coupon!]
     maker: UserBase
+    office: OfficeSimple
   }
 
   input AddCampaignInput {
     startAt: Timestamp!
     endAt: Timestamp!
-    address: String
+    address: String @deprecated(reason:"Please use 'officeId'")
     country: String
     city: String
     image: String
@@ -37,13 +38,14 @@ export default `
     customMessage: String
     initialAgeRange: Int
     finalAgeRange: Int
+    officeId: String!
   }
 
   input UpdateCampaignInput {
     id: String!
     startAt: Timestamp
     endAt: Timestamp
-    address: String
+    address: String @deprecated(reason:"Unused value")
     country: String
     city: String
     image: String
