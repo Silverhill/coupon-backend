@@ -12,5 +12,6 @@ exports = module.exports = {
     HUNTED: 'hunted',
     EXPIRED: 'expired',
     REDEEMED: 'redeemed'
-  }
+  },
+  uploadsFolder: './uploads/'
 };
