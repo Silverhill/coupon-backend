@@ -10,5 +10,6 @@ export default `
 
   input CompanyInput {
     businessName: String!
+    upload: Upload
   }
 `;

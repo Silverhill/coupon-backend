@@ -1,7 +1,8 @@
 import { extractUserIdFromToken } from '../../../services/model.service';
 import _ from 'lodash';
 import cloudinary from 'cloudinary';
-
+import fs from 'fs';
+import { storeFile } from './file.resolver';
 
 export const addCompany = async (parent, args, { models, request }) => {
   const { input } = args;
@@ -21,11 +22,13 @@ export const addCompany = async (parent, args, { models, request }) => {
     maker: makerId
   }
 
-  if(company.logo){
-    const { filename } = await company.logo;
-    await cloudinary.v2.uploader.upload(filename, (error, result) => {
+  if(company.upload){
+    const { stream, filename } = await company.logo;
+    const { path } = await storeFile({ stream, filename });
+    await cloudinary.v2.uploader.upload(path, (error, result) => {
       if (result) {
         company.logo = result.url;
+        fs.unlinkSync(path);
       } else if (error) {
         return error;
       }
