@@ -1,7 +1,9 @@
 import jwt from 'jsonwebtoken';
+import fs from 'fs';
 import cloudinary from 'cloudinary';
 import config from '../../../config';
 import { roleExist } from '../../../services/graphql.service';
+import { storeFile } from './file.resolver';
 
 /**
  * QUERY
@@ -202,17 +204,19 @@ export const updatePassword = async (parent, args, { models, request }) => {
   return user;
 };
 
-export const addImageToUser = async (parent, { image } , { models, request }) => {
-  const { filename } = await image;
+export const addImageToUser = async (parent, { upload } , { models, request }) => {
+  const { stream, filename } = await upload;
   const { headers: { authentication: token } } = request;
   const { id } = await extractUserInfoFromToken(token);
 
   let user = await models.User.findOne({ _id: id });
 
-  await cloudinary.v2.uploader.upload(filename, async (error, result) => {
+  const { path } = await storeFile({ stream, filename });
+  await cloudinary.v2.uploader.upload(path, async (error, result) => {
     if (result) {
       user.image = result.url;
       user.updatedAt = new Date();
+      fs.unlinkSync(path);
       user = await user.save();
     } else if (error) {
       return error;

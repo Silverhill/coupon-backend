@@ -86,6 +86,6 @@ export default `
     singleUpload(file: Upload!): File!
 
     # upload user image
-    addImageToUser(image: Upload!): User!
+    addImageToUser(upload: Upload!): User!
   }
 `;

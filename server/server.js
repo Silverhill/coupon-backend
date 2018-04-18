@@ -3,6 +3,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
+import mkdirp from 'mkdirp';
 import home from './routes/home';
 import user from './routes/user';
 import auth from './routes/auth';
@@ -87,6 +88,8 @@ app.listen(app.get('port'), function (error) {
     console.log('COUPON API is running on port', app.get('port'))
   }
 });
+
+mkdirp.sync(config.uploadsFolder);
 
 cloudinary.config(config.cloudinary);
 
