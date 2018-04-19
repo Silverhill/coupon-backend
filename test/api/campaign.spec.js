@@ -385,7 +385,84 @@ test('Campaign: Should get a Campaign', async t => {
   t.is(campaign.title, 'Campaign test 1');
 })
 
-test('Campaign: Should get all campaigns', async t => {
+test('Campaign: Hunter: Should get all campaigns', async t => {
+  t.plan(7);
+  function getAddCampaignQuery(officeId, title) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "${title}"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            startAt: 1521178272153
+            endAt: 1522188672153
+            couponsNumber: 20
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+          }
+        }
+      `
+    }
+  }
+
+  function getCaptureCouponQuery(id) {
+    return {
+      query: `
+        mutation {
+          captureCoupon(input: {
+            campaignId: "${id}"
+          }) {
+            id
+            code
+            status
+          }
+        }
+      `
+    }
+  }
+
+  const allCampaignsQuery = {
+    query: `
+        {
+          allCampaigns {
+            totalCount
+            campaings{
+              title
+              couponsHuntedByMe
+            }
+          }
+        }
+      `
+  }
+
+  let serverRequest = request(app)
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { signIn: { token: tokenHunter } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 1'), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 2'), tokenMaker);
+  await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
+
+  const allCampaignsResponse = await utils.callToQraphql(serverRequest, allCampaignsQuery, tokenHunter);
+  t.is(allCampaignsResponse.status, 200);
+
+  const { body: { data: { allCampaigns } } } = allCampaignsResponse;
+  t.is(allCampaigns.campaings.length, 2);
+  t.is(allCampaigns.totalCount, 2);
+  t.is(allCampaigns.campaings[0].title, 'Campaign 1');
+  t.is(allCampaigns.campaings[0].couponsHuntedByMe, 0);
+  t.is(allCampaigns.campaings[1].title, 'Campaign 2');
+  t.is(allCampaigns.campaings[1].couponsHuntedByMe, 1);
+});
+
+test('Campaign: Maker: Should get my campaigns', async t => {
   t.plan(4);
 
   function getAddCampaignQuery(officeId, title) {

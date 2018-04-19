@@ -3,6 +3,7 @@ import fs from 'fs';
 import cloudinary from 'cloudinary';
 import config from '../../../config';
 import crypto from 'crypto';
+import _ from 'lodash'
 import { extractUserIdFromToken } from '../../../services/model.service';
 import { storeFile } from './file.resolver';
 
@@ -12,20 +13,38 @@ export const allCampaigns = async (parent, {
                                             sortField = 'createdAt',
                                             sortDirection = 1
                                           }, context) => {
-  const { models } = context;
+  const { models, request } = context;
 
   const sortObject = {};
   sortObject[sortField] = sortDirection;
+  const { headers: { authentication } } = request;
+  const hunterId = await extractUserIdFromToken(authentication);
+
+  const hunter = await models.Hunter
+    .findOne({_id: hunterId})
+    .populate('coupons')
+
+  const mycampaigns = await models.Campaign
+    .find({
+      coupons: { '$in': hunter.coupons }
+    })
+    .populate('coupons')
+
+  const numberOfHuntedCoupons = getCampaignsWithHuntedCoupons(mycampaigns, hunter.coupons);
+
   const total = await models.Campaign.count({});
 
-  const campaigns = await models.Campaign.find({}, '-coupons')
+  const campaings = await models.Campaign.find({})
     .limit(limit)
     .skip(skip)
     .sort(sortObject)
+    .populate('coupons')
     .populate('maker');
 
+  const campaingsWithDetails = addCouponsHuntedByMe(campaings, mycampaigns, numberOfHuntedCoupons)
+
   const returnObject = {
-    campaigns: campaigns,
+    campaings: campaingsWithDetails,
     totalCount: total
   }
   return returnObject;
@@ -275,4 +294,35 @@ async function addCampaignsToMaker(makerId, campaignId, models){
     },
     { new: true }
   );
+}
+
+function findHuntedCampaign(campaignId, mycampaigns) {
+  return mycampaigns.find(mycampaign => {
+    return mycampaign.id === campaignId;
+  });
+}
+
+function getCampaignsWithHuntedCoupons(mycampaigns, hunterCoupons) {
+  let data = {};
+  for(let i = 0; i < mycampaigns.length; i++) {
+    const campaign = mycampaigns[i];
+    const mycoupons = _.intersectionBy(campaign.coupons, hunterCoupons, 'id');
+    data[campaign.id] = mycoupons.length;
+  }
+  return data;
+}
+
+function addCouponsHuntedByMe(campaings, mycampaigns, numberOfHuntedCoupons) {
+  let result = [];
+  for (let i = 0; i < campaings.length; i++) {
+    let campaign = campaings[i];
+    const isMyCampaign = findHuntedCampaign(campaign.id, mycampaigns);
+    if (isMyCampaign) {
+      campaign.couponsHuntedByMe =  numberOfHuntedCoupons[campaign.id];
+    } else {
+      campaign.couponsHuntedByMe = 0;
+    }
+    result.push(campaign);
+  }
+  return result;
 }

@@ -25,6 +25,30 @@ export default `
     office: OfficeSimple
   }
 
+  type CampaignForHunter {
+    id: ID!
+    startAt: Timestamp!
+    endAt: Timestamp!
+    country: String
+    city: String
+    image: String
+    totalCoupons: Int!
+    huntedCoupons: Int!
+    redeemedCoupons: Int!
+    status: String!
+    title: String!
+    description: String
+    customMessage: String
+    deleted: Boolean
+    initialAgeRange: Int
+    finalAgeRange: Int
+    createdAt: Timestamp!
+    couponsHuntedByMe: Int!
+    coupons: [Coupon!]
+    maker: UserBase
+    office: OfficeSimple
+  }
+
   input AddCampaignInput {
     startAt: Timestamp!
     endAt: Timestamp!
@@ -62,7 +86,7 @@ export default `
   }
 
   type PaginatedCampaigns {
-    campaings: [Campaign!]
+    campaings: [CampaignForHunter!]
     totalCount: Int!
   }
 `;
