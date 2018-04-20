@@ -432,7 +432,7 @@ test('Campaign: Hunter: Should get all campaigns', async t => {
         {
           allCampaigns {
             totalCount
-            campaings{
+            campaigns{
               title
               couponsHuntedByMe
             }
@@ -454,12 +454,12 @@ test('Campaign: Hunter: Should get all campaigns', async t => {
   t.is(allCampaignsResponse.status, 200);
 
   const { body: { data: { allCampaigns } } } = allCampaignsResponse;
-  t.is(allCampaigns.campaings.length, 2);
+  t.is(allCampaigns.campaigns.length, 2);
   t.is(allCampaigns.totalCount, 2);
-  t.is(allCampaigns.campaings[0].title, 'Campaign 1');
-  t.is(allCampaigns.campaings[0].couponsHuntedByMe, 0);
-  t.is(allCampaigns.campaings[1].title, 'Campaign 2');
-  t.is(allCampaigns.campaings[1].couponsHuntedByMe, 1);
+  t.is(allCampaigns.campaigns[0].title, 'Campaign 1');
+  t.is(allCampaigns.campaigns[0].couponsHuntedByMe, 0);
+  t.is(allCampaigns.campaigns[1].title, 'Campaign 2');
+  t.is(allCampaigns.campaigns[1].couponsHuntedByMe, 1);
 });
 
 test('Campaign: Maker: Should get my campaigns', async t => {

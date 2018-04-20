@@ -34,17 +34,17 @@ export const allCampaigns = async (parent, {
 
   const total = await models.Campaign.count({});
 
-  const campaings = await models.Campaign.find({})
+  const campaigns = await models.Campaign.find({})
     .limit(limit)
     .skip(skip)
     .sort(sortObject)
     .populate('coupons')
     .populate('maker');
 
-  const campaingsWithDetails = addCouponsHuntedByMe(campaings, mycampaigns, numberOfHuntedCoupons)
+  const campaignsWithDetails = addCouponsHuntedByMe(campaigns, mycampaigns, numberOfHuntedCoupons)
 
   const returnObject = {
-    campaings: campaingsWithDetails,
+    campaigns: campaignsWithDetails,
     totalCount: total
   }
   return returnObject;
@@ -316,10 +316,10 @@ function getCampaignsWithHuntedCoupons(mycampaigns, hunterCoupons) {
   return data;
 }
 
-function addCouponsHuntedByMe(campaings, mycampaigns, numberOfHuntedCoupons) {
+function addCouponsHuntedByMe(campaigns, mycampaigns, numberOfHuntedCoupons) {
   let result = [];
-  for (let i = 0; i < campaings.length; i++) {
-    let campaign = campaings[i];
+  for (let i = 0; i < campaigns.length; i++) {
+    let campaign = campaigns[i];
     const isMyCampaign = findHuntedCampaign(campaign.id, mycampaigns);
     if (isMyCampaign) {
       campaign.couponsHuntedByMe =  numberOfHuntedCoupons[campaign.id];

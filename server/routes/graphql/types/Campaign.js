@@ -86,7 +86,7 @@ export default `
   }
 
   type PaginatedCampaigns {
-    campaings: [CampaignForHunter!]
+    campaigns: [CampaignForHunter!]
     totalCount: Int!
   }
 `;
