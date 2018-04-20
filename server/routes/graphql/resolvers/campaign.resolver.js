@@ -103,8 +103,12 @@ export const addCampaign = async (parent, args, context) => {
     await newCampaign.save();
     const { _id: campaignId } = newCampaign;
     await addCouponsToCampaign(couponsNumber, campaignId, models)
-    await addCampaignToOffice(office._id, campaignId, models)
-    await addCampaignsToMaker(makerId, campaignId, models)
+    await updateRelatedModels({
+      officeId: office._id,
+      campaignId,
+      models,
+      makerId
+    });
     const campaignUpdated = await models.Campaign
       .findOne({ _id: campaignId },  '-coupons')
       .populate('office');
@@ -276,8 +280,8 @@ async function getOffice(makerId, officeId, models) {
   return office;
 }
 
-async function addCampaignToOffice(officeId, campaignId, models) {
-  await models.Office.findByIdAndUpdate(officeId,
+function addCampaignToOffice(officeId, campaignId, models) {
+  return models.Office.findByIdAndUpdate(officeId,
     {
       '$push': { 'campaigns': campaignId },
       updatedAt: new Date()
@@ -286,8 +290,8 @@ async function addCampaignToOffice(officeId, campaignId, models) {
   );
 }
 
-async function addCampaignsToMaker(makerId, campaignId, models){
-  await models.Maker.findByIdAndUpdate(makerId,
+function addCampaignsToMaker(makerId, campaignId, models){
+  return models.Maker.findByIdAndUpdate(makerId,
     {
       '$push': { 'campaigns': campaignId },
       updatedAt: new Date()
@@ -325,4 +329,16 @@ function addCouponsHuntedByMe(campaings, mycampaigns, numberOfHuntedCoupons) {
     result.push(campaign);
   }
   return result;
+}
+
+function updateRelatedModels(params) {
+  const {
+    officeId,
+    campaignId,
+    models,
+    makerId
+  } = params;
+  const promiseCampaignToOffice = addCampaignToOffice(officeId, campaignId, models)
+  const promiseCampaignsToMaker = addCampaignsToMaker(makerId, campaignId, models)
+  return Promise.all([promiseCampaignToOffice, promiseCampaignsToMaker])
 }
