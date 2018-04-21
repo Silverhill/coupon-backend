@@ -396,8 +396,8 @@ test('Campaign: Hunter: Should get all campaigns', async t => {
             country: "Ecuador"
             city: "Loja"
             description: "Description 1"
-            startAt: 1521178272153
-            endAt: 1522188672153
+            startAt: ${Date.now()}
+            endAt: ${Date.now() + 7200000}
             couponsNumber: 20
             initialAgeRange: 18
             finalAgeRange: 50
@@ -586,8 +586,8 @@ test('Campaign: Should validate if there are hunted coupons and prevent delete t
             country: "Ecuador"
             city: "Loja"
             description: "Description 1"
-            startAt: 1521178272153
-            endAt: 1522188672153
+            startAt: ${Date.now()}
+            endAt: ${Date.now() + 7200000}
             couponsNumber: 20
             initialAgeRange: 18
             finalAgeRange: 50
@@ -676,8 +676,8 @@ test('Campaign > huntersByCampaign: should get the hunter list of a specific cam
             city: "Loja"
             description: "Description 1"
             customMessage: "a custom message"
-            startAt: 1521178272153
-            endAt: 1522188672153
+            startAt: ${Date.now()}
+            endAt: ${Date.now() + 7200000}
             couponsNumber: ${couponsNumber}
             initialAgeRange: 18
             finalAgeRange: 50
