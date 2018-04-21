@@ -87,5 +87,8 @@ export default `
 
     # upload user image
     addImageToUser(upload: Upload!): User!
+
+    # Redeem a coupon. Access: Hunter
+    redeemCoupon(input: RedeemCouponInput!): CouponHunted!
   }
 `;

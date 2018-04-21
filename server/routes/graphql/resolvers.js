@@ -64,6 +64,7 @@ export default {
     deleteCampaign: requiresAuth(campaignResolver.deleteCampaign, ['maker']),
     //Coupon
     captureCoupon: requiresAuth(couponResolver.captureCoupon, ['hunter']),
+    redeemCoupon: requiresAuth(couponResolver.redeemCoupon, ['hunter']),
     //Company
     addCompany: requiresAuth(companyResolver.addCompany, ['maker']),
     //Office

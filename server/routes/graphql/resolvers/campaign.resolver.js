@@ -2,10 +2,10 @@ import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import cloudinary from 'cloudinary';
 import config from '../../../config';
-import crypto from 'crypto';
 import _ from 'lodash'
 import { extractUserIdFromToken } from '../../../services/model.service';
 import { storeFile } from './file.resolver';
+import shortid from 'shortid';
 
 export const allCampaigns = async (parent, {
                                             limit = 10,
@@ -242,10 +242,10 @@ async function addCouponsToCampaign(quantity, campaignId, models) {
 
 async function createCouponsRecursively(maxQuantity, models, campaignId) {
   if (maxQuantity > 0) {
-    const code = crypto.randomBytes(10).toString('hex')
+    const code = shortid.generate()
     const coupon = {
       code,
-      status: 'available',
+      status: config.couponStatus.AVAILABLE,
       createdAt: new Date(),
       updatedAt: new Date(),
       campaign: campaignId
