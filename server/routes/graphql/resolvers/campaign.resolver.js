@@ -26,7 +26,7 @@ export const allCampaigns = async (parent, {
 
   const mycampaigns = await models.Campaign
     .find({
-      coupons: { '$in': hunter.coupons }
+      coupons: { '$in': ((hunter || {}).coupons || []) }
     })
     .populate('coupons')
 

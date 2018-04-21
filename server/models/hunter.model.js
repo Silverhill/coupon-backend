@@ -20,7 +20,7 @@ var HunterSchema = User.schema.extend({
 HunterSchema
   .virtual('couponCount')
   .get(function() {
-    return this.coupons.length;
+    return (this.coupons || []).length;
   });
 
 registerEvents(HunterSchema);
