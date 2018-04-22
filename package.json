@@ -16,7 +16,8 @@
     "seed-database": "babel-node server/config/seed.js",
     "seed-development": "NODE_ENV=development npm run seed-database",
     "seed-production": "NODE_ENV=production npm run seed-database",
-    "seed-staging": "NODE_ENV=staging npm run seed-database"
+    "seed-staging": "NODE_ENV=staging npm run seed-database",
+    "start-production": "nodemon --exec babel-node server/server.js"
   },
   "apidoc": {
     "title": "COUPON API",
