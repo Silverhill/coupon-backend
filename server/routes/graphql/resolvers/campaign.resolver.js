@@ -52,15 +52,31 @@ export const allCampaigns = async (parent, {
   return returnObject;
 };
 
-export const myCampaigns = async (parent, args, { models, request }) => {
+export const myCampaigns = async (parent, {
+                                            limit = 10,
+                                            skip = 0,
+                                            sortField = 'createdAt',
+                                            sortDirection = 1
+                                          }, { models, request }) => {
+  const sortObject = {};
+  sortObject[sortField] = sortDirection;
   const { headers: { authentication } } = request;
   if (!authentication) throw new Error('You need logged to get campaigns');
 
   const { _id } = await jwt.verify(authentication, config.secrets.session);
+  const total = await models.Campaign.count({ maker: _id });
   const campaigns = await models.Campaign.find({ maker: _id },  '-coupons')
+    .limit(limit)
+    .skip(skip)
+    .sort(sortObject)
     .populate('office');
 
-  return campaigns;
+  const returnObject = {
+    campaigns: campaigns,
+    totalCount: total
+  }
+
+  return returnObject;
 };
 
 // TODO: Actualizar el estado (status) de la campaña acorde a las necesidades

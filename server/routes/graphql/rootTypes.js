@@ -22,7 +22,7 @@ export default `
     campaignsByMakerId(makerId: String!): [Campaign]!
 
     # Get my campaigns. Access: Maker
-    myCampaigns: [Campaign]!
+    myCampaigns: PaginatedCampaigns!
 
     # Get coupons from a specific campaign. Access: Maker
     couponsFromCampaign(campaignId: String!): [Coupon]!

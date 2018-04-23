@@ -552,12 +552,15 @@ test('Campaign: Maker: Should get my campaigns', async t => {
 
   const myCampaignsQuery = {
     query: `
-      {
-        myCampaigns {
+    {
+      myCampaigns{
+        campaigns{
           id
           title
         }
+        totalCount
       }
+    }
     `
   };
 
@@ -572,9 +575,9 @@ test('Campaign: Maker: Should get my campaigns', async t => {
   t.is(myCampaignsResponse.status, 200);
 
   const { body: { data: { myCampaigns } } } = myCampaignsResponse;
-  t.is(myCampaigns.length, 2);
-  t.is(myCampaigns[0].title, 'Campaign 1');
-  t.is(myCampaigns[1].title, 'Campaign 2');
+  t.is(myCampaigns.campaigns.length, 2);
+  t.is(myCampaigns.campaigns[0].title, 'Campaign 1');
+  t.is(myCampaigns.campaigns[1].title, 'Campaign 2');
 
 })
 
