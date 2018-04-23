@@ -225,9 +225,18 @@ export const getHuntersByCampaign = async (parent, args, context) => {
     const coupons = await models.Coupon.find({
       _id: { '$in': campaign.coupons }
     })
-    .populate('hunter')
+    .populate('hunter');
 
-    const hunters = coupons.map(item => item.hunter)
+    let hunters = [];
+    for(let i = 0; i < coupons.length; i++){
+      const index = hunters.indexOf(coupons[i].hunter);
+      if(index>-1){
+        hunters[index].couponsInCampaign +=1;
+      }else{
+        coupons[i].hunter.couponsInCampaign = 1;
+        hunters.push(coupons[i].hunter);
+      }
+    }
 
     return hunters;
   } catch (error) {

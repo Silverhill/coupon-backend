@@ -43,7 +43,7 @@ export default `
     myOffices: [Office!]
 
     # Get hunters by Campaign. Access: Maker
-    huntersByCampaign(campaignId: String!): [User!]
+    huntersByCampaign(campaignId: String!): [Hunter!]
 
     # Get my coupons. Access: Hunter
     myCoupons: [CouponBase!]
