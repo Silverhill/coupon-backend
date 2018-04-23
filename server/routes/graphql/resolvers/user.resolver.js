@@ -100,12 +100,23 @@ export const me = async (parent, args, { models, request }) => {
 };
 
 
-export const myCoupons = async (parent, args, { models, request }) => {
+export const myCoupons = async (parent, {
+  limit = 10,
+  skip = 0,
+  sortField = 'createdAt',
+  sortDirection = 1
+}, { models, request }) => {
   const { headers: { authentication: token } } = request;
+
+  const sortObject = {};
+  sortObject[sortField] = sortDirection;
 
   const { id } = await extractUserInfoFromToken(token);
   const { coupons } = await models.Hunter.findOne({ _id: id });
-  const myCouponsInfo = await models.Coupon.find({ _id: { "$in": coupons } })
+  const myCouponsInfo = await models.Coupon.find({ _id: { "$in": coupons || [] } })
+    .limit(limit)
+    .skip(skip)
+    .sort(sortObject)
     .populate({
       path: 'campaign',
       select: '-coupons',

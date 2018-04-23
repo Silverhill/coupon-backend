@@ -34,9 +34,11 @@ export const allCampaigns = async (parent, {
 
   const total = await models.Campaign.count({});
 
-  const campaigns = await models.Campaign.find({})
-    .limit(limit)
-    .skip(skip)
+  const getCampaigns = models.Campaign.find({});
+  if(limit) getCampaigns.limit(limit);
+  if(skip) getCampaigns.skip(skip);
+
+  const campaigns = await getCampaigns
     .sort(sortObject)
     .populate('coupons')
     .populate('maker');
