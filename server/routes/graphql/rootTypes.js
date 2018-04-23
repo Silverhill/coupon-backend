@@ -46,7 +46,7 @@ export default `
     huntersByCampaign(campaignId: String!): [Hunter!]
 
     # Get my coupons. Access: Hunter
-    myCoupons: [CouponBase!]
+    myCoupons(limit: Int, skip: Int, sortField: String, sortDirection: Int): [CouponBase!]
 
     # Get office. Access: Maker
     office(id: String!): Office!
