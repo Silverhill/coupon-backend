@@ -19,6 +19,6 @@ module.exports = {
     callbackURL: process.env.TwitterCallbackURL
   },
   mongoUrl: process.env.MONGO_URL,
-  seedDB: false,
+  seedDB: true,
   port: process.env.PORT,
 };
