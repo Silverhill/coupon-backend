@@ -4,3 +4,5 @@ node_modules/
 # Apidoc
 apidoc/
 .vscode
+build/
+uploads/
