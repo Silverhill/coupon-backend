@@ -23,8 +23,6 @@ export default `
   }
 
   input RedeemCouponInput {
-    campaignId: String!
-    couponId: String!
     couponCode: String!
   }
 

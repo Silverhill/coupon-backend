@@ -1,6 +1,6 @@
 import config from '../../../config';
 import { extractUserIdFromToken } from '../../../services/model.service';
-import shortid from 'shortid';
+import shorthash from 'shorthash';
 
 export const getCoupon = async (parent, args, { models }) => {
 
@@ -36,25 +36,32 @@ export const captureCoupon = async (parent, args, { models, request }) => {
 
     const { coupons: hunterCoupons } = await getMyHuntedCoupons(models, campaignId, hunterId);
 
-    if (hunterCoupons.length === 1) {
+    if (hunterCoupons && (hunterCoupons.length === 1)) {
       throw new Error('You can only capture one coupon for this campaign.');
     }
 
-    const { coupons, huntedCoupons } = await getCouponsFromCampaign(models, campaignId, {
-      status: config.couponStatus.AVAILABLE
-    });
+    const couponParams = {
+      status: config.couponStatus.AVAILABLE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      campaign: campaignId
+    }
 
-    const coupon = getLastItem(coupons);
+    const newCoupon = await new models.Coupon(couponParams);
+    newCoupon.code = generateCouponCode(newCoupon.id);
+    await newCoupon.save();
+
+    await addCouponToCampaign(models, campaignId, newCoupon._id);
 
     await updateHunterAndCampignModels({
       models,
       hunterId,
       campaignId,
-      couponId: coupon.id,
-      huntedCoupons
+      couponId: newCoupon.id,
+      huntedCoupons: campaign.huntedCoupons
     });
 
-    const updatedCoupon = await updateCouponStatus(models, coupon._id, hunterId);
+    const updatedCoupon = await updateCouponStatus(models, newCoupon._id, hunterId);
     return updatedCoupon;
 
   } catch (error) {
@@ -64,86 +71,59 @@ export const captureCoupon = async (parent, args, { models, request }) => {
 };
 
 export const redeemCoupon = async (parent, args, { models, request }) => {
-
-  const {input: { campaignId, couponId, couponCode } } = args;
+  const {input: { couponCode } } = args;
   const { headers: { authentication } } = request;
-  const hunterId = await extractUserIdFromToken(authentication);
+  const makerId = await extractUserIdFromToken(authentication);
+  const campaigns = await models.Campaign.where({
+    maker: makerId,
+  }) || [];
+  const couponData = await models.Coupon.findOne({
+    campaign: {'$in': campaigns },
+    code: couponCode
+  })
+  .populate('campaign')
 
-  const campaign = await models.Campaign.findOne({
-    _id: campaignId,
-    coupons: {
-      '$in': [couponId]
-    }
-  });
-
-  if (!campaign) {
-    throw Error('The specified campaign could not be found.');
-  }
-
-  if (campaign.status === config.campaignStatus.UNAVAILABLE) {
-    throw Error('The campaign is unavailable.');
-  }
-
-  if (campaign.status === config.campaignStatus.EXPIRED ) {
-    throw Error('The campaign has expired.');
-  }
-
-  const mycoupon = await models.Coupon.findOne({
-    _id: couponId,
-    hunter: hunterId
-  });
-
-  if (mycoupon.code !== couponCode || !shortid.isValid(couponCode)) {
+  if (!couponData) {
     throw Error('Invalid coupon code.');
   }
 
-  if (mycoupon.status === config.couponStatus.REDEEMED) {
+  const { campaign: myCampaign } = couponData;
+
+  if (couponData.status === config.couponStatus.REDEEMED) {
     throw Error('This coupon has already been redeemed.');
   }
 
+  if (myCampaign.status === config.campaignStatus.UNAVAILABLE) {
+    throw Error('The campaign is unavailable.');
+  }
+
+  if (myCampaign.status === config.campaignStatus.EXPIRED ) {
+    throw Error('The campaign has expired.');
+  }
+
   try {
-
-    await models.Campaign.findByIdAndUpdate(campaign._id,
-      {
-        redeemedCoupons: campaign.redeemedCoupons + 1,
-        updatedAt: new Date()
-      },
-      { new: true }
-    );
-
-    const couponUpdated = await models.Coupon.findByIdAndUpdate(mycoupon._id,
-      {
-        status: config.couponStatus.REDEEMED,
-        updatedAt: new Date()
-      },
-      { new: true }
-    )
-    .populate('campaign');
-
+    await updateRedeemedCouponsCount(models, myCampaign);
+    const couponUpdated = await updateCouponToRedeemed(models, couponData._id);
     return couponUpdated;
-
   } catch (error) {
     return error;
   }
 
 }
 
-function getCouponsFromCampaign(models, campaignId, match) {
+function getCampaignWithCoupons(models, campaignId, match) {
   return models.Campaign.findOne({ _id: campaignId }).populate({
     path: 'coupons',
     match
   });
 }
 
-function getLastItem(items) {
-  return items.pop();
-}
-
-function getMyHuntedCoupons(models, campaignId, hunterId) {
-  return getCouponsFromCampaign(models, campaignId, {
+async function getMyHuntedCoupons(models, campaignId, hunterId) {
+  const campaign = await getCampaignWithCoupons(models, campaignId, {
     hunter: hunterId,
     status: config.couponStatus.HUNTED
   });
+  return campaign || {};
 }
 
 function updateCouponStatus(models, couponId, hunterId) {
@@ -182,4 +162,39 @@ function updateHunterAndCampignModels(params) {
   );
 
   return Promise.all([hunterPromise, campaignPromise]);
+}
+
+function generateCouponCode(couponId) {
+  return shorthash.unique(couponId);
+}
+
+function addCouponToCampaign(models, campaignId, couponId) {
+  return models.Campaign.findByIdAndUpdate(campaignId,
+    {
+      '$push': { 'coupons': couponId },
+      updatedAt: new Date()
+    },
+    { new: true }
+  );
+}
+
+function updateRedeemedCouponsCount(models, myCampaign) {
+  return models.Campaign.findByIdAndUpdate(myCampaign._id,
+    {
+      redeemedCoupons: myCampaign.redeemedCoupons + 1,
+      updatedAt: new Date()
+    },
+    { new: true }
+  );
+}
+
+function updateCouponToRedeemed(models, couponId) {
+  return models.Coupon.findByIdAndUpdate(couponId,
+    {
+      status: config.couponStatus.REDEEMED,
+      updatedAt: new Date()
+    },
+    { new: true }
+  )
+  .populate('campaign');
 }

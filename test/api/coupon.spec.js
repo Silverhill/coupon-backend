@@ -81,14 +81,14 @@ function getAddCampaignQuery(officeId) {
   }
 }
 
-test('Coupon > couponsFromCampaign: Should get access only hunter role', async t => {
+test('Coupon > huntedCouponsByCampaign: Should get access only hunter role', async t => {
   t.plan(3)
 
-  function getCouponsFromCampaignQuery(id) {
+  function getHuntedCouponsByCampaignQuery(id) {
     return {
       query: `
         {
-          couponsFromCampaign(campaignId: "${id}") {
+          huntedCouponsByCampaign(campaignId: "${id}") {
             id
             code
             status
@@ -107,8 +107,8 @@ test('Coupon > couponsFromCampaign: Should get access only hunter role', async t
   const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
   const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
 
-  const res2 = await utils.callToQraphql(serverRequest, getCouponsFromCampaignQuery(addCampaign.id), tokenHunter);
-  const res3 = await utils.callToQraphql(serverRequest, getCouponsFromCampaignQuery(addCampaign.id), tokenMaker);
+  const res2 = await utils.callToQraphql(serverRequest, getHuntedCouponsByCampaignQuery(addCampaign.id), tokenHunter);
+  const res3 = await utils.callToQraphql(serverRequest, getHuntedCouponsByCampaignQuery(addCampaign.id), tokenMaker);
 
   const { body: bodyHunter } = res2;
   const { body: bodyMaker } = res3;
@@ -302,13 +302,11 @@ test('Coupon > captureCoupon: Should update the campaign counters', async t => {
 test('Coupon > redeemCoupon: Should get access only hunter user', async t => {
   t.plan(3);
 
-  function getRedeemCouponQuery(campaignId, couponId, couponCode) {
+  function getRedeemCouponQuery(couponCode) {
     return {
       query: `
         mutation {
           redeemCoupon(input: {
-            campaignId: "${campaignId}"
-            couponId: "${couponId}"
             couponCode: "${couponCode}"
           }) {
             id
@@ -348,28 +346,26 @@ test('Coupon > redeemCoupon: Should get access only hunter user', async t => {
   const { body: { data: { captureCoupon: coupon1 } } } = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
 
   // redeem coupon 1
-  const resRedeemCoupon1 = await utils.callToQraphql(serverRequest, getRedeemCouponQuery(addCampaign.id, coupon1.id, coupon1.code), tokenHunter);
-  const resRedeemCoupon2 = await utils.callToQraphql(serverRequest, getRedeemCouponQuery(addCampaign.id, coupon1.id, coupon1.code), tokenMaker);
+  const resRedeemCoupon1 = await utils.callToQraphql(serverRequest, getRedeemCouponQuery(coupon1.code), tokenHunter);
+  const resRedeemCoupon2 = await utils.callToQraphql(serverRequest, getRedeemCouponQuery(coupon1.code), tokenMaker);
 
   const { body: bodyHunter } = resRedeemCoupon1;
   const { body: bodyMaker } = resRedeemCoupon2;
 
-  t.truthy(bodyHunter.data);
-  t.falsy(bodyMaker.data);
-  t.is(bodyMaker.errors[0].message, 'Not have permissions for maker role.');
+  t.falsy(bodyHunter.data);
+  t.truthy(bodyMaker.data);
+  t.is(bodyHunter.errors[0].message, 'Not have permissions for hunter role.');
 
 });
 
 test('Coupon > redeemCoupon: Should update the campaign counters', async t => {
   t.plan(3);
 
-  function getRedeemCouponQuery(campaignId, couponId, couponCode) {
+  function getRedeemCouponQuery(couponCode) {
     return {
       query: `
         mutation {
           redeemCoupon(input: {
-            campaignId: "${campaignId}"
-            couponId: "${couponId}"
             couponCode: "${couponCode}"
           }) {
             id
@@ -413,7 +409,7 @@ test('Coupon > redeemCoupon: Should update the campaign counters', async t => {
   const { body: { data: { captureCoupon: coupon1 } } } = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
 
   // redeem coupon 1
-  const { body: { data: { redeemCoupon } } } = await utils.callToQraphql(serverRequest, getRedeemCouponQuery(addCampaign.id, coupon1.id, coupon1.code), tokenHunter);
+  const { body: { data: { redeemCoupon } } } = await utils.callToQraphql(serverRequest, getRedeemCouponQuery(coupon1.code), tokenMaker);
 
   t.truthy(redeemCoupon.id);
   t.is(redeemCoupon.status, 'redeemed');
@@ -423,13 +419,11 @@ test('Coupon > redeemCoupon: Should update the campaign counters', async t => {
 test('Coupon > redeemCoupon: Should return an error if the code is invalid', async t => {
   t.plan(1);
 
-  function getRedeemCouponQuery(campaignId, couponId, couponCode) {
+  function getRedeemCouponQuery(couponCode) {
     return {
       query: `
         mutation {
           redeemCoupon(input: {
-            campaignId: "${campaignId}"
-            couponId: "${couponId}"
             couponCode: "${couponCode}"
           }) {
             id
@@ -466,10 +460,10 @@ test('Coupon > redeemCoupon: Should return an error if the code is invalid', asy
   const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
 
   // capture coupon 1
-  const { body: { data: { captureCoupon: coupon1 } } } = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
+  await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
 
   // redeem coupon 1
-  const { body: { errors } } = await utils.callToQraphql(serverRequest, getRedeemCouponQuery(addCampaign.id, coupon1.id, 'invalidcode'), tokenHunter);
+  const { body: { errors } } = await utils.callToQraphql(serverRequest, getRedeemCouponQuery('invalidcode'), tokenMaker);
 
   t.is(errors[0].message, 'Invalid coupon code.');
 });
@@ -477,13 +471,11 @@ test('Coupon > redeemCoupon: Should return an error if the code is invalid', asy
 test('Coupon > redeemCoupon: Should return an error if the coupon has already been redeemed', async t => {
   t.plan(1);
 
-  function getRedeemCouponQuery(campaignId, couponId, couponCode) {
+  function getRedeemCouponQuery(couponCode) {
     return {
       query: `
         mutation {
           redeemCoupon(input: {
-            campaignId: "${campaignId}"
-            couponId: "${couponId}"
             couponCode: "${couponCode}"
           }) {
             id
@@ -523,8 +515,8 @@ test('Coupon > redeemCoupon: Should return an error if the coupon has already be
   const { body: { data: { captureCoupon: coupon1 } } } = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
 
   // redeem coupon 1
-  await utils.callToQraphql(serverRequest, getRedeemCouponQuery(addCampaign.id, coupon1.id, coupon1.code), tokenHunter);
-  const { body: { errors } } = await utils.callToQraphql(serverRequest, getRedeemCouponQuery(addCampaign.id, coupon1.id, coupon1.code), tokenHunter);
+  await utils.callToQraphql(serverRequest, getRedeemCouponQuery(coupon1.code), tokenMaker);
+  const { body: { errors } } = await utils.callToQraphql(serverRequest, getRedeemCouponQuery(coupon1.code), tokenMaker);
 
   t.is(errors[0].message, 'This coupon has already been redeemed.');
 });
