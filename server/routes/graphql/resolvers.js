@@ -42,6 +42,7 @@ export default {
     myCampaigns: requiresAuth(campaignResolver.myCampaigns, ['maker']),
     huntersByCampaign: requiresAuth(campaignResolver.getHuntersByCampaign, ['maker']),
     campaignsByMakerId: requiresAuth(campaignResolver.campaignsByMakerId, ['hunter']),
+    huntedCouponsByCampaign: requiresAuth(campaignResolver.getHuntedCouponsByCampaign, ['maker']),
     //Coupon
     couponsFromCampaign: requiresAuth(campaignResolver.getCouponsFromCampaign, ['maker']),
     getCoupon: requiresAuth(couponResolver.getCoupon, ['hunter', 'maker']),
@@ -64,6 +65,7 @@ export default {
     deleteCampaign: requiresAuth(campaignResolver.deleteCampaign, ['maker']),
     //Coupon
     captureCoupon: requiresAuth(couponResolver.captureCoupon, ['hunter']),
+    redeemCoupon: requiresAuth(couponResolver.redeemCoupon, ['maker']),
     //Company
     addCompany: requiresAuth(companyResolver.addCompany, ['maker']),
     //Office

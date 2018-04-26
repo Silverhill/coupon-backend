@@ -5,6 +5,7 @@ export default `
     email: String!
     provider: String
     role: UserRole!
+    image: String
     campaigns: [Campaign!]!
   }
 `

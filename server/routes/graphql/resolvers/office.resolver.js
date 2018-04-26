@@ -54,9 +54,9 @@ export const myOffices = async (parent, args, { models, request }) => {
   const makerId = await extractUserIdFromToken(authentication);
 
   try {
-    const { offices } = await models.Company.findOne({ maker: makerId })
-                                            .populate('offices');
-    return offices;
+    const company = await models.Company.findOne({ maker: makerId })
+                                        .populate('offices') || {};
+    return company.offices || [];
   } catch (error) {
     return error;
   }

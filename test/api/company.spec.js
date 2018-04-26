@@ -125,7 +125,7 @@ test('Company: addCompany > Should return an error if I try to create another co
 });
 
 test('Company: myCompany > Should get access only maker role', async t => {
-  t.plan(3)
+  t.plan(2)
 
   const addCompanyQuery = {
     query: `
@@ -168,12 +168,34 @@ test('Company: myCompany > Should get access only maker role', async t => {
   const { body: bodyHunter } = res2;
   const { body: bodyMaker } = res3;
 
-  t.falsy(bodyHunter.data);
-  t.truthy(bodyMaker.data);
-
+  t.truthy(bodyMaker.data.myCompany);
   const { errors } = bodyHunter;
   t.is(errors[0].message, 'Not have permissions for hunter role.');
 });
+
+test('Company: myCompany > Should get null if there is no company', async t => {
+  t.plan(2)
+
+  const myCompanyQuery = {
+    query: `
+      {
+        myCompany {
+          id
+          businessName
+        }
+      }
+    `
+  };
+
+  let serverRequest = request(app);
+  const loginResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { data: { signIn: { token: tokenMaker } } } = loginResponse.body;
+  const { body: { data, errors } } = await utils.callToQraphql(serverRequest, myCompanyQuery, tokenMaker);
+
+  t.is(data.myCompany, null);
+  t.falsy(errors);
+});
+
 
 test('Company: addCompany > Should get a Company', async t => {
   t.plan(3)

@@ -25,7 +25,7 @@ export default `
     myCampaigns: PaginatedCampaigns!
 
     # Get coupons from a specific campaign. Access: Maker
-    couponsFromCampaign(campaignId: String!): [Coupon]!
+    couponsFromCampaign(campaignId: String!): [Coupon]! @deprecated(reason:"Coupons are generated when the Hunter catches them")
 
     # Get user by id. Access: Admin
     getUser(id: String!): User!
@@ -37,13 +37,16 @@ export default `
     getCoupon(id: String!): Coupon!
 
     # Get my company. Access: Maker
-    myCompany: Company!
+    myCompany: Company
 
     # Get my offices. Access: Maker
     myOffices: [Office!]
 
     # Get hunters by Campaign. Access: Maker
     huntersByCampaign(campaignId: String!): [Hunter!]
+
+    # Get hunted coupons in a specific Campaign. Access: Maker
+    huntedCouponsByCampaign(campaignId: String!): [Coupon]!
 
     # Get my coupons. Access: Hunter
     myCoupons(limit: Int, skip: Int, sortField: String, sortDirection: Int): [CouponBase!]
@@ -87,5 +90,8 @@ export default `
 
     # upload user image
     addImageToUser(upload: Upload!): User!
+
+    # Redeem a coupon. Access: Hunter
+    redeemCoupon(input: RedeemCouponInput!): CouponHunted!
   }
 `;

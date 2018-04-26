@@ -21,4 +21,9 @@ export default `
   input CaptureCouponInput {
     campaignId: String!
   }
+
+  input RedeemCouponInput {
+    couponCode: String!
+  }
+
 `;

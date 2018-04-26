@@ -222,6 +222,47 @@ test('Office: myOffices > Should get my Offices', async t => {
   t.is(myOffices.length, 2);
 });
 
+test('Office: myOffices > Should get an empty array if there is no offices', async t => {
+  t.plan(4)
+
+  const addCompanyQuery = {
+    query: `
+      mutation {
+        addCompany(input: {
+          businessName: "Fogon Grill"
+        }) {
+          id
+          businessName
+        }
+      }
+    `
+  };
+
+  const myOfficesQuery = {
+    query: `
+      {
+        myOffices {
+          id
+          ruc
+        }
+      }
+    `
+  };
+
+  let serverRequest = request(app);
+  const loginResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { data: { signIn: { token: tokenMaker } } } = loginResponse.body
+  await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const myOfficesResponse = await utils.callToQraphql(serverRequest, myOfficesQuery, tokenMaker);
+
+  const { body: { data, errors } } = myOfficesResponse;
+
+  t.truthy(data.myOffices);
+  t.is(data.myOffices.length, 0);
+  t.deepEqual(data.myOffices, []);
+  t.falsy(errors);
+});
+
 test('Office: office > Should get access only maker role', async t => {
   t.plan(3)
 

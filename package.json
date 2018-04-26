@@ -62,7 +62,9 @@
     "passport-google-oauth": "^1.0.0",
     "passport-local": "^1.0.0",
     "passport-twitter": "^1.0.4",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "pre-commit": "^1.2.2",
+    "shorthash": "^0.0.2"
   },
   "devDependencies": {
     "npm-run-all": "^4.1.2",
