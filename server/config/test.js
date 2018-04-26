@@ -19,6 +19,5 @@ module.exports = {
     callbackURL: 'http://localhost:3000/auth/twitter/callback'
   },
   port: 7005,
-  mongoUrl: 'mongodb://localhost:27017/coupon-db-test',
-  seedDB: false
+  mongoUrl: 'mongodb://localhost:27017/coupon-db-test'
 };

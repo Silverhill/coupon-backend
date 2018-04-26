@@ -12,7 +12,11 @@
     "lint:watch": "npm run lint -- --watch",
     "test": "cross-env NODE_ENV=test node_modules/.bin/ava --serial",
     "test:watch": "npm test -- --watch",
-    "apidoc": "rm -rf apidoc && apidoc -f 'server/routes/.*\\.js$' -i ./server -o apidoc/"
+    "apidoc": "rm -rf apidoc && apidoc -f 'server/routes/.*\\.js$' -i ./server -o apidoc/",
+    "seed-database": "babel-node server/config/seed.js",
+    "seed-development": "NODE_ENV=development npm run seed-database",
+    "seed-production": "NODE_ENV=production npm run seed-database",
+    "seed-staging": "NODE_ENV=staging npm run seed-database"
   },
   "apidoc": {
     "title": "COUPON API",
