@@ -12,6 +12,7 @@ import path from 'path';
 import session from 'express-session'
 import config from './config'
 import cloudinary from 'cloudinary';
+import 'babel-polyfill';
 
 /* eslint-disable no-console */
 

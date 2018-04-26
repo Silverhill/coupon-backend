@@ -237,7 +237,7 @@ export const addImageToUser = async (parent, { upload } , { models, request }) =
   return user;
 };
 
-async function loginUser(email, password, models) {
+const loginUser = async (email, password, models) => {
   const user = await models.User.findOne({ email: email.toLowerCase() });
   if (!user) {
     throw new Error('Not user with that email.');
@@ -260,7 +260,7 @@ async function loginUser(email, password, models) {
   return token;
 }
 
-async function registerUser(_user, models) {
+const registerUser = async (_user, models) => {
   const hasValidRole = roleExist(_user.role);
   _user.role = (_user.role || 'hunter').toLowerCase();
 
@@ -277,7 +277,7 @@ async function registerUser(_user, models) {
   return user;
 }
 
-async function createCompany(companyName, makerId, models) {
+const createCompany = async (companyName, makerId, models) => {
   if (companyName) {
     const company = {
       businessName: companyName,
@@ -298,7 +298,7 @@ async function createCompany(companyName, makerId, models) {
   }
 }
 
-async function addCompanyToMaker(makerId, companyId, models) {
+const addCompanyToMaker = async (makerId, companyId, models) => {
   await models.Maker.findByIdAndUpdate(makerId,
     {
       company: companyId,
