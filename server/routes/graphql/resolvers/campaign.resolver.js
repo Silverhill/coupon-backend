@@ -25,7 +25,7 @@ export const allCampaigns = async (parent, {
 
   const mycampaigns = await models.Campaign
     .find({
-      coupons: { '$in': hunter.coupons }
+      coupons: { '$in': ((hunter || {}).coupons || []) }
     })
     .populate('coupons')
 
@@ -33,9 +33,11 @@ export const allCampaigns = async (parent, {
 
   const total = await models.Campaign.count({});
 
-  const campaigns = await models.Campaign.find({})
-    .limit(limit)
-    .skip(skip)
+  const getCampaigns = models.Campaign.find({});
+  if(limit) getCampaigns.limit(limit);
+  if(skip) getCampaigns.skip(skip);
+
+  const campaigns = await getCampaigns
     .sort(sortObject)
     .populate('coupons')
     .populate('maker');
@@ -49,15 +51,31 @@ export const allCampaigns = async (parent, {
   return returnObject;
 };
 
-export const myCampaigns = async (parent, args, { models, request }) => {
+export const myCampaigns = async (parent, {
+                                            limit = 10,
+                                            skip = 0,
+                                            sortField = 'createdAt',
+                                            sortDirection = 1
+                                          }, { models, request }) => {
+  const sortObject = {};
+  sortObject[sortField] = sortDirection;
   const { headers: { authentication } } = request;
   if (!authentication) throw new Error('You need logged to get campaigns');
 
   const { _id } = await jwt.verify(authentication, config.secrets.session);
+  const total = await models.Campaign.count({ maker: _id });
   const campaigns = await models.Campaign.find({ maker: _id },  '-coupons')
+    .limit(limit)
+    .skip(skip)
+    .sort(sortObject)
     .populate('office');
 
-  return campaigns;
+  const returnObject = {
+    campaigns: campaigns,
+    totalCount: total
+  }
+
+  return returnObject;
 };
 
 // TODO: Actualizar el estado (status) de la campaña acorde a las necesidades
@@ -75,7 +93,6 @@ export const addCampaign = async (parent, args, context) => {
   const { couponsNumber } = input;
   const campaign = {
     ...input,
-    age: 30,
     createdAt: new Date(),
     updatedAt: new Date(),
     totalCoupons: couponsNumber,
@@ -228,9 +245,18 @@ export const getHuntersByCampaign = async (parent, args, context) => {
     const coupons = await models.Coupon.find({
       _id: { '$in': campaign.coupons }
     })
-    .populate('hunter')
+    .populate('hunter');
 
-    const hunters = coupons.map(item => item.hunter)
+    let hunters = [];
+    for(let i = 0; i < coupons.length; i++){
+      const index = hunters.indexOf(coupons[i].hunter);
+      if(index>-1){
+        hunters[index].couponsInCampaign +=1;
+      }else{
+        coupons[i].hunter.couponsInCampaign = 1;
+        hunters.push(coupons[i].hunter);
+      }
+    }
 
     return hunters;
   } catch (error) {

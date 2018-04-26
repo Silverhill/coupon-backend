@@ -22,7 +22,7 @@ export default `
     campaignsByMakerId(makerId: String!): [Campaign]!
 
     # Get my campaigns. Access: Maker
-    myCampaigns: [Campaign]!
+    myCampaigns: PaginatedCampaigns!
 
     # Get coupons from a specific campaign. Access: Maker
     couponsFromCampaign(campaignId: String!): [Coupon]! @deprecated(reason:"Coupons are generated when the Hunter catches them")
@@ -43,13 +43,13 @@ export default `
     myOffices: [Office!]
 
     # Get hunters by Campaign. Access: Maker
-    huntersByCampaign(campaignId: String!): [User!]
+    huntersByCampaign(campaignId: String!): [Hunter!]
 
     # Get hunted coupons in a specific Campaign. Access: Maker
     huntedCouponsByCampaign(campaignId: String!): [Coupon]!
 
     # Get my coupons. Access: Hunter
-    myCoupons: [CouponBase!]
+    myCoupons(limit: Int, skip: Int, sortField: String, sortDirection: Int): [CouponBase!]
 
     # Get office. Access: Maker
     office(id: String!): Office!

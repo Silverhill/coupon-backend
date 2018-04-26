@@ -462,6 +462,67 @@ test('Campaign: Hunter: Should get all campaigns', async t => {
   t.is(allCampaigns.campaigns[1].couponsHuntedByMe, 1);
 });
 
+test('Campaign: Hunter: Return empty array if there is not coupons', async t => {
+  t.plan(8);
+  function getAddCampaignQuery(officeId, title) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "${title}"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            startAt: 1521178272153
+            endAt: 1522188672153
+            couponsNumber: 20
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+          }
+        }
+      `
+    }
+  }
+
+  const allCampaignsQuery = {
+    query: `
+        {
+          allCampaigns {
+            totalCount
+            campaigns{
+              title
+              couponsHuntedByMe
+            }
+          }
+        }
+      `
+  }
+
+  let serverRequest = request(app)
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { signIn: { token: tokenHunter } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 1'), tokenMaker);
+  await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 2'), tokenMaker);
+  await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 3'), tokenMaker);
+
+  const { body: { data: { allCampaigns } } }= await utils.callToQraphql(serverRequest, allCampaignsQuery, tokenHunter);
+
+  t.is(allCampaigns.campaigns.length, 3);
+  t.is(allCampaigns.totalCount, 3);
+  t.is(allCampaigns.campaigns[0].title, 'Campaign 1');
+  t.is(allCampaigns.campaigns[0].couponsHuntedByMe, 0);
+  t.is(allCampaigns.campaigns[1].title, 'Campaign 2');
+  t.is(allCampaigns.campaigns[1].couponsHuntedByMe, 0);
+  t.is(allCampaigns.campaigns[2].title, 'Campaign 3');
+  t.is(allCampaigns.campaigns[2].couponsHuntedByMe, 0);
+});
+
 test('Campaign: Maker: Should get my campaigns', async t => {
   t.plan(4);
 
@@ -491,12 +552,15 @@ test('Campaign: Maker: Should get my campaigns', async t => {
 
   const myCampaignsQuery = {
     query: `
-      {
-        myCampaigns {
+    {
+      myCampaigns{
+        campaigns{
           id
           title
         }
+        totalCount
       }
+    }
     `
   };
 
@@ -511,9 +575,9 @@ test('Campaign: Maker: Should get my campaigns', async t => {
   t.is(myCampaignsResponse.status, 200);
 
   const { body: { data: { myCampaigns } } } = myCampaignsResponse;
-  t.is(myCampaigns.length, 2);
-  t.is(myCampaigns[0].title, 'Campaign 1');
-  t.is(myCampaigns[1].title, 'Campaign 2');
+  t.is(myCampaigns.campaigns.length, 2);
+  t.is(myCampaigns.campaigns[0].title, 'Campaign 1');
+  t.is(myCampaigns.campaigns[1].title, 'Campaign 2');
 
 })
 
