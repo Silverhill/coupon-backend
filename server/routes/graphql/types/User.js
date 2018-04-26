@@ -6,6 +6,7 @@ export default `
     email: String!
     provider: String
     role: UserRole!
+    image: String
   }
 
   enum UserRole {
