@@ -24,6 +24,5 @@ module.exports = {
     api_secret: 'ZX6HMuhh2tfWJWJfe8kD23WXGzM'
   },
   port: 7001,
-  mongoUrl: 'mongodb://localhost:27017/coupon-db',
-  seedDB: true
+  mongoUrl: 'mongodb://localhost:27017/coupon-db'
 };

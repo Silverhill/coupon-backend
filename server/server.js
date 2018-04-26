@@ -11,8 +11,8 @@ import graphql from './routes/graphql';
 import path from 'path';
 import session from 'express-session'
 import config from './config'
-import seedDatabaseIfNeeded from './config/seed';
 import cloudinary from 'cloudinary';
+import 'babel-polyfill';
 
 /* eslint-disable no-console */
 
@@ -44,7 +44,6 @@ mongoose.connect(config.mongoUrl, { useMongoClient: true }, (error) => {
 
 mongoose.connection.once('open', function () {
   console.log('Mongodb: connection successful!!');
-  seedDatabaseIfNeeded();
 });
 
 //////////////// API ROUTES ////////////////
