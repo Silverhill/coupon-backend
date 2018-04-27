@@ -68,6 +68,7 @@ export default {
     redeemCoupon: requiresAuth(couponResolver.redeemCoupon, ['maker']),
     //Company
     addCompany: requiresAuth(companyResolver.addCompany, ['maker']),
+    addImageToCompany: requiresAuth(companyResolver.addImageToCompany, ['maker']),
     //Office
     addOffice: requiresAuth(officeResolver.addOffice, ['maker']),
     //Core uploader

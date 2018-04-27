@@ -60,6 +60,27 @@ export const myCompany = async (parent, args, { models, request }) => {
   }
 }
 
+export const addImageToCompany = async (parent, { upload } , { models, request }) => {
+  const { stream, filename } = await upload;
+  const { headers: { authentication: token } } = request;
+  const { makerId } = await extractUserInfoFromToken(token);
+
+  const { company } = await models.Maker.findOne({ _id: makerId })
+                                        .populate('company');
+
+  const { path } = await storeFile({ stream, filename });
+  await cloudinary.v2.uploader.upload(path, async (error, result) => {
+    if (result) {
+      company.logo = result.url;
+      fs.unlinkSync(path);
+      company = await company.save();
+    } else if (error) {
+      return error;
+    }
+  });
+  return company;
+};
+
 async function addCompanyToMaker(makerId, companyId, models) {
   await models.Maker.findByIdAndUpdate(makerId,
     {

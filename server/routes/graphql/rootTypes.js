@@ -91,6 +91,9 @@ export default `
     # upload user image
     addImageToUser(upload: Upload!): User!
 
+    # upload company logo
+    addImageToCompany(upload: Upload!): Company!
+
     # Redeem a coupon. Access: Hunter
     redeemCoupon(input: RedeemCouponInput!): CouponHunted!
   }
