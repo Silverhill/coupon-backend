@@ -65,7 +65,7 @@ export const addImageToCompany = async (parent, { upload } , { models, request }
   const { headers: { authentication: token } } = request;
   const { makerId } = await extractUserInfoFromToken(token);
 
-  const { company } = await models.Maker.findOne({ _id: makerId })
+  let { company } = await models.Maker.findOne({ _id: makerId })
                                         .populate('company');
 
   const { path } = await storeFile({ stream, filename });
