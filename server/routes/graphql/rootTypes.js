@@ -22,7 +22,7 @@ export default `
     campaignsByMakerId(makerId: String!): [Campaign]!
 
     # Get my campaigns. Access: Maker
-    myCampaigns: PaginatedCampaigns!
+    myCampaigns(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedCampaigns!
 
     # Get coupons from a specific campaign. Access: Maker
     couponsFromCampaign(campaignId: String!): [Coupon]! @deprecated(reason:"Coupons are generated when the Hunter catches them")
