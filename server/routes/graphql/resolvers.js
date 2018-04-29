@@ -49,6 +49,7 @@ export default {
     myCoupons: requiresAuth(userResolver.myCoupons, ['hunter']),
     //Company
     myCompany: requiresAuth(companyResolver.myCompany, ['maker']),
+    myHunters: requiresAuth(companyResolver.myHunters, ['maker']),
     //Office
     myOffices: requiresAuth(officeResolver.myOffices, ['maker']),
     office: requiresAuth(officeResolver.getOffice, ['maker'])

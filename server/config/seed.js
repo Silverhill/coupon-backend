@@ -21,93 +21,111 @@ mongoose.connect(config.mongoUrl, { useMongoClient: true }, (error) => {
 
 mongoose.connection.once('open', function () {
   console.log('Mongodb: connection successful!!');
-  seedDatabase();
+  seedDatabase().then(()=>{
+    console.log('finished');
+    mongoose.connection.close()
+    process.exit();
+  });
 });
 
-const seedDatabase = () => {
-    User.find({}).remove()
-      .then(() => {
-        User.create({
-          provider: 'local',
-          role: 'admin',
-          name: 'Admin',
-          email: 'admin@example.com',
-          password: 'admin',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        })
-        .then(() => console.log('finished populating users'))
-        .catch(err => console.log('error populating users', err));
-      });
-    Hunter.find({}).remove()
-      .then(() => {
-        Hunter.create({
-          provider: 'local',
-          name: 'Hunter',
-          email: 'hunter@example.com',
-          password: 'hunter',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        })
-        .then((maker) =>{
-          console.log('finished populating hunters');
-          Company.create({
-            businessName: 'Rumberitos',
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            maker: maker._id
-          }).then((company) => {
-            console.log('finished populating companies');
-            Office.create({
-              company: company._id,
-              ruc: '9999999999',
-              legalRepresentative: 'Carlos Huertas',
-              contributorType: 'Persona natural',
-              economicActivity: 'Diseño de páginas web',
-              name: 'Sucursal 1',
-              address: 'La Argelia',
-              email: 'sucursal1@rumberitos.com',
-              createdAt: Date.now(),
-              updatedAt: Date.now()
-            }).then((office) => {
-              console.log('finished populating offices');
-              Campaign.create({
-                maker: maker._id,
-                updatedAt: Date.now(),
-                createdAt: Date.now(),
-                title: '10% de descuento en pg web',
-                city: 'Loja',
-                country: 'Ecuador',
-                office: office._id,
-                startAt: Date.now(),
-                endAt: new Date().setMonth(new Date().getMonth() + 3),
-                totalCoupons: 100
-              }).then(() => {
-                console.log('finished populating campaigns');
-                mongoose.connection.close()
-                process.exit();
-              })
-              .catch(err => console.log('error populating campaigns', err));
-            })
-            .catch(err => console.log('error populating offices', err));
-          })
-          .catch(err => console.log('error populating companies', err));
-        })
-        .catch(err => console.log('error populating hunters', err));
-      });
-    Maker.find({}).remove()
-      .then(() => {
-        Maker.create({
-          provider: 'local',
-          name: 'Maker',
-          email: 'maker@example.com',
-          password: 'maker',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        })
-        .then(() => {
-          console.log('finished populating makers')
-        })
-        .catch(err => console.log('error populating makers', err));
-      });
+const dropAll = async () => {
+  await User.find({}).remove();
+  await Company.find({}).remove();
+  await Office.find({}).remove();
+  await Campaign.find({}).remove();
+}
+
+const seedDatabase = async () => {
+  console.log('first drop all');
+  await dropAll();
+  await User.create({
+      provider: 'local',
+      role: 'admin',
+      name: 'Admin',
+      email: 'admin@example.com',
+      password: 'admin',
+      createdAt: new Date(),
+      updatedAt: new Date()
+  });
+  let maker = await Maker.create({
+    provider: 'local',
+    name: 'Maker',
+    email: 'maker@example.com',
+    password: 'maker',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  });
+  let company = await Company.create({
+   businessName: 'Rumberitos',
+   createdAt: Date.now(),
+   updatedAt: Date.now(),
+   maker: maker._id
+  });
+
+  await Maker.findByIdAndUpdate(maker._id,
+    {
+      company: company._id,
+      updatedAt: new Date()
+    },
+    { new: true }
+  );
+
+  let office = await Office.create({
+    company: company._id,
+    ruc: '9999999999',
+    legalRepresentative: 'Carlos Huertas',
+    contributorType: 'Persona natural',
+    economicActivity: 'Diseño de páginas web',
+    name: 'Sucursal 1',
+    address: 'La Argelia',
+    email: 'sucursal1@rumberitos.com',
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  });
+
+  await Company.findByIdAndUpdate(company._id,
+    {
+      '$push': { 'offices': office._id },
+      updatedAt: new Date()
+    },
+    { new: true }
+  );
+
+  let campaign = await Campaign.create({
+    maker: maker._id,
+    updatedAt: Date.now(),
+    createdAt: Date.now(),
+    title: '10% de descuento en pg web',
+    city: 'Loja',
+    country: 'Ecuador',
+    office: office._id,
+    startAt: Date.now(),
+    endAt: new Date().setMonth(new Date().getMonth() + 3),
+    totalCoupons: 100
+  });
+
+  await Office.findByIdAndUpdate(office._id,
+    {
+      '$push': { 'campaigns': campaign._id },
+      updatedAt: new Date()
+    },
+    { new: true }
+  );
+
+  await Maker.findByIdAndUpdate(maker._id,
+    {
+      '$push': { 'campaigns': campaign._id },
+      updatedAt: new Date()
+    },
+    { new: true }
+  );
+
+  await Hunter.create({
+    provider: 'local',
+    name: 'Hunter',
+    email: 'hunter@example.com',
+    password: 'hunter',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  });
 }

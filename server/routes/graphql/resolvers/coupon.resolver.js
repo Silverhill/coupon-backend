@@ -44,7 +44,8 @@ export const captureCoupon = async (parent, args, { models, request }) => {
       status: config.couponStatus.AVAILABLE,
       createdAt: new Date(),
       updatedAt: new Date(),
-      campaign: campaignId
+      campaign: campaignId,
+      hunter: hunterId
     }
 
     const newCoupon = await new models.Coupon(couponParams);
