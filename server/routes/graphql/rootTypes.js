@@ -53,6 +53,8 @@ export default `
 
     # Get office. Access: Maker
     office(id: String!): Office!
+
+    myHunters: [HunterOfCompany]!
   }
 
   type Mutation {
