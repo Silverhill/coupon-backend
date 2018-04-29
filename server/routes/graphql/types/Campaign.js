@@ -47,6 +47,7 @@ export default `
     coupons: [Coupon!]
     maker: UserBase
     office: OfficeSimple
+    remaingCoupons: Int!
   }
 
   input AddCampaignInput {

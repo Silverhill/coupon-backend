@@ -75,6 +75,11 @@ var CampaignSchema = new Schema({
   }]
 })
 
+CampaignSchema.virtual('remaingCoupons')
+  .get(function (){
+    return this.totalCoupons - this.huntedCoupons - this.redeemedCoupons;
+  })
+
 
 CampaignSchema.virtual('status')
   .get(function () {
