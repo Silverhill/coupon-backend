@@ -134,6 +134,25 @@ export const myHunters = async (parent, args, { models, request }) => {
   }
 }
 
+export const updateCompany = async (parent, args, context) => {
+  const { models } = context;
+  const { input } = args;
+
+  try {
+    const company = {
+      ...input,
+      updatedAt: new Date()
+    }
+    const updatedCompany = await models.Company.findByIdAndUpdate(input.id,
+      company,
+      { new: true }
+    )
+    return updatedCompany;
+  } catch (error) {
+    throw new Error(error.message || error);
+  }
+}
+
 async function addCompanyToMaker(makerId, companyId, models) {
   await models.Maker.findByIdAndUpdate(makerId,
     {

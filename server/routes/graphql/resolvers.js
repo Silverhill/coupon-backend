@@ -71,6 +71,7 @@ export default {
     //Company
     addCompany: requiresAuth(companyResolver.addCompany, ['maker']),
     addImageToCompany: requiresAuth(companyResolver.addImageToCompany, ['maker']),
+    updateCompany: requiresAuth(companyResolver.updateCompany, ['maker']),
     //Office
     addOffice: requiresAuth(officeResolver.addOffice, ['maker']),
     //Core uploader
