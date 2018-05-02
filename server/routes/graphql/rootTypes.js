@@ -98,5 +98,8 @@ export default `
 
     # Redeem a coupon. Access: Hunter
     redeemCoupon(input: RedeemCouponInput!): CouponHunted!
+
+    # Update an existing Company. Access: Maker
+    updateCompany(input: UpdateCompanyInput): Company!
   }
 `;

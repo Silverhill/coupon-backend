@@ -11,5 +11,13 @@ export default `
   input CompanyInput {
     businessName: String!
     upload: Upload
+    slogan: String
+  }
+
+  input UpdateCompanyInput {
+    id: String!
+    businessName: String!
+    upload: Upload
+    slogan: String
   }
 `;
