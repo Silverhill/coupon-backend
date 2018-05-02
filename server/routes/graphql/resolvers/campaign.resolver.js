@@ -184,7 +184,8 @@ export const getCampaign = async (parent, args, context) => {
   const { id } = args;
   const { models } = context;
   try {
-    const campaign = await models.Campaign.findOne({ _id: id });
+    const campaign = await models.Campaign.findOne({ _id: id })
+                                          .populate('office') || {};
     return campaign;
   } catch (error) {
     throw new Error(error.message || error);
