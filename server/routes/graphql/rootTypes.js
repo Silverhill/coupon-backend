@@ -51,6 +51,8 @@ export default `
     # Get my coupons. Access: Hunter
     myCoupons(limit: Int, skip: Int, sortField: String, sortDirection: Int): [CouponBase!]
 
+    myRedeemedCoupons(limit: Int, skip: Int, sortField: String, sortDirection: Int): [CouponBase!]
+
     # Get office. Access: Maker
     office(id: String!): Office!
 
@@ -98,5 +100,8 @@ export default `
 
     # Redeem a coupon. Access: Hunter
     redeemCoupon(input: RedeemCouponInput!): CouponHunted!
+
+    # Update an existing Company. Access: Maker
+    updateCompany(input: UpdateCompanyInput): Company!
   }
 `;
