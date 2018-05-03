@@ -47,6 +47,7 @@ export default {
     couponsFromCampaign: requiresAuth(campaignResolver.getCouponsFromCampaign, ['maker']),
     getCoupon: requiresAuth(couponResolver.getCoupon, ['hunter', 'maker']),
     myCoupons: requiresAuth(userResolver.myCoupons, ['hunter']),
+    myRedeemedCoupons: requiresAuth(userResolver.myRedeemedCoupons, ['hunter']),
     //Company
     myCompany: requiresAuth(companyResolver.myCompany, ['maker']),
     myHunters: requiresAuth(companyResolver.myHunters, ['maker']),
