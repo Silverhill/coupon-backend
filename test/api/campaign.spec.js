@@ -332,7 +332,7 @@ test('Campaign: Should delete a Campaign', async t => {
 })
 
 test('Campaign: Should get a Campaign', async t => {
-  t.plan(3);
+  t.plan(5);
 
   function getAddCampaignQuery(officeId) {
     return {
@@ -366,6 +366,10 @@ test('Campaign: Should get a Campaign', async t => {
           campaign(id: "${id}") {
             id
             title
+            office {
+              id
+              name
+            }
           }
         }
       `
@@ -383,6 +387,8 @@ test('Campaign: Should get a Campaign', async t => {
   const { body: { data: { campaign } } } = campaignResponse;
   t.truthy(campaign.id)
   t.is(campaign.title, 'Campaign test 1');
+  t.truthy(campaign.office.id);
+  t.is(campaign.office.name, 'Fogon Grill sucursal 1');
 })
 
 test('Campaign: Hunter: Should get all campaigns', async t => {
