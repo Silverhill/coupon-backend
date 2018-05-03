@@ -83,7 +83,6 @@ export const addCampaign = async (parent, args, context) => {
   const { models, request } = context;
   const { input } = args;
   const { headers: { authentication } } = request;
-  validateRange(input);
   const makerId = await extractUserIdFromToken(authentication);
   const office = await getOffice(makerId, input.officeId, models);
   if (!office) {
@@ -92,12 +91,14 @@ export const addCampaign = async (parent, args, context) => {
 
   const { couponsNumber } = input;
   const campaign = {
-    ...input,
     createdAt: new Date(),
     updatedAt: new Date(),
     totalCoupons: couponsNumber,
+    initialAgeRange: 18,
+    finalAgeRange: 60,
     maker: makerId,
-    office: office._id
+    office: office._id,
+    ...input
   }
 
   if(campaign.upload){
@@ -138,8 +139,6 @@ export const updateCampaign = async (parent, args, context) => {
   const { models } = context;
   const { input } = args;
 
-  validateRange(input);
-
   try {
     const campaign = {
       ...input,
@@ -157,7 +156,7 @@ export const updateCampaign = async (parent, args, context) => {
 
 export const deleteCampaign = async (parent, args, context) => {
   const { models } = context;
-  const { input: { id } } = args;
+  const { input: { id } } = args || {};
 
   try {
 
@@ -185,7 +184,8 @@ export const getCampaign = async (parent, args, context) => {
   const { models } = context;
   try {
     const campaign = await models.Campaign.findOne({ _id: id })
-                                          .populate('office') || {};
+                                          .populate('office');
+
     return campaign;
   } catch (error) {
     throw new Error(error.message || error);
@@ -197,10 +197,11 @@ export const getCouponsFromCampaign = async (parent, args, context) => {
   const { campaignId } = args;
   const { models } = context;
   try {
-    const { coupons } = await models.Campaign.findOne({ _id: campaignId })
-      .populate('coupons')
-      .exec();
-    return coupons;
+    const campaign = await models.Campaign
+      .findOne({ _id: campaignId })
+      .populate('coupons') || {}
+
+    return campaign.coupons || [];
   } catch (error) {
     throw new Error(error.message || error);
   }
@@ -244,7 +245,7 @@ export const getHuntersByCampaign = async (parent, args, context) => {
     }) || {};
 
     const coupons = await models.Coupon.find({
-      _id: { '$in': campaign.coupons }
+      _id: { '$in': campaign.coupons || [] }
     })
     .populate('hunter');
 
@@ -267,22 +268,15 @@ export const getHuntersByCampaign = async (parent, args, context) => {
 
 export const campaignsByMakerId = async(parent, { makerId }, { models }) => {
   try {
-    const campaigns = await models.Campaign.find({ maker: makerId }, '-coupons');
+    const campaigns = await models.Campaign.find({ maker: makerId }, '-coupons') || [];
     return campaigns;
   } catch (error) {
     throw new Error('Maker id not exist');
   }
 }
 
-function validateRange(input) {
-  if (input.endAt <= input.startAt) {
-    throw new Error('endAt should be greater than startAt.');
-  }
-  return
-}
-
 async function getOffice(makerId, officeId, models) {
-  const company = await models.Company.findOne({ maker: makerId });
+  const company = await models.Company.findOne({ maker: makerId }) || {};
   const office = await models.Office.findOne({
     _id: officeId,
     company: company._id

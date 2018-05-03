@@ -1,6 +1,7 @@
 import config from '../../../config';
 import { extractUserIdFromToken } from '../../../services/model.service';
 import shorthash from 'shorthash';
+import _ from 'lodash'
 
 export const getCoupon = async (parent, args, { models }) => {
 
@@ -48,7 +49,7 @@ export const captureCoupon = async (parent, args, { models, request }) => {
       hunter: hunterId
     }
 
-    const newCoupon = await new models.Coupon(couponParams);
+    const newCoupon = await new models.Coupon(couponParams) || {};
     newCoupon.code = generateCouponCode(newCoupon.id);
     await newCoupon.save();
 
@@ -84,7 +85,7 @@ export const redeemCoupon = async (parent, args, { models, request }) => {
   })
   .populate('campaign')
 
-  if (!couponData) {
+  if (_.isEmpty(couponData)) {
     throw Error('Invalid coupon code.');
   }
 

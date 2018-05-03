@@ -13,28 +13,28 @@ export default `
     allHunters(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedHunter!
 
     # Get Campaign. Access: Maker
-    campaign(id: String!): Campaign!
+    campaign(id: String!): Campaign
 
     # Get all campaigns. Access: Hunter
     allCampaigns(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedCampaigns!
 
     # Get all campaigns by Maker. Access: Hunter
-    campaignsByMakerId(makerId: String!): [Campaign]!
+    campaignsByMakerId(makerId: String!): [Campaign!]
 
     # Get my campaigns. Access: Maker
     myCampaigns(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedCampaigns!
 
     # Get coupons from a specific campaign. Access: Maker
-    couponsFromCampaign(campaignId: String!): [Coupon]! @deprecated(reason:"Coupons are generated when the Hunter catches them")
+    couponsFromCampaign(campaignId: String!): [Coupon!] @deprecated(reason:"Coupons are generated when the Hunter catches them")
 
     # Get user by id. Access: Admin
-    getUser(id: String!): User!
+    getUser(id: String!): User
 
     # Get current user. Access: Admin, Maker, Hunter
     me: UserBase!
 
     # Get coupon by id. Access: Maker, Hunter
-    getCoupon(id: String!): Coupon!
+    getCoupon(id: String!): Coupon
 
     # Get my company. Access: Maker
     myCompany: Company
@@ -46,7 +46,7 @@ export default `
     huntersByCampaign(campaignId: String!): [Hunter!]
 
     # Get hunted coupons in a specific Campaign. Access: Maker
-    huntedCouponsByCampaign(campaignId: String!): [Coupon]!
+    huntedCouponsByCampaign(campaignId: String!): [Coupon!]
 
     # Get my coupons. Access: Hunter
     myCoupons(limit: Int, skip: Int, sortField: String, sortDirection: Int): [CouponBase!]
@@ -54,9 +54,9 @@ export default `
     myRedeemedCoupons(limit: Int, skip: Int, sortField: String, sortDirection: Int): [CouponBase!]
 
     # Get office. Access: Maker
-    office(id: String!): Office!
+    office(id: String!): Office
 
-    myHunters: [HunterOfCompany]!
+    myHunters: [HunterOfCompany!]
   }
 
   type Mutation {

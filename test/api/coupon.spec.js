@@ -113,7 +113,7 @@ test('Coupon > huntedCouponsByCampaign: Should get access only hunter role', asy
   const { body: bodyHunter } = res2;
   const { body: bodyMaker } = res3;
 
-  t.falsy(bodyHunter.data);
+  t.falsy(bodyHunter.data.huntedCouponsByCampaign);
   t.truthy(bodyMaker.data);
 
   const { errors: errors1 } = bodyHunter;
