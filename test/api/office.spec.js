@@ -330,7 +330,7 @@ test('Office: office > Should get access only maker role', async t => {
   const { body: bodyMaker } = await utils.callToQraphql(serverRequest, getOfficeQuery(addOffice.id), tokenMaker);
   const { body: bodyHunter } = await utils.callToQraphql(serverRequest, getOfficeQuery(addOffice.id), tokenHunter);
 
-  t.falsy(bodyHunter.data);
+  t.falsy(bodyHunter.data.office);
   t.truthy(bodyMaker.data);
 
   const { errors } = bodyHunter;
@@ -410,4 +410,73 @@ test('Office: office > get an specific office from my offices', async t => {
   t.truthy(office2.id);
   t.is(office2.name, 'sucursal 3');
   t.is(office2.ruc, '1132569976004');
+});
+
+test('Office: office > should validate the email format', async t => {
+  t.plan(3)
+
+  const addCompanyQuery = {
+    query: `
+      mutation {
+        addCompany(input: {
+          businessName: "Fogon Grill"
+        }) {
+          id
+          businessName
+        }
+      }
+    `
+  };
+
+  function getAddOfficeQuery(companyId, email) {
+    return {
+      query: `
+        mutation {
+          addOffice(input: {
+            ruc: "1102224498"
+            economicActivity: "Comida"
+            contributorType: "Natural"
+            legalRepresentative: "Juan Perez"
+            name: "Sucursal"
+            officePhone: "2567476"
+            cellPhone: "0968755643"
+            address: "Rocafuerte y Sucre"
+            email: "${email}"
+            companyId: "${companyId}"
+          }) {
+            id
+            ruc
+            economicActivity
+            legalRepresentative
+            officePhone
+          }
+        }
+      `
+    }
+  }
+
+  function getOfficeQuery(officeId) {
+    return {
+      query: `
+        {
+          office(id: "${officeId}") {
+            id
+            ruc
+            name
+          }
+        }
+      `
+    }
+  }
+
+  let serverRequest = request(app);
+  const { body: { data: { signIn: { token: tokenMaker } } } } =  await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+
+  const { body: { data: { addOffice: addOffice1 } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id, 'emailvalido@test.com'), tokenMaker);
+  t.truthy(addOffice1);
+
+  const { body: { data, errors } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id, 'invalid@mgm@test.com'), tokenMaker);
+  t.falsy(data)
+  t.is(errors[0].message, 'Office validation failed: email: Invalid email format.');
 });

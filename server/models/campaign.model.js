@@ -36,11 +36,17 @@ var CampaignSchema = new Schema({
   },
   initialAgeRange: {
     type: Number,
-    default: 18
+    default: 18,
+    min: [1, 'initialAgeRange should be in the range of 1 to 99.'],
+    max: [99, 'initialAgeRange should be in the range of 1 to 99.'],
+    required: true
   },
   finalAgeRange: {
     type: Number,
-    default: 60
+    default: 60,
+    min: [2, 'finalAgeRange should be in the range of 2 to 100.'],
+    max: [100, 'finalAgeRange should be in the range of 2 to 100.'],
+    required: true
   },
   title: {
     type: String,
@@ -98,5 +104,20 @@ CampaignSchema.virtual('status')
       return config.campaignStatus.EXPIRED;
     }
   });
+
+  CampaignSchema
+    .path('initialAgeRange')
+    .validate(function () {
+      return this.finalAgeRange > this.initialAgeRange;
+    },
+    'initialAgeRange should be less than finalAgeRange.');
+
+  CampaignSchema
+    .path('endAt')
+    .validate(function () {
+      return this.endAt.getTime() > this.startAt.getTime()
+    },
+    'endAt should be greater than startAt.')
+
 
 export default mongoose.model('Campaign', CampaignSchema);

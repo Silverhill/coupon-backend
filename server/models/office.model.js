@@ -2,6 +2,7 @@
 
 mongoose.Promise = require('bluebird');
 import mongoose, {Schema} from 'mongoose';
+import { isValidEmail } from '../services/validation.service';
 
 var OfficeSchema = new Schema({
   ruc: {
@@ -53,5 +54,12 @@ var OfficeSchema = new Schema({
     required: true
   }
 })
+
+OfficeSchema
+  .path('email')
+  .validate(function () {
+    return isValidEmail(this.email);
+  },
+  'Invalid email format.');
 
 export default mongoose.model('Office', OfficeSchema);

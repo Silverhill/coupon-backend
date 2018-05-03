@@ -9,7 +9,7 @@ export const addCompany = async (parent, args, { models, request }) => {
   const { headers: { authentication } } = request;
   const makerId = await extractUserIdFromToken(authentication);
 
-  const { company: makerCompany } = await models.Maker.findOne({ _id: makerId })
+  const { company: makerCompany } = await models.Maker.findOne({ _id: makerId }) || {}
 
   if (!_.isEmpty(makerCompany)) {
     throw Error('Only one company can be created.');

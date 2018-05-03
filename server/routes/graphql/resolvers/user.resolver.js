@@ -21,7 +21,7 @@ export const allUsers = async (parent,
   const users = await models.User.find({}, '-salt -password')
                                  .limit(limit)
                                  .skip(skip)
-                                 .sort(sortObject);
+                                 .sort(sortObject) || [];
   const returnObject = {
     users: users,
     totalCount: total
@@ -41,7 +41,7 @@ export const allMakers = async (parent, {
   const users = await models.User.find({'_type': 'Maker'}, '-salt -password')
                                  .limit(limit)
                                  .skip(skip)
-                                 .sort(sortObject);
+                                 .sort(sortObject) || [];
   const returnObject = {
     makers: users,
     totalCount: total
@@ -63,7 +63,7 @@ export const allHunters = async (parent, {
   const users = await models.User.find({'_type': 'Hunter'}, '-salt -password')
                                  .limit(limit)
                                  .skip(skip)
-                                 .sort(sortObject);
+                                 .sort(sortObject) || [];
   const returnObject = {
     hunters: users,
     totalCount: total
@@ -112,7 +112,7 @@ export const myCoupons = async (parent, {
   sortObject[sortField] = sortDirection;
 
   const { id } = await extractUserInfoFromToken(token);
-  const { coupons } = await models.Hunter.findOne({ _id: id });
+  const { coupons } = await models.Hunter.findOne({ _id: id }) || {};
   const myCouponsInfo = await models.Coupon.find({ _id: { "$in": coupons || [] } })
     .limit(limit)
     .skip(skip)
@@ -124,7 +124,7 @@ export const myCoupons = async (parent, {
         path: 'maker',
         select: '-campaigns'
       }
-    });
+    }) || [];
 
   return myCouponsInfo;
 }
