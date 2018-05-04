@@ -16,7 +16,7 @@ export default `
 
   input UpdateCompanyInput {
     id: String!
-    businessName: String!
+    businessName: String
     upload: Upload
     slogan: String
   }
