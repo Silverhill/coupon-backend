@@ -44,6 +44,8 @@ export default `
     finalAgeRange: Int
     createdAt: Timestamp!
     couponsHuntedByMe: Int!
+    couponsRedeemedByMe: Int!
+    canHunt: Boolean!
     coupons: [Coupon!]
     maker: UserBase
     office: OfficeSimple
