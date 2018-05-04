@@ -126,8 +126,8 @@ export const myHunters = async (parent, args, { models, request }) => {
         }
         hunters.push(allCoupons[i].hunter);
       }
-      return hunters;
     }
+    return hunters;
 
   } catch (error) {
     return error;
