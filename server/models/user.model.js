@@ -4,6 +4,7 @@ import crypto from 'crypto';
 mongoose.Promise = require('bluebird');
 import mongoose, {Schema} from 'mongoose';
 import {registerEvents} from '../events/user.events';
+import { isValidEmail } from '../services/validation.service';
 
 const authTypes = ['facebook', 'google', 'twitter'];
 
@@ -79,13 +80,29 @@ UserSchema
 /**
  * Validations
  */
+UserSchema
+.path('email')
+.validate(function () {
+  if (this && this.email) {
+    return isValidEmail(this.email);
+  } else {
+    const email = this.getUpdate().$set.email;
+    return isValidEmail(email);
+  }
+},
+'Invalid email format.');
+
 
 // Validate empty email
 UserSchema
   .path('email')
   .validate(function(email) {
-    if(authTypes.indexOf(this.provider) !== -1) {
-      return true;
+    if (this && this.email) {
+      if(authTypes.indexOf(this.provider) !== -1) {
+        return true;
+      }
+    } else {
+      email = this.getUpdate().$set.email;
     }
     return email.length;
   }, 'Email cannot be blank');
@@ -103,24 +120,14 @@ UserSchema
 // Validate email is not taken
 UserSchema
   .path('email')
-  .validate(function(value) {
-    if(authTypes.indexOf(this.provider) !== -1) {
-      return true;
+  .validate(async function(value) {
+    if (this && this.email) {
+      const isValid = await runEmailDocumentValidation(this, value);
+      return isValid;
+    } else {
+      const isValid = await runEmailUpdateValidation(this);
+      return isValid;
     }
-
-    return this.constructor.findOne({ email: value }).exec()
-      .then(user => {
-        if(user) {
-          if(this.id === user.id) {
-            return true;
-          }
-          return false;
-        }
-        return true;
-      })
-      .catch(function(err) {
-        throw err;
-      });
   }, 'The specified email address is already in use.');
 
 var validatePresenceOf = function(value) {
@@ -264,6 +271,36 @@ UserSchema.methods = {
       });
   }
 };
+
+const runEmailDocumentValidation = async (scope, value) => {
+  if(authTypes.indexOf(scope.provider) !== -1) {
+    return true;
+  }
+  const user =  await scope.constructor.findOne({ email: value });
+  if(user) {
+    if(scope.id === user.id) {
+      return true;
+    }
+    return false;
+  }
+  return true;
+}
+
+const runEmailUpdateValidation = async (scope) => {
+  const { models, id: currentUserId, $set: { email} } = scope.getUpdate();
+  const user = await models.User.findOne({_id: currentUserId});
+  if(authTypes.indexOf(user.provider) !== -1) {
+    return true;
+  }
+  const userWithTheSameEmail = await models.User.findOne({email});
+  if(userWithTheSameEmail) {
+    if(currentUserId === userWithTheSameEmail.id) {
+      return true;
+    }
+    return false;
+  }
+  return true;
+}
 
 registerEvents(UserSchema);
 export default mongoose.model('User', UserSchema);

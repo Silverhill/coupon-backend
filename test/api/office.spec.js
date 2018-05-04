@@ -455,20 +455,6 @@ test('Office: office > should validate the email format', async t => {
     }
   }
 
-  function getOfficeQuery(officeId) {
-    return {
-      query: `
-        {
-          office(id: "${officeId}") {
-            id
-            ruc
-            name
-          }
-        }
-      `
-    }
-  }
-
   let serverRequest = request(app);
   const { body: { data: { signIn: { token: tokenMaker } } } } =  await utils.callToQraphql(serverRequest, makerLoginQuery);
   const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
