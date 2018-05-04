@@ -4,6 +4,7 @@ import cloudinary from 'cloudinary';
 import config from '../../../config';
 import { roleExist } from '../../../services/graphql.service';
 import { storeFile } from './file.resolver';
+import { extractUserIdFromToken } from '../../../services/model.service'
 
 /**
  * QUERY
@@ -265,6 +266,42 @@ export const addImageToUser = async (parent, { upload } , { models, request }) =
   });
 
   return user;
+};
+
+export const updateUser = async (parent, args , { models, request }) => {
+  const { input: user } = args;
+  const { headers: { authentication } } = request;
+  const userId = await extractUserIdFromToken(authentication);
+
+  if (user.upload) {
+    const { stream, filename } = await user.upload;
+    const { path } = await storeFile({ stream, filename });
+    await cloudinary.v2.uploader.upload(path, (error, result) => {
+      if (result) {
+        user.image = result.url;
+        fs.unlinkSync(path);
+      } else if (error) {
+        return error;
+      }
+    });
+  }
+
+  user.updatedAt = new Date();
+
+  const userUpdated = await models.User.findOneAndUpdate({_id: userId},
+    {
+      $set: user,
+      models,
+      id: userId
+    },
+    {
+      new: true,
+      runValidators: true,
+      context: 'query'
+    }
+  );
+
+  return userUpdated;
 };
 
 const loginUser = async (email, password, models) => {

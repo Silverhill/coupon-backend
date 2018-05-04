@@ -103,5 +103,8 @@ export default `
 
     # Update an existing Company. Access: Maker
     updateCompany(input: UpdateCompanyInput): Company!
+
+    # Update User info. Access: Maker, Hunter
+    updateUser(input: UpdateUserInput): UserBase!
   }
 `;

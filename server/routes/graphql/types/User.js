@@ -60,4 +60,10 @@ export default `
     hunters: [Hunter!]
     totalCount: Int!
   }
+
+  input UpdateUserInput {
+    name: String
+    email: String
+    upload: Upload
+  }
 `;

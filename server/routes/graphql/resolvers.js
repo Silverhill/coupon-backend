@@ -60,7 +60,9 @@ export default {
     register: userResolver.register,
     login: userResolver.login,
     signUp: userResolver.signUp,
+    //User
     updatePassword: requiresAuth(userResolver.updatePassword, ['admin', 'maker', 'hunter']),
+    updateUser: requiresAuth(userResolver.updateUser, ['maker', 'hunter']),
     //Campaign
     addCampaign: requiresAuth(campaignResolver.addCampaign, ['maker']),
     updateCampaign: requiresAuth(campaignResolver.updateCampaign, ['maker']),
