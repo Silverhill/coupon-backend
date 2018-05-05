@@ -18,6 +18,11 @@ module.exports = {
     secret: process.env.TwitterSecret,
     callbackURL: process.env.TwitterCallbackURL
   },
+  cloudinary:{
+    cloud_name: process.env.cloudName,
+    api_key: process.env.cloudinaryKey,
+    api_secret: process.env.cloudinarySecret
+  },
   mongoUrl: process.env.MONGO_URL,
   seedDB: true,
   port: process.env.PORT,
