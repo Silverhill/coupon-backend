@@ -81,7 +81,7 @@ export default `
     deleteCampaign(input: DeleteCampaignInput): Campaign!
 
     # Capture a coupon from a specific Campaign. Access: Hunter
-    captureCoupon(input: CaptureCouponInput!): Coupon!
+    captureCoupon(input: CaptureCouponInput!): CouponHunted!
 
     # Create new Company. Access: Maker
     addCompany(input: CompanyInput!): Company!

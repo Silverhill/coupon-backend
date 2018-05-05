@@ -520,3 +520,45 @@ test('Coupon > redeemCoupon: Should return an error if the coupon has already be
 
   t.is(errors[0].message, 'This coupon has already been redeemed.');
 });
+
+test('Campaign: Should return a campaign within the coupon after the Hunter has hunted it', async t => {
+  t.plan(5)
+
+  function getCaptureCouponQuery(id) {
+    return {
+      query: `
+        mutation {
+          captureCoupon(input: {
+            campaignId: "${id}"
+          }) {
+            id
+            code
+            status
+            campaign {
+              id
+              title
+              description
+            }
+          }
+        }
+      `
+    }
+  }
+
+  let serverRequest = request(app);
+  const { body: { data: { signIn: { token: tokenHunter } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
+
+  // capture coupon
+  const { body: { data: { captureCoupon } } } = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
+
+  t.truthy(captureCoupon.id);
+  t.truthy(captureCoupon.campaign)
+  t.truthy(captureCoupon.campaign.id)
+  t.is(captureCoupon.campaign.title, 'Campaign test 1');
+  t.is(captureCoupon.campaign.description, 'Description 1');
+});

@@ -21,15 +21,15 @@ export const allCampaigns = async (parent, {
 
   const hunter = await models.Hunter
     .findOne({_id: hunterId})
-    .populate('coupons')
-
-  const mycampaigns = await models.Campaign
+    .populate('coupons') || {}
+  const myCoupons  = hunter.coupons || [];
+  const campaignsSelectedByMe = await models.Campaign
     .find({
-      coupons: { '$in': ((hunter || {}).coupons || []) }
+      coupons: { '$in': myCoupons }
     })
     .populate('coupons')
 
-  const numberOfHuntedCoupons = getCampaignsWithHuntedCoupons(mycampaigns, hunter.coupons);
+  const campaignsWithCouponsSelected = mapCampaignsWithTotalOfCouponsHuntedByMe(campaignsSelectedByMe, myCoupons);
 
   const total = await models.Campaign.count({});
 
@@ -37,13 +37,12 @@ export const allCampaigns = async (parent, {
   if(limit) getCampaigns.limit(limit);
   if(skip) getCampaigns.skip(skip);
 
-  const campaigns = await getCampaigns
+  const allSortedCampaigns = await getCampaigns
     .sort(sortObject)
     .populate('coupons')
     .populate('maker');
 
-  const campaignsWithDetails = addCouponsHuntedByMe(campaigns, mycampaigns, numberOfHuntedCoupons)
-
+  const campaignsWithDetails = addCouponsHuntedByMeToCampaigns(allSortedCampaigns, campaignsSelectedByMe, campaignsWithCouponsSelected)
   const returnObject = {
     campaigns: campaignsWithDetails,
     totalCount: total
@@ -304,35 +303,47 @@ function addCampaignsToMaker(makerId, campaignId, models){
   );
 }
 
-function findHuntedCampaign(campaignId, mycampaigns) {
-  return mycampaigns.find(mycampaign => {
+function findHuntedCampaign(campaignId, myCampaigns) {
+  return myCampaigns.find(mycampaign => {
     return mycampaign.id === campaignId;
   });
 }
 
-function getCampaignsWithHuntedCoupons(mycampaigns, hunterCoupons) {
-  let data = {};
-  for(let i = 0; i < mycampaigns.length; i++) {
-    const campaign = mycampaigns[i];
-    const mycoupons = _.intersectionBy(campaign.coupons, hunterCoupons, 'id');
-    data[campaign.id] = mycoupons.length;
+function mapCampaignsWithTotalOfCouponsHuntedByMe(campaignsSelectedByMe, myCoupons) {
+  let campaigns = {};
+  const myHuntedCoupons = _.filter(myCoupons, {status: config.couponStatus.HUNTED})
+  const myRedeemedCoupons = _.filter(myCoupons, {status: config.couponStatus.REDEEMED})
+  for(let i = 0; i < campaignsSelectedByMe.length; i++) {
+    const campaign = campaignsSelectedByMe[i];
+    const couponsHuntedInThisCampaign = _.intersectionBy(campaign.coupons, myHuntedCoupons, 'id');
+    const couponsRedeemedInThisCampaign = _.intersectionBy(campaign.coupons, myRedeemedCoupons, 'id');
+    campaigns[campaign.id] = {
+      couponsHunted: couponsRedeemedInThisCampaign.length + couponsHuntedInThisCampaign.length,
+      couponsRedeemed: couponsRedeemedInThisCampaign.length
+    }
   }
-  return data;
+  return campaigns;
 }
 
-function addCouponsHuntedByMe(campaigns, mycampaigns, numberOfHuntedCoupons) {
-  let result = [];
-  for (let i = 0; i < campaigns.length; i++) {
-    let campaign = campaigns[i];
-    const isMyCampaign = findHuntedCampaign(campaign.id, mycampaigns);
+function addCouponsHuntedByMeToCampaigns(allSortedCampaigns, myCampaigns, campaignsWithCouponsSelected) {
+  let campaigns = [];
+  for (let i = 0; i < allSortedCampaigns.length; i++) {
+    let campaign = allSortedCampaigns[i];
+    const isMyCampaign = findHuntedCampaign(campaign.id, myCampaigns);
     if (isMyCampaign) {
-      campaign.couponsHuntedByMe =  numberOfHuntedCoupons[campaign.id];
+      campaign.couponsHuntedByMe = campaignsWithCouponsSelected[campaign.id].couponsHunted;
+      campaign.couponsRedeemedByMe = campaignsWithCouponsSelected[campaign.id].couponsRedeemed;
     } else {
       campaign.couponsHuntedByMe = 0;
+      campaign.couponsRedeemedByMe = 0;
     }
-    result.push(campaign);
+    const couponsWereRedeemed = (campaign.couponsHuntedByMe === campaign.couponsRedeemedByMe);
+    const campaignIsAvailable = campaign.status === config.campaignStatus.AVAILABLE;
+    campaign.canHunt = (couponsWereRedeemed && campaignIsAvailable);
+
+    campaigns.push(campaign);
   }
-  return result;
+  return campaigns;
 }
 
 function updateRelatedModels(params) {

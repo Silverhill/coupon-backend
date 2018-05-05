@@ -136,7 +136,8 @@ function updateCouponStatus(models, couponId, hunterId) {
       updatedAt: new Date()
     },
     { new: true }
-  );
+  )
+  .populate('campaign');
 }
 
 function updateHunterAndCampignModels(params) {

@@ -15,7 +15,7 @@ export default `
     id: ID!
     code: String
     status: String
-    campaign: Campaign
+    campaign: CampaignForHunter
   }
 
   input CaptureCouponInput {

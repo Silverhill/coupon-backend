@@ -59,7 +59,6 @@ function getAddOfficeQuery(companyId) {
   }
 }
 
-
 test('Campaign: Should get access only maker role', async t => {
   t.plan(3)
 
@@ -483,7 +482,7 @@ test('Campaign: Should get a Campaign', async t => {
 })
 
 test('Campaign: Hunter: Should get all campaigns', async t => {
-  t.plan(7);
+  t.plan(9);
   function getAddCampaignQuery(officeId, title) {
     return {
       query: `
@@ -532,10 +531,27 @@ test('Campaign: Hunter: Should get all campaigns', async t => {
             campaigns{
               title
               couponsHuntedByMe
+              couponsRedeemedByMe
             }
           }
         }
       `
+  }
+
+  function getRedeemCouponQuery(couponCode) {
+    return {
+      query: `
+        mutation {
+          redeemCoupon(input: {
+            couponCode: "${couponCode}"
+          }) {
+            id
+            code
+            status
+          }
+        }
+      `
+    }
   }
 
   let serverRequest = request(app)
@@ -543,9 +559,13 @@ test('Campaign: Hunter: Should get all campaigns', async t => {
   const { body: { data: { signIn: { token: tokenHunter } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
   const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
   const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  //Hunt coupon
   await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 1'), tokenMaker);
   const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 2'), tokenMaker);
-  await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
+  const { body: { data: { captureCoupon } } } = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
+
+  //Redeem coupon
+  await utils.callToQraphql(serverRequest, getRedeemCouponQuery(captureCoupon.code), tokenMaker);
 
   const allCampaignsResponse = await utils.callToQraphql(serverRequest, allCampaignsQuery, tokenHunter);
   t.is(allCampaignsResponse.status, 200);
@@ -555,8 +575,105 @@ test('Campaign: Hunter: Should get all campaigns', async t => {
   t.is(allCampaigns.totalCount, 2);
   t.is(allCampaigns.campaigns[0].title, 'Campaign 1');
   t.is(allCampaigns.campaigns[0].couponsHuntedByMe, 0);
+  t.is(allCampaigns.campaigns[0].couponsRedeemedByMe, 0);
   t.is(allCampaigns.campaigns[1].title, 'Campaign 2');
   t.is(allCampaigns.campaigns[1].couponsHuntedByMe, 1);
+  t.is(allCampaigns.campaigns[1].couponsRedeemedByMe, 1);
+});
+
+test('Campaign: Hunter: Should get all campaigns with the flag canHunt', async t => {
+  t.plan(4);
+  function getAddCampaignQuery(officeId, title) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "${title}"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            startAt: ${Date.now()}
+            endAt: ${Date.now() + 7200000}
+            couponsNumber: 20
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+          }
+        }
+      `
+    }
+  }
+
+  function getCaptureCouponQuery(id) {
+    return {
+      query: `
+        mutation {
+          captureCoupon(input: {
+            campaignId: "${id}"
+          }) {
+            id
+            code
+            status
+          }
+        }
+      `
+    }
+  }
+
+  const allCampaignsQuery = {
+    query: `
+        {
+          allCampaigns {
+            totalCount
+            campaigns{
+              title
+              canHunt
+            }
+          }
+        }
+      `
+  }
+
+  function getRedeemCouponQuery(couponCode) {
+    return {
+      query: `
+        mutation {
+          redeemCoupon(input: {
+            couponCode: "${couponCode}"
+          }) {
+            id
+            code
+            status
+          }
+        }
+      `
+    }
+  }
+
+  let serverRequest = request(app)
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { signIn: { token: tokenHunter } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  //Campaign 1
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 1'), tokenMaker);
+   //Campaign 2
+  await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 2'), tokenMaker);
+  //Hunt coupon in Campaign 1
+  const { body: { data: { captureCoupon } } } = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
+  const { body: { data: { allCampaigns: allCampaigns1 } } } = await utils.callToQraphql(serverRequest, allCampaignsQuery, tokenHunter);
+
+  //Redeem coupon in Campaign 1
+  await utils.callToQraphql(serverRequest, getRedeemCouponQuery(captureCoupon.code), tokenMaker);
+  const { body: { data: { allCampaigns: allCampaigns2 } } } = await utils.callToQraphql(serverRequest, allCampaignsQuery, tokenHunter);
+
+  t.is(allCampaigns1.campaigns.length, 2);
+  t.is(allCampaigns2.campaigns.length, 2);
+  t.false(allCampaigns1.campaigns[0].canHunt);
+  t.true(allCampaigns2.campaigns[1].canHunt);
 });
 
 test('Campaign: Hunter: Return empty array if there is not coupons', async t => {
@@ -1219,4 +1336,63 @@ test('Campaign: should have status: soldout', async t => {
 
   const { body: { data: { campaign } } } = await utils.callToQraphql(serverRequest, getCampaignQuery(addCampaign.id), tokenMaker);
   t.is(campaign.status, 'soldout');
+});
+
+test('Campaign: Hunter: Should get all campaigns even if there are no coupons hunted', async t => {
+  t.plan(6);
+  function getAddCampaignQuery(officeId, title) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "${title}"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            startAt: ${Date.now()}
+            endAt: ${Date.now() + 7200000}
+            couponsNumber: 20
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+          }
+        }
+      `
+    }
+  }
+
+  const allCampaignsQuery = {
+    query: `
+      {
+        allCampaigns {
+          campaigns {
+            id
+            title
+            couponsHuntedByMe
+          }
+          totalCount
+        }
+      }
+    `
+  }
+
+  let serverRequest = request(app)
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { signIn: { token: tokenHunter } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 1'), tokenMaker);
+  await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 2'), tokenMaker);
+
+  const { body: { data: { allCampaigns } } } = await utils.callToQraphql(serverRequest, allCampaignsQuery, tokenHunter);
+
+  t.is(allCampaigns.campaigns.length, 2);
+  t.is(allCampaigns.totalCount, 2);
+  t.is(allCampaigns.campaigns[0].title, 'Campaign 1');
+  t.is(allCampaigns.campaigns[0].couponsHuntedByMe, 0);
+  t.is(allCampaigns.campaigns[1].title, 'Campaign 2');
+  t.is(allCampaigns.campaigns[1].couponsHuntedByMe, 0);
 });
