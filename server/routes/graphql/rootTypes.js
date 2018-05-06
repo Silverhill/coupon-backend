@@ -66,7 +66,7 @@ export default `
     login(email: String!, password: String!): String! @deprecated(reason:"Please use 'signIn' query")
 
     # User register
-    signUp(input: AddUserInput): User!
+    signUp(input: AddUserInput): UserWithCompany!
 
     # Update user password. Access: Admin, Maker, Hunter
     updatePassword(input: UpdatePasswordInput): User!

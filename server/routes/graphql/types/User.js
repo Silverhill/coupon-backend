@@ -24,12 +24,22 @@ export default `
     image: String
   }
 
+  type UserWithCompany implements UserBase {
+    id: String!
+    name: String
+    email: String!
+    provider: String
+    role: UserRole!
+    image: String
+    company: Company
+  }
+
   input AddUserInput {
     email: String!
     password: String!
-    company: String!
+    company: String
     name: String!
-    role: String
+    role: String!
   }
 
   input UpdatePasswordInput {
