@@ -1,23 +1,21 @@
-import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import cloudinary from 'cloudinary';
 import config from '../../../config';
 import _ from 'lodash'
-import { extractUserIdFromToken } from '../../../services/model.service';
 import { storeFile } from './file.resolver';
 
 export const allCampaigns = async (parent, {
                                             limit = 10,
                                             skip = 0,
                                             sortField = 'createdAt',
-                                            sortDirection = 1
+                                            sortDirection = 1,
+                                            ...args
                                           }, context) => {
-  const { models, request } = context;
+  const { models } = context;
 
   const sortObject = {};
   sortObject[sortField] = sortDirection;
-  const { headers: { authentication } } = request;
-  const hunterId = await extractUserIdFromToken(authentication);
+  const {_id: hunterId} = args.currentUser;
 
   const hunter = await models.Hunter
     .findOne({_id: hunterId})
@@ -54,14 +52,14 @@ export const myCampaigns = async (parent, {
                                             limit = 10,
                                             skip = 0,
                                             sortField = 'createdAt',
-                                            sortDirection = 1
-                                          }, { models, request }) => {
+                                            sortDirection = 1,
+                                            ...args
+                                          }, { models }) => {
   const sortObject = {};
   sortObject[sortField] = sortDirection;
-  const { headers: { authentication } } = request;
-  if (!authentication) throw new Error('You need logged to get campaigns');
 
-  const { _id } = await jwt.verify(authentication, config.secrets.session);
+
+  const { _id } = args.currentUser;
   const total = await models.Campaign.count({ maker: _id });
   const campaigns = await models.Campaign.find({ maker: _id },  '-coupons')
     .limit(limit)
@@ -79,10 +77,9 @@ export const myCampaigns = async (parent, {
 
 // TODO: Actualizar el estado (status) de la campaña acorde a las necesidades
 export const addCampaign = async (parent, args, context) => {
-  const { models, request } = context;
+  const { models } = context;
   const { input } = args;
-  const { headers: { authentication } } = request;
-  const makerId = await extractUserIdFromToken(authentication);
+  const {_id: makerId} = args.currentUser;
   const office = await getOffice(makerId, input.officeId, models);
   if (!office) {
     throw Error('Invalid office Id');
@@ -227,9 +224,8 @@ export const getHuntedCouponsByCampaign = async (parent, args, context) => {
 
 export const getHuntersByCampaign = async (parent, args, context) => {
   const { campaignId } = args;
-  const { models, request } = context;
-  const { headers: { authentication } } = request;
-  const makerId = await extractUserIdFromToken(authentication);
+  const { models } = context;
+  const {_id: makerId} = args.currentUser;
 
   try {
 

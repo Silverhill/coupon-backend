@@ -1,11 +1,9 @@
-import { extractUserIdFromToken } from '../../../services/model.service'
 
 //TODO: Valida RUC
-export const addOffice = async (parent, args, { models, request }) => {
+export const addOffice = async (parent, args, { models }) => {
   const { input } = args;
   const { companyId } = input;
-  const { headers: { authentication } } = request;
-  const makerId = await extractUserIdFromToken(authentication);
+  const {_id: makerId} = args.currentUser;
 
   let makerCompany = null;
   try {
@@ -49,9 +47,8 @@ export const addOffice = async (parent, args, { models, request }) => {
 
 };
 
-export const myOffices = async (parent, args, { models, request }) => {
-  const { headers: { authentication } } = request;
-  const makerId = await extractUserIdFromToken(authentication);
+export const myOffices = async (parent, args, { models }) => {
+  const {_id: makerId} = args.currentUser;
 
   try {
     const company = await models.Company.findOne({ maker: makerId })
@@ -62,10 +59,9 @@ export const myOffices = async (parent, args, { models, request }) => {
   }
 }
 
-export const getOffice = async (parent, args, { models, request }) => {
+export const getOffice = async (parent, args, { models }) => {
   const { id: officeId } = args;
-  const { headers: { authentication } } = request;
-  const makerId = await extractUserIdFromToken(authentication);
+  const {_id: makerId} = args.currentUser;
 
   try {
     const company = await models.Company.findOne({ maker: makerId }) || {};
