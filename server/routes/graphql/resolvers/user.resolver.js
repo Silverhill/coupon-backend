@@ -174,30 +174,43 @@ export const register = async (parent, { user: _user }, { models }) => {
 };
 
 export const signUp = async (parent, args, { models }) => {
-  const { input: _user } = args;
-  const { company: companyName } = _user;
-
-  if (_user.company) {
-    delete _user.company;
+  const { input } = args;
+  const { company: companyName } = input;
+  const userData = {
+    ...input
   }
+  delete userData.company;
+  const isMaker = userData.role === 'maker';
 
   try {
 
-    let res = await registerUser(_user, models);
+    if (isMaker) {
 
-    if (res.role == 'maker') {
-      const newCompany = await createCompany(companyName, res._id, models);
-      res = await models.Maker.findByIdAndUpdate(res._id,
+      if (!companyName) {
+        throw new Error('Validation failed: company was not provided.');
+      }
+      const maker = await registerUser(userData, models);
+      const { _id: makerId } = maker;
+      const makerCompany = await createAndRelateCompany(companyName, makerId, models);
+      const makerWithCompany = await models.Maker.findByIdAndUpdate(makerId,
         {
-          company: newCompany._id,
+          company: makerCompany._id,
           updatedAt: new Date()
         },
-        { new: true }
-      );
+        {
+          new: true
+        }
+      )
+      .populate('company')
 
+      return makerWithCompany;
+
+    } else {
+
+      const user = await registerUser(userData, models);
+      return user;
     }
 
-    return res;
   } catch (error) {
     return error;
   }
@@ -344,7 +357,7 @@ const registerUser = async (_user, models) => {
   return user;
 }
 
-const createCompany = async (companyName, makerId, models) => {
+const createAndRelateCompany = async (companyName, makerId, models) => {
   if (companyName) {
     const company = {
       businessName: companyName,

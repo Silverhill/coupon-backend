@@ -144,3 +144,99 @@ test('User: updateUser > Should return an error if email is invalid', async t =>
   t.falsy(data)
   t.is(errors[0].message, 'Validation failed: email: Invalid email format.');
 });
+
+test('User: signUp > Should create a new Hunter', async t => {
+  t.plan(4)
+
+  const signUpQuery = {
+    query: `
+      mutation {
+        signUp(input: {
+          name:"hunterNew"
+          email: "hunternew@example.com"
+          password: "12345678"
+          role: "hunter"
+        }) {
+          id
+          name
+          email
+          role
+        }
+      }
+    `
+  }
+
+  let serverRequest = request(app);
+  const { body: { data: { signUp } } } = await utils.callToQraphql(serverRequest, signUpQuery);
+  t.truthy(signUp.id)
+  t.is(signUp.name, 'hunterNew')
+  t.is(signUp.email, 'hunternew@example.com')
+  t.is(signUp.role, 'hunter')
+});
+
+test('User: signUp > Should create a new Maker with company', async t => {
+  t.plan(6)
+
+  const signUpQuery = {
+    query: `
+      mutation {
+        signUp(input: {
+          name:"makerNew"
+          email: "makernew@example.com"
+          password: "12345678"
+          company: "New Company"
+          role: "maker"
+        }) {
+          id
+          name
+          email
+          role
+          company {
+            id
+            businessName
+          }
+        }
+      }
+    `
+  }
+
+  let serverRequest = request(app);
+  const { body: { data: { signUp } } }  = await utils.callToQraphql(serverRequest, signUpQuery);
+
+  t.truthy(signUp.id)
+  t.is(signUp.name, 'makerNew')
+  t.is(signUp.email, 'makernew@example.com')
+  t.is(signUp.role, 'maker')
+  t.truthy(signUp.company)
+  t.is(signUp.company.businessName, 'New Company')
+});
+
+test('User: signUp > Maker: Should return an error if company is empty', async t => {
+  t.plan(2)
+
+  const signUpQuery = {
+    query: `
+      mutation {
+        signUp(input: {
+          name:"makerNew"
+          email: "makernew@example.com"
+          password: "12345678"
+          role: "maker"
+        }) {
+          id
+          name
+          email
+          role
+        }
+      }
+    `
+  }
+
+  let serverRequest = request(app);
+  const { body: { data, errors } } = await utils.callToQraphql(serverRequest, signUpQuery);
+
+  t.falsy(data)
+  t.is(errors[0].message, 'Validation failed: company was not provided.');
+});
+
+
