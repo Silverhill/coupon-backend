@@ -143,6 +143,20 @@ export const updateCompany = async (parent, args, context) => {
       ...input,
       updatedAt: new Date()
     }
+
+    if (company.upload) {
+      const { stream, filename } = await company.upload;
+      const { path } = await storeFile({ stream, filename });
+      await cloudinary.v2.uploader.upload(path, (error, result) => {
+        if (result) {
+          company.logo = result.url;
+          fs.unlinkSync(path);
+        } else if (error) {
+          return error;
+        }
+      });
+    }
+
     const updatedCompany = await models.Company.findByIdAndUpdate(input.id,
       company,
       { new: true }
