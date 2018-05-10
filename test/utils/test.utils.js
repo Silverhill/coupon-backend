@@ -23,45 +23,35 @@ const utils = {
       role: 'admin',
       name: 'Admin',
       email: 'admin@example.com',
-      password: 'admin',
-      createdAt: new Date(),
-      updatedAt: new Date()
+      password: 'admin'
     })
     await User.create({
       provider: 'local',
       role: 'hunter',
       name: 'Hunter',
       email: 'hunter@example.com',
-      password: 'hunter',
-      createdAt: new Date(),
-      updatedAt: new Date()
+      password: 'hunter'
     })
     await User.create({
       provider: 'local',
       role: 'hunter',
       name: 'Hunter2',
       email: 'hunter2@example.com',
-      password: 'hunter',
-      createdAt: new Date(),
-      updatedAt: new Date()
+      password: 'hunter'
     })
     await User.create({
       provider: 'local',
       role: 'hunter',
       name: 'Hunter3',
       email: 'hunter3@example.com',
-      password: 'hunter',
-      createdAt: new Date(),
-      updatedAt: new Date()
+      password: 'hunter'
     })
     await User.create({
       provider: 'local',
       role: 'maker',
       name: 'Maker',
       email: 'maker@example.com',
-      password: 'maker',
-      createdAt: new Date(),
-      updatedAt: new Date()
+      password: 'maker'
     })
   },
 

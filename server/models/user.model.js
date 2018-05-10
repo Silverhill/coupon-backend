@@ -39,18 +39,11 @@ var UserSchema = new Schema({
   provider: String,
   salt: String,
   facebook: {},
-  github: {},
-  createdAt: {
-    type: Date,
-    required: true
-  },
-  updatedAt: {
-    type: Date,
-    required: true
-  }
+  github: {}
 }, {
   collection : 'users',
-  discriminatorKey : '_type'
+  discriminatorKey : '_type',
+  timestamps: true
 });
 
 /**

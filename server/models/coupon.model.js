@@ -12,14 +12,6 @@ var CouponSchema = new Schema({
     type: String,
     default: 'available' //POSIBLE STATUS: available, hunted, expired, redeemed
   },
-  createdAt: {
-    type: Date,
-    required: true
-  },
-  updatedAt: {
-    type: Date,
-    required: true
-  },
   campaign: {
     type: Schema.ObjectId,
     ref: 'Campaign',
@@ -29,6 +21,9 @@ var CouponSchema = new Schema({
     type: Schema.ObjectId,
     ref: 'Hunter'
   }
+},
+{
+  timestamps: true
 })
 
 export default mongoose.model('Coupon', CouponSchema);

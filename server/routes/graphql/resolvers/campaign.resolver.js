@@ -87,8 +87,6 @@ export const addCampaign = async (parent, args, context) => {
 
   const { couponsNumber } = input;
   const campaign = {
-    createdAt: new Date(),
-    updatedAt: new Date(),
     totalCoupons: couponsNumber,
     initialAgeRange: 18,
     finalAgeRange: 60,
@@ -137,8 +135,7 @@ export const updateCampaign = async (parent, args, context) => {
 
   try {
     const campaign = {
-      ...input,
-      updatedAt: new Date()
+      ...input
     }
     const updatedCampaign = await models.Campaign.findByIdAndUpdate(input.id,
       campaign,
@@ -160,8 +157,7 @@ export const deleteCampaign = async (parent, args, context) => {
 
     if (campaign.huntedCoupons == 0) {
       const updatedCampaign = await models.Campaign.findByIdAndUpdate(id, {
-        deleted: true,
-        updatedAt: new Date()
+        deleted: true
       }, { new: true });
 
       return updatedCampaign;
@@ -282,8 +278,7 @@ async function getOffice(makerId, officeId, models) {
 function addCampaignToOffice(officeId, campaignId, models) {
   return models.Office.findByIdAndUpdate(officeId,
     {
-      '$push': { 'campaigns': campaignId },
-      updatedAt: new Date()
+      '$push': { 'campaigns': campaignId }
     },
     { new: true }
   );
@@ -292,8 +287,7 @@ function addCampaignToOffice(officeId, campaignId, models) {
 function addCampaignsToMaker(makerId, campaignId, models){
   return models.Maker.findByIdAndUpdate(makerId,
     {
-      '$push': { 'campaigns': campaignId },
-      updatedAt: new Date()
+      '$push': { 'campaigns': campaignId }
     },
     { new: true }
   );
