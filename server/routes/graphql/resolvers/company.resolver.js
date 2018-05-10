@@ -15,8 +15,6 @@ export const addCompany = async (parent, args, { models }) => {
 
   const company = {
     ...input,
-    createdAt: new Date(),
-    updatedAt: new Date(),
     maker: makerId
   }
 
@@ -135,8 +133,7 @@ export const updateCompany = async (parent, args, context) => {
 
   try {
     const company = {
-      ...input,
-      updatedAt: new Date()
+      ...input
     }
 
     if (company.upload) {
@@ -165,8 +162,7 @@ export const updateCompany = async (parent, args, context) => {
 async function addCompanyToMaker(makerId, companyId, models) {
   await models.Maker.findByIdAndUpdate(makerId,
     {
-      company: companyId,
-      updatedAt: new Date()
+      company: companyId
     },
     { new: true }
   );

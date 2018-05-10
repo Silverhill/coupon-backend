@@ -193,8 +193,7 @@ export const signUp = async (parent, args, { models }) => {
       const makerCompany = await createAndRelateCompany(companyName, makerId, models);
       const makerWithCompany = await models.Maker.findByIdAndUpdate(makerId,
         {
-          company: makerCompany._id,
-          updatedAt: new Date()
+          company: makerCompany._id
         },
         {
           new: true
@@ -249,7 +248,6 @@ export const updatePassword = async (parent, args, { models, request }) => {
 
   if (user.authenticate(oldPass)) {
     user.password = newPass;
-    user.updatedAt = new Date()
     user = await user.save();
   } else {
     throw new Error('Problem to changue the password');
@@ -268,7 +266,6 @@ export const addImageToUser = async (parent, { upload, ...args } , { models }) =
   await cloudinary.v2.uploader.upload(path, async (error, result) => {
     if (result) {
       user.image = result.url;
-      user.updatedAt = new Date();
       fs.unlinkSync(path);
       user = await user.save();
     } else if (error) {
@@ -295,8 +292,6 @@ export const updateUser = async (parent, args , { models }) => {
       }
     });
   }
-
-  user.updatedAt = new Date();
 
   const userUpdated = await models.User.findOneAndUpdate({_id: userId},
     {
@@ -347,8 +342,6 @@ const registerUser = async (_user, models) => {
   if (_user.role === 'hunter') user = await new models.Hunter(_user);
   if (_user.role === 'maker') user = await new models.Maker(_user);
   user.provider = 'local';
-  user.createdAt = new Date();
-  user.updatedAt = new Date();
   user = await user.save();
 
   return user;
@@ -358,8 +351,6 @@ const createAndRelateCompany = async (companyName, makerId, models) => {
   if (companyName) {
     const company = {
       businessName: companyName,
-      createdAt: new Date(),
-      updatedAt: new Date(),
       maker: makerId
     }
 
@@ -378,8 +369,7 @@ const createAndRelateCompany = async (companyName, makerId, models) => {
 const addCompanyToMaker = async (makerId, companyId, models) => {
   await models.Maker.findByIdAndUpdate(makerId,
     {
-      company: companyId,
-      updatedAt: new Date()
+      company: companyId
     },
     { new: true }
   );
