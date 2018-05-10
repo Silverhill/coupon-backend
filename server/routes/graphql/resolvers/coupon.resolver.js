@@ -131,7 +131,13 @@ function updateCouponStatus(models, couponId, hunterId) {
     },
     { new: true }
   )
-  .populate('campaign');
+  .populate({
+    path: 'campaign',
+    populate: {
+      path: 'maker',
+      select: '-salt -password'
+    }
+  });
 }
 
 function updateHunterAndCampignModels(params) {
