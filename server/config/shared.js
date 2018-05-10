@@ -13,5 +13,8 @@ exports = module.exports = {
     EXPIRED: 'expired',
     REDEEMED: 'redeemed'
   },
+  subscriptionsTopics: {
+    REDEEMED_COUPON_TOPIC: 'newCouponRedeemed'
+  },
   uploadsFolder: './uploads/'
 };

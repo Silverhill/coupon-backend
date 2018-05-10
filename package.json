@@ -54,6 +54,7 @@
     "express-jwt": "^5.3.0",
     "express-session": "^1.15.6",
     "graphql": "^0.13.2",
+    "graphql-subscriptions": "^0.5.8",
     "graphql-tools": "^2.21.0",
     "lodash": "^4.17.4",
     "mongoose": "^4.13.7",
@@ -65,7 +66,8 @@
     "passport-twitter": "^1.0.4",
     "path": "^0.12.7",
     "pre-commit": "^1.2.2",
-    "shorthash": "^0.0.2"
+    "shorthash": "^0.0.2",
+    "subscriptions-transport-ws": "^0.9.8"
   },
   "devDependencies": {
     "npm-run-all": "^4.1.2",

@@ -40,7 +40,13 @@ router.use('/graphql', ...helperMiddleware, graphqlExpress(request => ({
 })));
 
 if (config.env === 'development') {
-  router.use('/graphiql', graphiqlExpress({ endpointURL: '/graphql' }));
+  router.use('/graphiql', graphiqlExpress({
+    endpointURL: '/graphql',
+    subscriptionsEndpoint: `ws://localhost:${config.port}/subscriptions`
+   }));
 }
 
-export default router;
+export default {
+  router,
+  schema
+};

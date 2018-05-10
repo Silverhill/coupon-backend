@@ -6,8 +6,13 @@ import * as couponResolver from './resolvers/coupon.resolver';
 import * as companyResolver from './resolvers/company.resolver';
 import * as officeResolver from './resolvers/office.resolver';
 import * as fileResolver from './resolvers/file.resolver';
+import * as subscriptionResolver from './resolvers/subscription.resolver'
 import { requiresAuth } from '../../services/graphql.service';
 import { timestampScalar } from './scalars/timestamp.scalar';
+import { PubSub } from 'graphql-subscriptions';
+
+const pubsub = new PubSub();
+const params = { pubsub }
 
 export default {
   Timestamp: timestampScalar,
@@ -69,7 +74,7 @@ export default {
     deleteCampaign: requiresAuth(campaignResolver.deleteCampaign, ['maker']),
     //Coupon
     captureCoupon: requiresAuth(couponResolver.captureCoupon, ['hunter']),
-    redeemCoupon: requiresAuth(couponResolver.redeemCoupon, ['maker']),
+    redeemCoupon: requiresAuth(couponResolver.redeemCoupon, ['maker'], params),
     //Company
     addCompany: requiresAuth(companyResolver.addCompany, ['maker']),
     addImageToCompany: requiresAuth(companyResolver.addImageToCompany, ['maker']),
@@ -80,5 +85,8 @@ export default {
     singleUpload: requiresAuth(fileResolver.uploadFile, ['admin', 'maker', 'hunter']),
     //Core uploader
     addImageToUser: requiresAuth(userResolver.addImageToUser, ['admin', 'maker', 'hunter']),
+  },
+  Subscription: {
+    redeemedCoupon:  subscriptionResolver.redeemedCoupon(params)
   }
 }
