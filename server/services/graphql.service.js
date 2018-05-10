@@ -1,5 +1,8 @@
 import jwt from 'jsonwebtoken';
 import config from '../config';
+import { extractUserIdFromToken } from './model.service';
+import User from '../models/user.model';
+
 
 export const requiresAuth = (resolver, permissionsByRole = []) => async (parent, args, context) => {
   if(!resolver) return;
@@ -18,9 +21,23 @@ export const requiresAuth = (resolver, permissionsByRole = []) => async (parent,
 
   await hasRole(tokenInfo, permissionsByRole);
 
+  const currentUser = await getCurrentUser(authentication);
+
+  args.currentUser = currentUser;
+
   // Return graphql resolver
   return resolver(parent, args, context);
 };
+
+const getCurrentUser = async (token) => {
+  const userId = await extractUserIdFromToken(token);
+  const user = await User.findOne({ _id: userId }, '-salt -password');
+  if(user){
+    return user;
+  }else{
+    throw new Error('Invalid token. Login, please.');
+  }
+}
 
 const hasRole = async ({ role }, permissionsByRole = []) => {
   if (!role) {

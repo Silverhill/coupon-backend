@@ -4,7 +4,6 @@ import cloudinary from 'cloudinary';
 import config from '../../../config';
 import { roleExist } from '../../../services/graphql.service';
 import { storeFile } from './file.resolver';
-import { extractUserIdFromToken } from '../../../services/model.service'
 
 /**
  * QUERY
@@ -80,7 +79,8 @@ export const getUser = async (parent, args, { models }) => {
 
 export const me = async (parent, args, { models, request }) => {
   const { headers: { authentication: token } } = request;
-  const { id: userId, role } = await extractUserInfoFromToken(token);
+  const {_id: userId} = args.currentUser;
+  const { role } = await extractUserInfoFromToken(token);
 
   let user;
   if(role === 'hunter') {
@@ -105,14 +105,14 @@ export const myCoupons = async (parent, {
   limit = 10,
   skip = 0,
   sortField = 'createdAt',
-  sortDirection = 1
-}, { models, request }) => {
-  const { headers: { authentication: token } } = request;
+  sortDirection = 1,
+  ...args
+}, { models }) => {
 
   const sortObject = {};
   sortObject[sortField] = sortDirection;
 
-  const { id } = await extractUserInfoFromToken(token);
+  const {_id: id} = args.currentUser;
   const { coupons } = await models.Hunter.findOne({ _id: id }) || {};
   const myCouponsInfo = await models.Coupon.find({ _id: { "$in": coupons || [] } })
     .limit(limit)
@@ -134,14 +134,13 @@ export const myRedeemedCoupons = async (parent, {
   limit = 10,
   skip = 0,
   sortField = 'createdAt',
-  sortDirection = 1
-}, { models, request }) => {
-  const { headers: { authentication: token } } = request;
-
+  sortDirection = 1,
+  ...args
+}, { models }) => {
   const sortObject = {};
   sortObject[sortField] = sortDirection;
 
-  const { id } = await extractUserInfoFromToken(token);
+  const {_id: id} = args.currentUser;
   const { coupons } = await models.Hunter.findOne({ _id: id });
   const myCouponsInfo = await models.Coupon.find({ _id: { "$in": coupons || [] },
                                                           status: config.couponStatus.REDEEMED })
@@ -259,10 +258,9 @@ export const updatePassword = async (parent, args, { models, request }) => {
   return user;
 };
 
-export const addImageToUser = async (parent, { upload } , { models, request }) => {
+export const addImageToUser = async (parent, { upload, ...args } , { models }) => {
   const { stream, filename } = await upload;
-  const { headers: { authentication: token } } = request;
-  const { id } = await extractUserInfoFromToken(token);
+  const {_id: id} = args.currentUser;
 
   let user = await models.User.findOne({ _id: id });
 
@@ -281,10 +279,9 @@ export const addImageToUser = async (parent, { upload } , { models, request }) =
   return user;
 };
 
-export const updateUser = async (parent, args , { models, request }) => {
+export const updateUser = async (parent, args , { models }) => {
   const { input: user } = args;
-  const { headers: { authentication } } = request;
-  const userId = await extractUserIdFromToken(authentication);
+  const {_id: userId} = args.currentUser;
 
   if (user.upload) {
     const { stream, filename } = await user.upload;

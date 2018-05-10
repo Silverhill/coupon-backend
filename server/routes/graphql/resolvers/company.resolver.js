@@ -1,13 +1,11 @@
-import { extractUserIdFromToken } from '../../../services/model.service';
 import _ from 'lodash';
 import cloudinary from 'cloudinary';
 import fs from 'fs';
 import { storeFile } from './file.resolver';
 
-export const addCompany = async (parent, args, { models, request }) => {
+export const addCompany = async (parent, args, { models }) => {
   const { input } = args;
-  const { headers: { authentication } } = request;
-  const makerId = await extractUserIdFromToken(authentication);
+  const {_id: makerId} = args.currentUser;
 
   const { company: makerCompany } = await models.Maker.findOne({ _id: makerId }) || {}
 
@@ -47,9 +45,8 @@ export const addCompany = async (parent, args, { models, request }) => {
 
 };
 
-export const myCompany = async (parent, args, { models, request }) => {
-  const { headers: { authentication } } = request;
-  const makerId = await extractUserIdFromToken(authentication);
+export const myCompany = async (parent, args, { models }) => {
+  const {_id: makerId} = args.currentUser;
 
   try {
     const { company } = await models.Maker.findOne({ _id: makerId })
@@ -60,10 +57,9 @@ export const myCompany = async (parent, args, { models, request }) => {
   }
 }
 
-export const addImageToCompany = async (parent, { upload }, { models, request }) => {
+export const addImageToCompany = async (parent, { upload, ...args }, { models }) => {
   const { stream, filename } = await upload;
-  const { headers: { authentication } } = request;
-  const makerId = await extractUserIdFromToken(authentication);
+  const {_id: makerId} = args.currentUser;
 
   let { company } = await models.Maker.findOne({ _id: makerId })
     .populate('company');
@@ -81,9 +77,8 @@ export const addImageToCompany = async (parent, { upload }, { models, request })
   return company;
 };
 
-export const myHunters = async (parent, args, { models, request }) => {
-  const { headers: { authentication } } = request;
-  const makerId = await extractUserIdFromToken(authentication);
+export const myHunters = async (parent, args, { models }) => {
+  const {_id: makerId} = args.currentUser;
 
   try {
 

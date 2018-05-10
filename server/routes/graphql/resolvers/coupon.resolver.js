@@ -1,5 +1,4 @@
 import config from '../../../config';
-import { extractUserIdFromToken } from '../../../services/model.service';
 import shorthash from 'shorthash';
 import _ from 'lodash'
 
@@ -10,10 +9,9 @@ export const getCoupon = async (parent, args, { models }) => {
   return coupon;
 };
 
-export const captureCoupon = async (parent, args, { models, request }) => {
+export const captureCoupon = async (parent, args, { models }) => {
   const { input: {campaignId} } = args;
-  const { headers: { authentication } } = request;
-  const hunterId = await extractUserIdFromToken(authentication);
+  const {_id: hunterId} = args.currentUser;
 
   const campaign = await models.Campaign.findOne({
     _id: campaignId
@@ -72,10 +70,9 @@ export const captureCoupon = async (parent, args, { models, request }) => {
 
 };
 
-export const redeemCoupon = async (parent, args, { models, request }) => {
+export const redeemCoupon = async (parent, args, { models }) => {
   const {input: { couponCode } } = args;
-  const { headers: { authentication } } = request;
-  const makerId = await extractUserIdFromToken(authentication);
+  const {_id: makerId} = args.currentUser;
   const campaigns = await models.Campaign.where({
     maker: makerId,
   }) || [];
