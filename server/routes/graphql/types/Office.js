@@ -26,6 +26,19 @@ export default `
     email: String!
   }
 
+  type PublicOffice {
+    id: ID!
+    economicActivity: String!
+    contributorType: String!
+    legalRepresentative: String!
+    name: String!
+    officePhone: String
+    cellPhone: String
+    address: String!
+    email: String!
+    company: PublicCompany
+  }
+
   input OfficeInput {
     ruc: String!
     economicActivity: String!

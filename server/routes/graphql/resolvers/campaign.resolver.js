@@ -266,6 +266,39 @@ export const campaignsByMakerId = async(parent, { makerId }, { models }) => {
   }
 }
 
+export const getPublicCampaigns = async (parent, {
+                                                    limit = 10,
+                                                    skip = 0,
+                                                    sortField = 'createdAt',
+                                                    sortDirection = 1
+                                                  }, { models }) => {
+
+  const sortObject = {};
+  sortObject[sortField] = sortDirection;
+  const totalCount = await models.Campaign.count({});
+  const getCampaigns = models.Campaign.find({});
+  if(limit) getCampaigns.limit(limit);
+  if(skip) getCampaigns.skip(skip);
+
+  const sortedCampaigns = await getCampaigns
+    .sort(sortObject)
+    .select('-coupons -maker')
+    .populate({
+      path: 'office',
+      select: '-ruc',
+      populate: {
+        path: 'company',
+        select: '-offices -campaigns',
+      }
+    })
+
+  const paginatedPublicCampaigns = {
+    campaigns: sortedCampaigns,
+    totalCount: totalCount
+  }
+  return paginatedPublicCampaigns;
+}
+
 async function getOffice(makerId, officeId, models) {
   const company = await models.Company.findOne({ maker: makerId }) || {};
   const office = await models.Office.findOne({
