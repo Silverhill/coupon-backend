@@ -36,14 +36,6 @@ var OfficeSchema = new Schema({
     lowercase: true,
     required: true,
   },
-  createdAt: {
-    type: Date,
-    required: true
-  },
-  updatedAt: {
-    type: Date,
-    required: true
-  },
   campaigns: [{
     type: Schema.ObjectId,
     ref: 'Campaign'
@@ -53,6 +45,9 @@ var OfficeSchema = new Schema({
     ref: 'Company',
     required: true
   }
+},
+{
+  timestamps: true
 })
 
 OfficeSchema

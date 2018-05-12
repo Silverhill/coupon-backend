@@ -23,8 +23,6 @@ export const addOffice = async (parent, args, { models }) => {
 
   const office = {
     ...input,
-    createdAt: new Date(),
-    updatedAt: new Date(),
     company: makerCompany._id
   }
 
@@ -34,8 +32,7 @@ export const addOffice = async (parent, args, { models }) => {
 
     await models.Company.findByIdAndUpdate(makerCompany._id,
       {
-        '$push': { 'offices': newOffice.id },
-        updatedAt: new Date()
+        '$push': { 'offices': newOffice.id }
       },
       { new: true }
     );

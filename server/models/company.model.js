@@ -8,14 +8,6 @@ var CompanySchema = new Schema({
     type: String,
     required: true
   },
-  createdAt: {
-    type: Date,
-    required: true
-  },
-  updatedAt: {
-    type: Date,
-    required: true
-  },
   maker: {
     type: Schema.ObjectId,
     ref: 'Maker',
@@ -27,6 +19,9 @@ var CompanySchema = new Schema({
   }],
   logo: String,
   slogan: String
+},
+{
+  timestamps: true
 })
 
 export default mongoose.model('Company', CompanySchema);

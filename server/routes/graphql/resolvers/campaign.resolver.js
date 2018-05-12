@@ -89,8 +89,6 @@ export const addCampaign = async (parent, args, context) => {
 
   const { couponsNumber } = input;
   const campaign = {
-    createdAt: new Date(),
-    updatedAt: new Date(),
     totalCoupons: couponsNumber,
     initialAgeRange: 18,
     finalAgeRange: 60,
@@ -153,8 +151,7 @@ export const updateCampaign = async (parent, args, context) => {
 
   try {
     const campaign = {
-      ...input,
-      updatedAt: new Date()
+      ...input
     }
     const updatedCampaign = await models.Campaign.findByIdAndUpdate(input.id,
       campaign,
@@ -176,8 +173,7 @@ export const deleteCampaign = async (parent, args, context) => {
 
     if (campaign.huntedCoupons == 0) {
       const updatedCampaign = await models.Campaign.findByIdAndUpdate(id, {
-        deleted: true,
-        updatedAt: new Date()
+        deleted: true
       }, { new: true });
 
       return updatedCampaign;
@@ -286,6 +282,39 @@ export const campaignsByMakerId = async(parent, { makerId }, { models }) => {
   }
 }
 
+export const getPublicCampaigns = async (parent, {
+                                                    limit = 10,
+                                                    skip = 0,
+                                                    sortField = 'createdAt',
+                                                    sortDirection = 1
+                                                  }, { models }) => {
+
+  const sortObject = {};
+  sortObject[sortField] = sortDirection;
+  const totalCount = await models.Campaign.count({});
+  const getCampaigns = models.Campaign.find({});
+  if(limit) getCampaigns.limit(limit);
+  if(skip) getCampaigns.skip(skip);
+
+  const sortedCampaigns = await getCampaigns
+    .sort(sortObject)
+    .select('-coupons -maker')
+    .populate({
+      path: 'office',
+      select: '-ruc',
+      populate: {
+        path: 'company',
+        select: '-offices -campaigns',
+      }
+    })
+
+  const paginatedPublicCampaigns = {
+    campaigns: sortedCampaigns,
+    totalCount: totalCount
+  }
+  return paginatedPublicCampaigns;
+}
+
 async function getOffice(makerId, officeId, models) {
   const company = await models.Company.findOne({ maker: makerId }) || {};
   const office = await models.Office.findOne({
@@ -298,8 +327,7 @@ async function getOffice(makerId, officeId, models) {
 function addCampaignToOffice(officeId, campaignId, models) {
   return models.Office.findByIdAndUpdate(officeId,
     {
-      '$push': { 'campaigns': campaignId },
-      updatedAt: new Date()
+      '$push': { 'campaigns': campaignId }
     },
     { new: true }
   );
@@ -308,8 +336,7 @@ function addCampaignToOffice(officeId, campaignId, models) {
 function addCampaignsToMaker(makerId, campaignId, models){
   return models.Maker.findByIdAndUpdate(makerId,
     {
-      '$push': { 'campaigns': campaignId },
-      updatedAt: new Date()
+      '$push': { 'campaigns': campaignId }
     },
     { new: true }
   );

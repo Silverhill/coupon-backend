@@ -198,6 +198,51 @@ test('Coupon > captureCoupon: Should return a coupon', async t => {
   t.is(coupon1.status, 'hunted');
 });
 
+test('Coupon > captureCoupon: Should return a coupon with campaign and maker data', async t => {
+  t.plan(4)
+
+  function getCaptureCouponQuery(id) {
+    return {
+      query: `
+        mutation {
+          captureCoupon(input: {
+            campaignId: "${id}"
+          }) {
+            id
+            code
+            status
+            campaign {
+              id
+              title
+              maker {
+                id
+                name
+              }
+            }
+          }
+        }
+      `
+    }
+  }
+
+  let serverRequest = request(app);
+  const { body: { data: { signIn: { token: tokenHunter } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
+
+  // capture coupon
+  const { body: { data: { captureCoupon: coupon1 } } } = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
+
+  t.truthy(coupon1.campaign);
+  t.is(coupon1.campaign.title, 'Campaign test 1');
+
+  t.truthy(coupon1.campaign.maker);
+  t.is(coupon1.campaign.maker.name, 'Maker');
+});
+
 test('Coupon > captureCoupon: Should capture only one coupon', async t => {
   t.plan(4)
 

@@ -43,29 +43,22 @@ const seedDatabase = async () => {
       role: 'admin',
       name: 'Admin',
       email: 'admin@example.com',
-      password: 'admin',
-      createdAt: new Date(),
-      updatedAt: new Date()
+      password: 'admin'
   });
   let maker = await Maker.create({
     provider: 'local',
     name: 'Maker',
     email: 'maker@example.com',
-    password: 'maker',
-    createdAt: new Date(),
-    updatedAt: new Date()
+    password: 'maker'
   });
   let company = await Company.create({
    businessName: 'Rumberitos',
-   createdAt: Date.now(),
-   updatedAt: Date.now(),
    maker: maker._id
   });
 
   await Maker.findByIdAndUpdate(maker._id,
     {
-      company: company._id,
-      updatedAt: new Date()
+      company: company._id
     },
     { new: true }
   );
@@ -78,23 +71,18 @@ const seedDatabase = async () => {
     economicActivity: 'Diseño de páginas web',
     name: 'Sucursal 1',
     address: 'La Argelia',
-    email: 'sucursal1@rumberitos.com',
-    createdAt: Date.now(),
-    updatedAt: Date.now()
+    email: 'sucursal1@rumberitos.com'
   });
 
   await Company.findByIdAndUpdate(company._id,
     {
-      '$push': { 'offices': office._id },
-      updatedAt: new Date()
+      '$push': { 'offices': office._id }
     },
     { new: true }
   );
 
   let campaign = await Campaign.create({
     maker: maker._id,
-    updatedAt: Date.now(),
-    createdAt: Date.now(),
     title: '10% de descuento en pg web',
     city: 'Loja',
     country: 'Ecuador',
@@ -106,16 +94,14 @@ const seedDatabase = async () => {
 
   await Office.findByIdAndUpdate(office._id,
     {
-      '$push': { 'campaigns': campaign._id },
-      updatedAt: new Date()
+      '$push': { 'campaigns': campaign._id }
     },
     { new: true }
   );
 
   await Maker.findByIdAndUpdate(maker._id,
     {
-      '$push': { 'campaigns': campaign._id },
-      updatedAt: new Date()
+      '$push': { 'campaigns': campaign._id }
     },
     { new: true }
   );
@@ -124,8 +110,6 @@ const seedDatabase = async () => {
     provider: 'local',
     name: 'Hunter',
     email: 'hunter@example.com',
-    password: 'hunter',
-    createdAt: new Date(),
-    updatedAt: new Date()
+    password: 'hunter'
   });
 }

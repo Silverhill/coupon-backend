@@ -62,14 +62,6 @@ var CampaignSchema = new Schema({
     type: Boolean,
     default: false
   },
-  createdAt: {
-    type: Date,
-    required: true
-  },
-  updatedAt: {
-    type: Date,
-    required: true
-  },
   maker: {
     type: Schema.ObjectId,
     ref: 'Maker',
@@ -83,6 +75,9 @@ var CampaignSchema = new Schema({
     type: Schema.ObjectId,
     ref: 'Coupon'
   }]
+},
+{
+  timestamps: true
 })
 
 CampaignSchema.virtual('remaingCoupons')

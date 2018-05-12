@@ -42,8 +42,6 @@ export const captureCoupon = async (parent, args, { models, params }) => {
 
     const couponParams = {
       status: config.couponStatus.AVAILABLE,
-      createdAt: new Date(),
-      updatedAt: new Date(),
       campaign: campaignId,
       hunter: hunterId
     }
@@ -139,12 +137,17 @@ function updateCouponStatus(models, couponId, hunterId) {
   return models.Coupon.findByIdAndUpdate(couponId,
     {
       hunter: hunterId,
-      status: config.couponStatus.HUNTED,
-      updatedAt: new Date()
+      status: config.couponStatus.HUNTED
     },
     { new: true }
   )
-  .populate('campaign');
+  .populate({
+    path: 'campaign',
+    populate: {
+      path: 'maker',
+      select: '-salt -password'
+    }
+  });
 }
 
 function updateHunterAndCampignModels(params) {
@@ -157,16 +160,14 @@ function updateHunterAndCampignModels(params) {
 
   const hunterPromise = models.Hunter.findByIdAndUpdate(hunterId,
     {
-      '$push': { 'coupons': couponId },
-      updatedAt: new Date()
+      '$push': { 'coupons': couponId }
     },
     { new: true }
   );
 
   const campaignPromise = models.Campaign.findByIdAndUpdate(campaignId,
     {
-      huntedCoupons: huntedCoupons + 1,
-      updatedAt: new Date()
+      huntedCoupons: huntedCoupons + 1
     },
     { new: true }
   );
@@ -181,8 +182,7 @@ function generateCouponCode(couponId) {
 function addCouponToCampaign(models, campaignId, couponId) {
   return models.Campaign.findByIdAndUpdate(campaignId,
     {
-      '$push': { 'coupons': couponId },
-      updatedAt: new Date()
+      '$push': { 'coupons': couponId }
     },
     { new: true }
   );
@@ -191,8 +191,7 @@ function addCouponToCampaign(models, campaignId, couponId) {
 function updateRedeemedCouponsCount(models, myCampaign) {
   return models.Campaign.findByIdAndUpdate(myCampaign._id,
     {
-      redeemedCoupons: myCampaign.redeemedCoupons + 1,
-      updatedAt: new Date()
+      redeemedCoupons: myCampaign.redeemedCoupons + 1
     },
     { new: true }
   );
@@ -201,8 +200,7 @@ function updateRedeemedCouponsCount(models, myCampaign) {
 function updateCouponToRedeemed(models, couponId) {
   return models.Coupon.findByIdAndUpdate(couponId,
     {
-      status: config.couponStatus.REDEEMED,
-      updatedAt: new Date()
+      status: config.couponStatus.REDEEMED
     },
     { new: true }
   )
