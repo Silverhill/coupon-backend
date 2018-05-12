@@ -57,6 +57,8 @@ export default `
     office(id: String!): Office
 
     myHunters: [HunterOfCompany!]
+
+    publicCampaigns(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedPublicCampaigns!
   }
 
   type Mutation {

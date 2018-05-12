@@ -8,6 +8,13 @@ export default `
     slogan: String
   }
 
+  type PublicCompany {
+    id: ID!
+    businessName: String!
+    logo: String
+    slogan: String
+  }
+
   input CompanyInput {
     businessName: String!
     upload: Upload

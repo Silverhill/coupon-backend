@@ -52,6 +52,28 @@ export default `
     remaingCoupons: Int!
   }
 
+  type PublicCampaigns {
+    id: ID!
+    startAt: Timestamp!
+    endAt: Timestamp!
+    country: String
+    city: String
+    image: String
+    totalCoupons: Int!
+    huntedCoupons: Int!
+    redeemedCoupons: Int!
+    status: String!
+    title: String!
+    description: String
+    customMessage: String
+    deleted: Boolean
+    initialAgeRange: Int
+    finalAgeRange: Int
+    remaingCoupons: Int!
+    createdAt: Timestamp!
+    office: PublicOffice
+  }
+
   input AddCampaignInput {
     startAt: Timestamp!
     endAt: Timestamp!
@@ -90,6 +112,11 @@ export default `
 
   type PaginatedCampaigns {
     campaigns: [CampaignForHunter!]
+    totalCount: Int!
+  }
+
+  type PaginatedPublicCampaigns {
+    campaigns: [PublicCampaigns!]
     totalCount: Int!
   }
 `;
