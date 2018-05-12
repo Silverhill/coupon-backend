@@ -54,6 +54,10 @@ var CampaignSchema = new Schema({
   },
   description: String,
   customMessage: String,
+  expired: {
+    type: Boolean,
+    default: false
+  },
   deleted: {
     type: Boolean,
     default: false
@@ -95,7 +99,7 @@ CampaignSchema.virtual('status')
         return config.campaignStatus.SOLDOUT;
       }
     }
-    if (now >= this.endAt.getTime()) {
+    if (this.expired || (now >= this.endAt.getTime())) {
       return config.campaignStatus.EXPIRED;
     }
   });

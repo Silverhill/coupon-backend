@@ -13,6 +13,9 @@ import session from 'express-session'
 import config from './config'
 import cloudinary from 'cloudinary';
 import 'babel-polyfill';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { execute, subscribe } from 'graphql';
+import { createServer } from 'http';
 
 /* eslint-disable no-console */
 
@@ -60,7 +63,7 @@ app.use(function(req, res, next) {
 //Users
 v1.use('/', home);
 v1.use('/users', user);
-v1.use('/', graphql);
+v1.use('/', graphql.router);
 
 //Auth
 v1.use('/auth', auth);
@@ -80,10 +83,23 @@ app.use((req, res) => {
   })
 })
 
-app.listen(app.get('port'), function (error) {
+
+const ws = createServer(app);
+
+ws.listen(app.get('port'), function (error) {
   if (error) {
     console.log(error);
   } else {
+    // Set up the WebSocket for handling GraphQL subscriptions.
+    new SubscriptionServer({
+      execute,
+      subscribe,
+      schema: graphql.schema
+    }, {
+      server: ws,
+      path: '/subscriptions',
+    });
+
     console.log('COUPON API is running on port', app.get('port'))
   }
 });

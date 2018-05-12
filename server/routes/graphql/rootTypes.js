@@ -108,5 +108,12 @@ export default `
 
     # Update User info. Access: Maker, Hunter
     updateUser(input: UpdateUserInput): UserBase!
+
+  }
+
+  type Subscription {
+    redeemedCoupon: CouponHunted!
+    huntedCoupon: CouponHunted!
+    expiredCampaign: Campaign!
   }
 `;

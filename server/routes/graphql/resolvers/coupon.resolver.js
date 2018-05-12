@@ -9,8 +9,9 @@ export const getCoupon = async (parent, args, { models }) => {
   return coupon;
 };
 
-export const captureCoupon = async (parent, args, { models }) => {
+export const captureCoupon = async (parent, args, { models, params }) => {
   const { input: {campaignId} } = args;
+  const { pubsub } = params;
   const {_id: hunterId} = args.currentUser;
 
   const campaign = await models.Campaign.findOne({
@@ -60,6 +61,11 @@ export const captureCoupon = async (parent, args, { models }) => {
     });
 
     const updatedCoupon = await updateCouponStatus(models, newCoupon._id, hunterId);
+
+    pubsub.publish(config.subscriptionsTopics.HUNTED_COUPON_TOPIC, {
+      huntedCoupon: updatedCoupon
+    });
+
     return updatedCoupon;
 
   } catch (error) {
@@ -68,9 +74,10 @@ export const captureCoupon = async (parent, args, { models }) => {
 
 };
 
-export const redeemCoupon = async (parent, args, { models }) => {
+export const redeemCoupon = async (parent, args, { models, params }) => {
   const {input: { couponCode } } = args;
   const {_id: makerId} = args.currentUser;
+  const { pubsub } = params;
   const campaigns = await models.Campaign.where({
     maker: makerId,
   }) || [];
@@ -101,6 +108,9 @@ export const redeemCoupon = async (parent, args, { models }) => {
   try {
     await updateRedeemedCouponsCount(models, myCampaign);
     const couponUpdated = await updateCouponToRedeemed(models, couponData._id);
+    pubsub.publish(config.subscriptionsTopics.REDEEMED_COUPON_TOPIC, {
+      redeemedCoupon: couponUpdated
+    });
     return couponUpdated;
   } catch (error) {
     return error;
