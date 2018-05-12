@@ -9,8 +9,9 @@ export const getCoupon = async (parent, args, { models }) => {
   return coupon;
 };
 
-export const captureCoupon = async (parent, args, { models }) => {
+export const captureCoupon = async (parent, args, { models, params }) => {
   const { input: {campaignId} } = args;
+  const { pubsub } = params;
   const {_id: hunterId} = args.currentUser;
 
   const campaign = await models.Campaign.findOne({
@@ -62,6 +63,11 @@ export const captureCoupon = async (parent, args, { models }) => {
     });
 
     const updatedCoupon = await updateCouponStatus(models, newCoupon._id, hunterId);
+
+    pubsub.publish(config.subscriptionsTopics.HUNTED_COUPON_TOPIC, {
+      huntedCoupon: updatedCoupon
+    });
+
     return updatedCoupon;
 
   } catch (error) {

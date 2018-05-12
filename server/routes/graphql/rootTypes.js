@@ -111,5 +111,7 @@ export default `
 
   type Subscription {
     redeemedCoupon: CouponHunted!
+    huntedCoupon: CouponHunted!
+    expiredCampaign: Campaign!
   }
 `;

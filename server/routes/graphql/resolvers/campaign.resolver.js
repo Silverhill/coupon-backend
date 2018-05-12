@@ -3,6 +3,7 @@ import cloudinary from 'cloudinary';
 import config from '../../../config';
 import _ from 'lodash'
 import { storeFile } from './file.resolver';
+import schedule from 'node-schedule'
 
 export const allCampaigns = async (parent, {
                                             limit = 10,
@@ -77,7 +78,8 @@ export const myCampaigns = async (parent, {
 
 // TODO: Actualizar el estado (status) de la campaña acorde a las necesidades
 export const addCampaign = async (parent, args, context) => {
-  const { models } = context;
+  const { models, params } = context;
+  const { pubsub } = params;
   const { input } = args;
   const {_id: makerId} = args.currentUser;
   const office = await getOffice(makerId, input.officeId, models);
@@ -124,6 +126,20 @@ export const addCampaign = async (parent, args, context) => {
     const campaignUpdated = await models.Campaign
       .findOne({ _id: campaignId },  '-coupons')
       .populate('office');
+
+    const task = schedule.scheduleJob(campaignUpdated.endAt, async () => {
+      const expiredCampaign = await models.Campaign.findOneAndUpdate({_id: campaignUpdated.id }, {
+        $set: {
+          expired: true
+        },
+      },
+      { new: true});
+      pubsub.publish(config.subscriptionsTopics.EXPIRED_CAMPAIGN_TOPIC, {
+        expiredCampaign
+      });
+      task.cancel();
+    });
+
     return campaignUpdated;
   } catch (error) {
     newCampaign.remove();

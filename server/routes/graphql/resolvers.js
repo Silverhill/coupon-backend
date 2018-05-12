@@ -69,11 +69,11 @@ export default {
     updatePassword: requiresAuth(userResolver.updatePassword, ['admin', 'maker', 'hunter']),
     updateUser: requiresAuth(userResolver.updateUser, ['maker', 'hunter']),
     //Campaign
-    addCampaign: requiresAuth(campaignResolver.addCampaign, ['maker']),
+    addCampaign: requiresAuth(campaignResolver.addCampaign, ['maker'], params),
     updateCampaign: requiresAuth(campaignResolver.updateCampaign, ['maker']),
     deleteCampaign: requiresAuth(campaignResolver.deleteCampaign, ['maker']),
     //Coupon
-    captureCoupon: requiresAuth(couponResolver.captureCoupon, ['hunter']),
+    captureCoupon: requiresAuth(couponResolver.captureCoupon, ['hunter'], params),
     redeemCoupon: requiresAuth(couponResolver.redeemCoupon, ['maker'], params),
     //Company
     addCompany: requiresAuth(companyResolver.addCompany, ['maker']),
@@ -87,6 +87,8 @@ export default {
     addImageToUser: requiresAuth(userResolver.addImageToUser, ['admin', 'maker', 'hunter']),
   },
   Subscription: {
-    redeemedCoupon:  subscriptionResolver.redeemedCoupon(params)
+    redeemedCoupon:  subscriptionResolver.redeemedCoupon(params),
+    expiredCampaign: subscriptionResolver.expiredCampaign(params),
+    huntedCoupon: subscriptionResolver.huntedCoupon(params)
   }
 }
