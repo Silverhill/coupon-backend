@@ -48,6 +48,9 @@ export default `
     # Get hunted coupons in a specific Campaign. Access: Maker
     huntedCouponsByCampaign(campaignId: String!): [Coupon!]
 
+    # Get hunted coupons in a specific Campaign. Access: Maker
+    couponsByCampaignAndHunter(campaignId: String!, hunterId: String!): [Coupon!]
+
     # Get my coupons. Access: Hunter
     myCoupons(limit: Int, skip: Int, sortField: String, sortDirection: Int): [CouponBase!]
 
