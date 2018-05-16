@@ -76,6 +76,33 @@ export const myCampaigns = async (parent, {
   return returnObject;
 };
 
+export const myInactiveCampaigns = async (parent, {
+    limit = 10,
+    skip = 0,
+    sortField = 'createdAt',
+    sortDirection = 1,
+    ...args
+  }, { models }) => {
+  const sortObject = {};
+  sortObject[sortField] = sortDirection;
+
+
+  const { _id } = args.currentUser;
+  const total = await models.Campaign.count({ maker: _id, endAt: {'$lte': new Date()} });
+  const campaigns = await models.Campaign.find({ maker: _id, endAt: {'$lte': new Date()} },  '-coupons')
+  .limit(limit)
+  .skip(skip)
+  .sort(sortObject)
+  .populate('office');
+
+  const returnObject = {
+  campaigns: campaigns,
+  totalCount: total
+  }
+
+  return returnObject;
+};
+
 // TODO: Actualizar el estado (status) de la campaña acorde a las necesidades
 export const addCampaign = async (parent, args, context) => {
   const { models, params } = context;
