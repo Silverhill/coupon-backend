@@ -261,6 +261,25 @@ export const getHuntedCouponsByCampaign = async (parent, args, context) => {
   }
 };
 
+export const getCouponsByCampaignAndHunter = async (parent, args, context) => {
+  const { campaignId, hunterId } = args;
+  const { models } = context;
+  try {
+    const campaign = await models.Campaign.findOne({
+        _id: campaignId
+      })
+      .populate({
+        path: 'coupons',
+        match:{
+          hunter: hunterId
+        }
+      }) || {};
+    return campaign.coupons || [];
+  } catch (error) {
+    throw new Error(error.message || error);
+  }
+}
+
 export const getHuntersByCampaign = async (parent, args, context) => {
   const { campaignId } = args;
   const { models } = context;

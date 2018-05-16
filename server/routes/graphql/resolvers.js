@@ -48,6 +48,7 @@ export default {
     huntersByCampaign: requiresAuth(campaignResolver.getHuntersByCampaign, ['maker']),
     campaignsByMakerId: requiresAuth(campaignResolver.campaignsByMakerId, ['hunter']),
     huntedCouponsByCampaign: requiresAuth(campaignResolver.getHuntedCouponsByCampaign, ['maker']),
+    couponsByCampaignAndHunter: requiresAuth(campaignResolver.getCouponsByCampaignAndHunter, ['maker']),
     publicCampaigns: campaignResolver.getPublicCampaigns,
     myInactiveCampaigns: requiresAuth(campaignResolver.myInactiveCampaigns, ['maker']),
     //Coupon
