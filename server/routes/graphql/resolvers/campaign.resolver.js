@@ -18,20 +18,10 @@ export const allCampaigns = async (parent, {
   sortObject[sortField] = sortDirection;
   const {_id: hunterId} = args.currentUser;
 
-  const hunter = await models.Hunter
-    .findOne({_id: hunterId})
-    .populate('coupons') || {}
-  const myCoupons  = hunter.coupons || [];
-  const campaignsSelectedByMe = await models.Campaign
-    .find({
-      coupons: { '$in': myCoupons }
-    })
-    .populate('coupons')
-
+  const myCoupons = await getHunterCoupons(models, hunterId);
+  const campaignsSelectedByMe = await getCampaignsSelectedByMe(models, myCoupons);
   const campaignsWithCouponsSelected = mapCampaignsWithTotalOfCouponsHuntedByMe(campaignsSelectedByMe, myCoupons);
-
   const total = await models.Campaign.count({});
-
   const getCampaigns = models.Campaign.find({});
   if(limit) getCampaigns.limit(limit);
   if(skip) getCampaigns.skip(skip);
@@ -319,13 +309,28 @@ export const getHuntersByCampaign = async (parent, args, context) => {
   }
 };
 
-export const campaignsByMakerId = async(parent, { makerId }, { models }) => {
+export const campaignsByMakerId = async(parent, args, { models }) => {
+  const {currentUser, makerId} = args;
+  const {_id: hunterId} = currentUser;
+  let makerCampaigns = [];
+
   try {
-    const campaigns = await models.Campaign.find({ maker: makerId }, '-coupons') || [];
-    return campaigns;
+    makerCampaigns = await models.Campaign
+                                .find({
+                                  maker: makerId
+                                })
+                                .select('-coupons')
+                                .populate('maker') || [];
   } catch (error) {
     throw new Error('Maker id not exist');
   }
+
+  const myCoupons = await getHunterCoupons(models, hunterId);
+  const campaignsSelectedByMe = await getCampaignsSelectedByMe(models, myCoupons);
+  const campaignsWithCouponsSelected = mapCampaignsWithTotalOfCouponsHuntedByMe(campaignsSelectedByMe, myCoupons);
+  const campaignsWithDetails = addCouponsHuntedByMeToCampaigns(makerCampaigns, campaignsSelectedByMe, campaignsWithCouponsSelected)
+
+  return campaignsWithDetails;
 }
 
 export const getPublicCampaigns = async (parent, {
@@ -441,4 +446,26 @@ function updateRelatedModels(params) {
   const promiseCampaignToOffice = addCampaignToOffice(officeId, campaignId, models)
   const promiseCampaignsToMaker = addCampaignsToMaker(makerId, campaignId, models)
   return Promise.all([promiseCampaignToOffice, promiseCampaignsToMaker])
+}
+
+
+const getHunterCoupons = async (models, hunterId) => {
+  const hunter = await models.Hunter
+                            .findOne({_id: hunterId})
+                            .populate('coupons') || {}
+
+  return hunter.coupons || [];
+}
+
+const getCampaignsSelectedByMe= async (models, myCoupons) => {
+  const campaigns = await models.Campaign
+                                .find({
+                                  coupons: {
+                                    '$in': myCoupons
+                                  }
+                                })
+                                .populate('coupons');
+
+  return campaigns
+
 }

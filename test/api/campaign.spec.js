@@ -795,7 +795,6 @@ test('Campaign: Maker: Should get my campaigns', async t => {
 
 })
 
-
 test('Campaign: Should create a coupon after the hunter capture one', async t => {
   t.plan(3);
 
@@ -1495,3 +1494,103 @@ test('Campaign: Public: Should get public campaigns', async t => {
   t.is(publicCampaigns.campaigns[2].office.name, 'Fogon Grill sucursal 1');
   t.is(publicCampaigns.campaigns[2].office.company.businessName, 'Fogon Grill');
 });
+
+test('Campaign: Hunter: Should return the campaigns by Maker', async t => {
+  t.plan(9);
+  function getAddCampaignQuery(officeId, title) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "${title}"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            startAt: ${Date.now()}
+            endAt: ${Date.now() + 7200000}
+            couponsNumber: 20
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+          }
+        }
+      `
+    }
+  }
+
+  function getCampaignsByMakerIdQuery(makerId) {
+    return {
+      query: `
+        {
+          campaignsByMakerId(makerId:"${makerId}") {
+            id
+            title
+            status
+            country
+            city
+            image
+            totalCoupons
+            huntedCoupons
+            redeemedCoupons
+            description
+            initialAgeRange
+            finalAgeRange
+            couponsHuntedByMe
+            couponsRedeemedByMe
+            canHunt
+          }
+        }
+      `
+    }
+  }
+
+  function getCaptureCouponQuery(id) {
+    return {
+      query: `
+        mutation {
+          captureCoupon(input: {
+            campaignId: "${id}"
+          }) {
+            id
+            code
+            status
+          }
+        }
+      `
+    }
+  }
+
+  const meQuery = {
+    query: `
+      {
+        me {
+          id
+        }
+      }
+    `
+  }
+
+  let serverRequest = request(app)
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { signIn: { token: tokenHunter } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 1'), tokenMaker);
+  await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 2'), tokenMaker);
+  await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
+  const { body: { data: { me: makerData } } } = await utils.callToQraphql(serverRequest, meQuery, tokenMaker);
+  const { body: { data: { campaignsByMakerId } } } = await utils.callToQraphql(serverRequest, getCampaignsByMakerIdQuery(makerData.id), tokenHunter);
+
+  t.is(campaignsByMakerId.length, 2);
+  t.is(campaignsByMakerId[0].title, 'Campaign 1');
+  t.is(campaignsByMakerId[0].couponsHuntedByMe, 1);
+  t.is(campaignsByMakerId[0].couponsRedeemedByMe, 0);
+  t.false(campaignsByMakerId[0].canHunt);
+  t.is(campaignsByMakerId[1].title, 'Campaign 2');
+  t.is(campaignsByMakerId[1].couponsHuntedByMe, 0);
+  t.is(campaignsByMakerId[1].couponsRedeemedByMe, 0)
+  t.true(campaignsByMakerId[1].canHunt);
+})

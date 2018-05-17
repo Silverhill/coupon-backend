@@ -607,3 +607,114 @@ test('Campaign: Should return a campaign within the coupon after the Hunter has 
   t.is(captureCoupon.campaign.title, 'Campaign test 1');
   t.is(captureCoupon.campaign.description, 'Description 1');
 });
+
+test('User: Hunter > myRedeemedCoupons: Should return the list of my redeemed coupons', async t => {
+  t.plan(8)
+
+  const myRedeemedCouponsQuery = {
+    query: `
+      {
+        myRedeemedCoupons {
+          ...on CouponHunted {
+            id
+            code
+            status
+            campaign {
+              title
+              maker {
+                id
+                name
+                provider
+              }
+              office {
+                id
+                name
+                legalRepresentative
+                email
+              }
+            }
+          }
+        }
+      }
+    `
+  }
+
+  function getAddCampaignQuery(officeId, title) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "${title}"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            startAt: ${Date.now()}
+            endAt: ${Date.now() + 7200000}
+            couponsNumber: 20
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+          }
+        }
+      `
+    }
+  }
+
+  function getCaptureCouponQuery(id) {
+    return {
+      query: `
+        mutation {
+          captureCoupon(input: {
+            campaignId: "${id}"
+          }) {
+            id
+            code
+            status
+          }
+        }
+      `
+    }
+  }
+
+  function getRedeemCouponQuery(couponCode) {
+    return {
+      query: `
+        mutation {
+          redeemCoupon(input: {
+            couponCode: "${couponCode}"
+          }) {
+            id
+            code
+            status
+          }
+        }
+      `
+    }
+  }
+
+  let serverRequest = request(app)
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { signIn: { token: tokenHunter } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 1'), tokenMaker);
+  await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 2'), tokenMaker);
+  const { body: { data: { captureCoupon: coupon1 } } } = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
+  await utils.callToQraphql(serverRequest, getRedeemCouponQuery(coupon1.code), tokenMaker);
+
+  //My redeemed coupons
+
+  const { body: { data: { myRedeemedCoupons }}} = await utils.callToQraphql(serverRequest, myRedeemedCouponsQuery, tokenHunter);
+
+  t.is(myRedeemedCoupons.length, 1);
+  t.truthy(myRedeemedCoupons[0]);
+  t.is(myRedeemedCoupons[0].status, 'redeemed');
+  t.truthy(myRedeemedCoupons[0].campaign);
+  t.truthy(myRedeemedCoupons[0].campaign.maker);
+  t.is(myRedeemedCoupons[0].campaign.maker.name, 'Maker');
+  t.truthy(myRedeemedCoupons[0].campaign.office);
+  t.is(myRedeemedCoupons[0].campaign.office.name, 'Fogon Grill sucursal 1');
+});

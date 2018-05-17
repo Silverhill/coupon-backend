@@ -154,7 +154,16 @@ export const myRedeemedCoupons = async (parent, {
         path: 'maker',
         select: '-campaigns'
       }
-    });
+    })
+    .populate({
+      path: 'campaign',
+      select: '-coupons',
+      populate: {
+        path: 'office',
+        select: '-campaigns'
+      }
+    })
+    .exec() || [];
 
   return myCouponsInfo;
 }
