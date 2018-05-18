@@ -80,9 +80,9 @@ var CampaignSchema = new Schema({
   timestamps: true
 })
 
-CampaignSchema.virtual('remaingCoupons')
+CampaignSchema.virtual('remainingCoupons')
   .get(function (){
-    return this.totalCoupons - this.huntedCoupons - this.redeemedCoupons;
+    return this.totalCoupons - this.huntedCoupons;
   })
 
 

@@ -114,7 +114,10 @@ export const myCoupons = async (parent, {
 
   const {_id: id} = args.currentUser;
   const { coupons } = await models.Hunter.findOne({ _id: id }) || {};
-  const myCouponsInfo = await models.Coupon.find({ _id: { "$in": coupons || [] } })
+  const myCouponsInfo = await models.Coupon.find({
+    _id: { "$in": coupons || [] },
+    status: config.couponStatus.HUNTED,
+  })
     .limit(limit)
     .skip(skip)
     .sort(sortObject)
