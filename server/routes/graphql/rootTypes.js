@@ -19,7 +19,7 @@ export default `
     allCampaigns(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedCampaigns!
 
     # Get all campaigns by Maker. Access: Hunter
-    campaignsByMakerId(makerId: String!): [Campaign!]
+    campaignsByMakerId(makerId: String!): [CampaignForHunter!]
 
     # Get my campaigns. Access: Maker
     myCampaigns(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedCampaigns!
