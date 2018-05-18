@@ -16,6 +16,7 @@ export default `
     title: String!
     description: String
     customMessage: String
+    background: String
     deleted: Boolean
     initialAgeRange: Int
     finalAgeRange: Int
@@ -39,6 +40,7 @@ export default `
     title: String!
     description: String
     customMessage: String
+    background: String
     deleted: Boolean
     initialAgeRange: Int
     finalAgeRange: Int
@@ -83,6 +85,7 @@ export default `
     image: String
     couponsNumber: Int!
     title: String!
+    background: String
     description: String
     customMessage: String
     initialAgeRange: Int
@@ -100,6 +103,7 @@ export default `
     city: String
     image: String
     title: String
+    background: String
     description: String
     customMessage: String
     initialAgeRange: Int

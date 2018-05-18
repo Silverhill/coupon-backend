@@ -309,7 +309,7 @@ test('Campaign: endAt should be greater than startAt', async t => {
 });
 
 test('Campaign: Should update a Campaign', async t => {
-  t.plan(3);
+  t.plan(4);
   function getAddCampaignQuery(officeId) {
     return {
       query: `
@@ -343,9 +343,11 @@ test('Campaign: Should update a Campaign', async t => {
           updateCampaign(input: {
             id: "${id}"
             title: "Campaign updated"
+            background: "rgb(10, 5, 7)"
           }) {
             id
             title
+            background
             deleted
           }
         }
@@ -365,6 +367,7 @@ test('Campaign: Should update a Campaign', async t => {
   const { body: { data: { updateCampaign } } } = updateCampaignResponse;
 
   t.is(updateCampaign.title, 'Campaign updated');
+  t.is(updateCampaign.background, 'rgb(10, 5, 7)')
   t.is(updateCampaign.deleted, false);
 });
 
@@ -1593,4 +1596,73 @@ test('Campaign: Hunter: Should return the campaigns by Maker', async t => {
   t.is(campaignsByMakerId[1].couponsHuntedByMe, 0);
   t.is(campaignsByMakerId[1].couponsRedeemedByMe, 0)
   t.true(campaignsByMakerId[1].canHunt);
+})
+
+test('Campaign: Should add background when the Campaign is created', async t => {
+  t.plan(12)
+
+  function getAddCampaignWithBackgroundQuery(officeId, background) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "Campaign 1"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            customMessage: "a custom message"
+            startAt: 1521178272153
+            endAt: 1522188672153
+            couponsNumber: 20
+            background: "${background}"
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+            title
+            country
+            city
+            description
+            customMessage
+            startAt
+            endAt
+            totalCoupons
+            huntedCoupons
+            background
+            redeemedCoupons
+            initialAgeRange
+            finalAgeRange
+            createdAt
+            deleted
+          }
+        }
+      `
+    }
+  }
+
+  let serverRequest = request(app)
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+
+  const { body: { data: { addCampaign: campaignLinearGradient } } } = await utils.callToQraphql(serverRequest, getAddCampaignWithBackgroundQuery(addOffice.id, "linear-gradient(rgb(249, 5, 11), rgb(10, 5, 7) 85%)"), tokenMaker);
+  const { body: { data: { addCampaign: campaignImage } } } = await utils.callToQraphql(serverRequest, getAddCampaignWithBackgroundQuery(addOffice.id, "https://static8.depositphotos.com/1332722/1017/v/950/depositphotos_10178209-stock-illustration-seaml"), tokenMaker);
+  const { body: { data: { addCampaign: campaignRadialGradient } } } = await utils.callToQraphql(serverRequest, getAddCampaignWithBackgroundQuery(addOffice.id, "radial-gradient(at right bottom, rgb(254, 219, 55) 0%, rgb(253, 185, 49) 8%, rgb(159, 121, 40) 30%, rgb(138, 110, 47) 40%, transparent 80%)"), tokenMaker);
+  const { body: { data: { addCampaign: campaignHex} } } = await utils.callToQraphql(serverRequest, getAddCampaignWithBackgroundQuery(addOffice.id, "#f7f7f7"), tokenMaker);
+  const { body: { data: { addCampaign: campaignRgb } } } = await utils.callToQraphql(serverRequest, getAddCampaignWithBackgroundQuery(addOffice.id, "rgb(10, 5, 7)"), tokenMaker);
+  const { body: { data, errors } } = await utils.callToQraphql(serverRequest, getAddCampaignWithBackgroundQuery(addOffice.id, "xdxdxdxdxd"), tokenMaker);
+
+  t.truthy(campaignLinearGradient);
+  t.truthy(campaignLinearGradient.background);
+  t.truthy(campaignImage);
+  t.truthy(campaignImage.background);
+  t.truthy(campaignRadialGradient);
+  t.truthy(campaignRadialGradient.background);
+  t.truthy(campaignHex);
+  t.truthy(campaignHex.background);
+  t.truthy(campaignRgb);
+  t.truthy(campaignRgb.background);
+  t.falsy(data)
+  t.is(errors[0].message, 'Campaign validation failed: background: Invalid Background format.');
 })

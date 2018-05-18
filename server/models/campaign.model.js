@@ -3,6 +3,7 @@
 mongoose.Promise = require('bluebird');
 import mongoose, {Schema} from 'mongoose';
 import config from '../config';
+import * as validator from '../services/validation.service';
 
 var CampaignSchema = new Schema({
   startAt: {
@@ -12,6 +13,10 @@ var CampaignSchema = new Schema({
   endAt: {
     type: Date,
     required: true
+  },
+  background: {
+    type: String,
+    default: ''
   },
   country: {
     type: String,
@@ -117,6 +122,29 @@ CampaignSchema.virtual('status')
       return this.endAt.getTime() > this.startAt.getTime()
     },
     'endAt should be greater than startAt.')
+
+  CampaignSchema
+    .path('background')
+    .validate(function (value) {
+      return isValidBackgroundFormat(value);
+    },
+    'Invalid Background format.')
+
+const isValidBackgroundFormat = (value) => {
+  if (value === '') {
+    return true;
+  }
+
+  if (validator.isValidRgbColor(value) ||
+      validator.isValidHexColor(value) ||
+      validator.isValidUrl(value) ||
+      validator.isValidLinearGradient(value) ||
+      validator.isValidRadialGradient(value)) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 
 export default mongoose.model('Campaign', CampaignSchema);
