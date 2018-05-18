@@ -1444,7 +1444,7 @@ test('Campaign: Public: Should get public campaigns', async t => {
               deleted
               initialAgeRange
               finalAgeRange
-              remaingCoupons
+              remainingCoupons
               createdAt
               office {
                 id

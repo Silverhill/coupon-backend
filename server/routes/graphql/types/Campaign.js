@@ -49,7 +49,7 @@ export default `
     coupons: [Coupon!]
     maker: UserBase
     office: OfficeSimple
-    remaingCoupons: Int!
+    remainingCoupons: Int!
   }
 
   type PublicCampaigns {
@@ -69,7 +69,7 @@ export default `
     deleted: Boolean
     initialAgeRange: Int
     finalAgeRange: Int
-    remaingCoupons: Int!
+    remainingCoupons: Int!
     createdAt: Timestamp!
     office: PublicOffice
   }
