@@ -18,6 +18,14 @@ export default `
     campaign: CampaignForHunter
   }
 
+  type CouponForMaker implements CouponBase {
+    id: ID!
+    code: String
+    status: String
+    updatedAt: Timestamp!
+    campaign: CampaignForMaker
+  }
+
   input CaptureCouponInput {
     campaignId: String!
   }
