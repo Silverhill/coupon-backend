@@ -65,6 +65,9 @@ export default `
     myHunters: [HunterOfCompany!]
 
     publicCampaigns(limit: Int, skip: Int, sortField: String, sortDirection: Int): PaginatedPublicCampaigns!
+
+    # Get coupons by Hunter
+    couponsByHunter(hunterId: String!, limit: Int, skip: Int, sortField: String, sortDirection: Int): [CouponBase!]
   }
 
   type Mutation {

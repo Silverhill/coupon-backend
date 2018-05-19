@@ -54,6 +54,28 @@ export default `
     remainingCoupons: Int!
   }
 
+  type CampaignForMaker {
+    id: ID!
+    startAt: Timestamp!
+    endAt: Timestamp!
+    country: String
+    city: String
+    image: String
+    totalCoupons: Int!
+    huntedCoupons: Int!
+    redeemedCoupons: Int!
+    status: String!
+    title: String!
+    description: String
+    customMessage: String
+    background: String
+    deleted: Boolean
+    initialAgeRange: Int
+    finalAgeRange: Int
+    createdAt: Timestamp!
+    remainingCoupons: Int!
+  }
+
   type PublicCampaigns {
     id: ID!
     startAt: Timestamp!

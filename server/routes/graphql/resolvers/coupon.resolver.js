@@ -118,6 +118,32 @@ export const redeemCoupon = async (parent, args, { models, params }) => {
 
 }
 
+export const getCouponsByHunter = async (parent, {
+    limit = 10,
+    skip = 0,
+    sortField = 'createdAt',
+    sortDirection = 1,
+    ...args
+  }, { models }) => {
+
+  const sortObject = {};
+  sortObject[sortField] = sortDirection;
+  const hunterId = args.hunterId;
+  const { coupons } = await models.Hunter.findOne({ _id: hunterId }) || {};
+  const myCouponsInfo = await models.Coupon.find({
+    _id: { "$in": coupons || [] }
+  })
+    .limit(limit)
+    .skip(skip)
+    .sort(sortObject)
+    .populate({
+      path: 'campaign',
+      select: '-coupons'
+    }) || [];
+
+    return myCouponsInfo;
+}
+
 function getCampaignWithCoupons(models, campaignId, match) {
   return models.Campaign.findOne({ _id: campaignId }).populate({
     path: 'coupons',

@@ -18,7 +18,8 @@ export default {
   Timestamp: timestampScalar,
 
   CouponBase: {
-    __resolveType(obj){
+    __resolveType(obj, context, { fieldName }){
+      if(fieldName === 'couponsByHunter') return 'CouponForMaker';
       if(obj.campaign) return 'CouponHunted';
       return 'Coupon';
     }
@@ -56,6 +57,7 @@ export default {
     getCoupon: requiresAuth(couponResolver.getCoupon, ['hunter', 'maker']),
     myCoupons: requiresAuth(userResolver.myCoupons, ['hunter']),
     myRedeemedCoupons: requiresAuth(userResolver.myRedeemedCoupons, ['hunter']),
+    couponsByHunter: requiresAuth(couponResolver.getCouponsByHunter, ['maker']),
     //Company
     myCompany: requiresAuth(companyResolver.myCompany, ['maker']),
     myHunters: requiresAuth(companyResolver.myHunters, ['maker']),
