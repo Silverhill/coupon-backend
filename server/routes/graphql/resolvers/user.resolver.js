@@ -250,7 +250,7 @@ export const signIn = async (parent, args, { models }) => {
 export const updatePassword = async (parent, args, { models, request }) => {
   const { input } = args;
   const { headers: { authentication } } = request;
-  if(!authentication) throw new Error('You need logged to changue password');
+  if(!authentication) throw new Error('You need logging to change password.');
 
   const oldPass = input.oldPass.toString().trim();
   const newPass = input.newPass.toString().trim();
@@ -262,7 +262,7 @@ export const updatePassword = async (parent, args, { models, request }) => {
     user.password = newPass;
     user = await user.save();
   } else {
-    throw new Error('Problem to changue the password');
+    throw new Error('There is a problem changing the password. Please try again.');
   }
 
   return user;
