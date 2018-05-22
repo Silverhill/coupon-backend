@@ -1,8 +1,8 @@
 import test from 'ava';
-import { connectDB, dropDB } from '../mocks/db';
+import { connectDB, dropDB } from '../../mocks/db';
 import request from 'supertest';
-import app from '../../server/server';
-import utils from '../utils/test.utils'
+import app from '../../../server/server';
+import utils from '../../utils/test.utils'
 
 const hunterLoginQuery = utils.getHunterLoginQuery();
 const makerLoginQuery = utils.getMakerLoginQuery();
@@ -15,6 +15,7 @@ test.beforeEach('connect with mongodb', async () => {
 test.afterEach.always(async () => {
   await dropDB();
 });
+
 
 test('User: updateUser > Maker: Should update the user info', async t => {
   t.plan(8)
@@ -238,5 +239,3 @@ test('User: signUp > Maker: Should return an error if company is empty', async t
   t.falsy(data)
   t.is(errors[0].message, 'Validation failed: company was not provided.');
 });
-
-

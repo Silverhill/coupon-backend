@@ -1,8 +1,8 @@
 import test from 'ava';
-import { connectDB, dropDB } from '../mocks/db';
+import { connectDB, dropDB } from '../../mocks/db';
 import request from 'supertest';
-import app from '../../server/server';
-import utils from '../utils/test.utils'
+import app from '../../../server/server';
+import utils from '../../utils/test.utils'
 import sleep from 'then-sleep';
 
 const hunterLoginQuery = utils.getHunterLoginQuery();
@@ -59,372 +59,7 @@ function getAddOfficeQuery(companyId) {
   }
 }
 
-test('Campaign: Should get access only maker role', async t => {
-  t.plan(3)
-
-  function getAddCampaignQuery(officeId) {
-    return {
-      query: `
-        mutation {
-          addCampaign(input: {
-            title: "Campaign 1"
-            country: "Ecuador"
-            city: "Loja"
-            description: "Description 1"
-            customMessage: "a custom message"
-            startAt: 1521178272153
-            endAt: 1522188672153
-            couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
-            officeId: "${officeId}"
-          }) {
-            id
-            title
-          }
-        }
-      `
-    }
-  }
-
-  let serverRequest = request(app);
-
-  const hunterResponse = await utils.callToQraphql(serverRequest, hunterLoginQuery);
-  const makerResponse = await utils.callToQraphql(serverRequest, makerLoginQuery);
-
-  const { data: { signIn: { token: token2 } } } = hunterResponse.body
-  const { data: { signIn: { token: token3 } } } = makerResponse.body
-
-  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, token3);
-  const { body: { data: { addOffice } }  } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), token3);
-
-  const res2 = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), token2);
-  const res3 = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), token3);
-
-  const { body: bodyHunter } = res2;
-  const { body: bodyMaker } = res3;
-
-  t.falsy(bodyHunter.data);
-  t.truthy(bodyMaker.data);
-
-  const { errors: errors1 } = bodyHunter;
-
-  t.is(errors1[0].message, 'Not have permissions for hunter role.');
-});
-
-test('Campaign: Should create a Campaign', async t => {
-  t.plan(15)
-
-  function getAddCampaignQuery(officeId) {
-    return {
-      query: `
-        mutation {
-          addCampaign(input: {
-            title: "Campaign 1"
-            country: "Ecuador"
-            city: "Loja"
-            description: "Description 1"
-            customMessage: "a custom message"
-            startAt: 1521178272153
-            endAt: 1522188672153
-            couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
-            officeId: "${officeId}"
-          }) {
-            id
-            title
-            country
-            city
-            description
-            customMessage
-            startAt
-            endAt
-            totalCoupons
-            huntedCoupons
-            redeemedCoupons
-            initialAgeRange
-            finalAgeRange
-            createdAt
-            deleted
-          }
-        }
-      `
-    }
-  }
-
-  let serverRequest = request(app)
-  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
-  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
-
-  const addCampaignResponse = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
-  t.is(addCampaignResponse.status, 200);
-
-  const { body: { data: { addCampaign } } } = addCampaignResponse;
-
-  t.is(addCampaign.title, 'Campaign 1');
-  t.is(addCampaign.country, 'Ecuador');
-  t.is(addCampaign.city, 'Loja');
-  t.is(addCampaign.description, 'Description 1');
-  t.is(addCampaign.customMessage, 'a custom message');
-  t.is(addCampaign.startAt, 1521178272153);
-  t.is(addCampaign.endAt, 1522188672153);
-  t.is(addCampaign.totalCoupons, 20);
-  t.is(addCampaign.huntedCoupons, 0);
-  t.is(addCampaign.redeemedCoupons, 0);
-  t.is(addCampaign.initialAgeRange, 18);
-  t.is(addCampaign.finalAgeRange, 50);
-  t.truthy(addCampaign.createdAt);
-  t.is(addCampaign.deleted, false);
-});
-
-test('Campaign: age range should be greater or equal to 1 and less than 100', async t => {
-  t.plan(9)
-
-  function getAddCampaignQuery(officeId, initialAgeRange, finalAgeRange) {
-    return {
-      query: `
-        mutation {
-          addCampaign(input: {
-            title: "Campaign 1"
-            country: "Ecuador"
-            city: "Loja"
-            description: "Description 1"
-            customMessage: "a custom message"
-            startAt: 1521178272153
-            endAt: 1522188672153
-            couponsNumber: 20
-            initialAgeRange: ${initialAgeRange}
-            finalAgeRange: ${finalAgeRange}
-            officeId: "${officeId}"
-          }) {
-            id
-            title
-          }
-        }
-      `
-    }
-  }
-
-  let serverRequest = request(app)
-  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
-  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
-
-  const { body: { errors: errorsTest1, data: dataTest1 } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, -18, 50), tokenMaker);
-  t.falsy(dataTest1);
-  t.is(errorsTest1[0].message, 'Campaign validation failed: initialAgeRange: initialAgeRange should be in the range of 1 to 99.');
-  const { body: { errors: errorsTest2, data: dataTest2 } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 18, 101), tokenMaker);
-  t.falsy(dataTest2);
-  t.is(errorsTest2[0].message, 'Campaign validation failed: finalAgeRange: finalAgeRange should be in the range of 2 to 100.');
-  const { body: { errors: errorsTest3, data: dataTest3 } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 0, 50), tokenMaker);
-  t.falsy(dataTest3);
-  t.is(errorsTest3[0].message, 'Campaign validation failed: initialAgeRange: initialAgeRange should be in the range of 1 to 99.');
-  const { body: { data: { addCampaign: addCampaignTest4 } } }= await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 1, 100), tokenMaker);
-  t.truthy(addCampaignTest4)
-  t.truthy(addCampaignTest4.id)
-  t.is(addCampaignTest4.title, 'Campaign 1')
-});
-
-test('Campaign: initialAgeRange should be less than finalAgeRange', async t => {
-  t.plan(5)
-
-  function getAddCampaignQuery(officeId, initialAgeRange, finalAgeRange) {
-    return {
-      query: `
-        mutation {
-          addCampaign(input: {
-            title: "Campaign 1"
-            country: "Ecuador"
-            city: "Loja"
-            description: "Description 1"
-            customMessage: "a custom message"
-            startAt: 1521178272153
-            endAt: 1522188672153
-            couponsNumber: 20
-            initialAgeRange: ${initialAgeRange}
-            finalAgeRange: ${finalAgeRange}
-            officeId: "${officeId}"
-          }) {
-            id
-            title
-          }
-        }
-      `
-    }
-  }
-
-  let serverRequest = request(app)
-  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
-  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
-
-  const { body: { errors: errorsTest1, data: dataTest1 } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 50, 25), tokenMaker);
-
-  t.falsy(dataTest1);
-  t.is(errorsTest1[0].message, 'Campaign validation failed: initialAgeRange: initialAgeRange should be less than finalAgeRange.');
-  const { body: { data: { addCampaign: addCampaignTest2 } } }= await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 25, 50), tokenMaker);
-  t.truthy(addCampaignTest2)
-  t.truthy(addCampaignTest2.id)
-  t.is(addCampaignTest2.title, 'Campaign 1')
-});
-
-test('Campaign: endAt should be greater than startAt', async t => {
-  t.plan(2)
-  function getAddCampaignQuery(officeId) {
-    return {
-      query: `
-        mutation {
-          addCampaign(input: {
-            title: "Campaign 1"
-            country: "Ecuador"
-            city: "Loja"
-            description: "Description 1"
-            startAt: 1522188672153
-            endAt: 1521178272153
-            couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
-            officeId: "${officeId}"
-          }) {
-            id
-            title
-          }
-        }
-      `
-    }
-  }
-
-  let serverRequest = request(app)
-  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
-  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
-
-  const addCampaignResponse = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
-  t.is(addCampaignResponse.status, 200);
-
-  const { body: { errors } } = addCampaignResponse;
-  t.is(errors[0].message, 'Campaign validation failed: endAt: endAt should be greater than startAt.');
-});
-
-test('Campaign: Should update a Campaign', async t => {
-  t.plan(4);
-  function getAddCampaignQuery(officeId) {
-    return {
-      query: `
-        mutation {
-          addCampaign(input: {
-            title: "Campaign 1"
-            country: "Ecuador"
-            city: "Loja"
-            description: "Description 1"
-            startAt: 1521178272153
-            endAt: 1522188672153
-            couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
-            officeId: "${officeId}"
-          }) {
-            id
-            title
-            deleted
-          }
-        }
-      `
-    }
-  }
-
-  function getUpdateCampaignQuery(id) {
-
-    return {
-      query: `
-        mutation {
-          updateCampaign(input: {
-            id: "${id}"
-            title: "Campaign updated"
-            background: "rgb(10, 5, 7)"
-          }) {
-            id
-            title
-            background
-            deleted
-          }
-        }
-      `
-    };
-  }
-
-  let serverRequest = request(app)
-  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
-  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
-  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
-
-  const updateCampaignResponse = await utils.callToQraphql(serverRequest, getUpdateCampaignQuery(addCampaign.id), tokenMaker);
-  t.is(updateCampaignResponse.status, 200);
-
-  const { body: { data: { updateCampaign } } } = updateCampaignResponse;
-
-  t.is(updateCampaign.title, 'Campaign updated');
-  t.is(updateCampaign.background, 'rgb(10, 5, 7)')
-  t.is(updateCampaign.deleted, false);
-});
-
-test('Campaign: Should delete a Campaign', async t => {
-  t.plan(2);
-  function getAddCampaignQuery(officeId) {
-    return {
-      query: `
-        mutation {
-          addCampaign(input: {
-            title: "Campaign 1"
-            country: "Ecuador"
-            city: "Loja"
-            description: "Description 1"
-            startAt: 1521178272153
-            endAt: 1522188672153
-            couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
-            officeId: "${officeId}"
-          }) {
-            id
-            title
-          }
-        }
-      `
-    }
-  }
-
-  function getDeleteCampaignQuery(id) {
-    return {
-      query: `
-        mutation {
-          deleteCampaign(input: {
-            id: "${id}"
-          }) {
-            id
-            deleted
-          }
-        }
-      `
-    };
-  }
-
-  let serverRequest = request(app)
-  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
-  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
-  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
-  const deleteCampaignResponse = await utils.callToQraphql(serverRequest, getDeleteCampaignQuery(addCampaign.id), tokenMaker);
-  t.is(deleteCampaignResponse.status, 200);
-
-  const { body: { data: { deleteCampaign } } } = deleteCampaignResponse;
-  t.is(deleteCampaign.deleted, true);
-})
-
-test('Campaign: Should get a Campaign', async t => {
+test('Campaign: campaign > Should get a Campaign', async t => {
   t.plan(5);
 
   function getAddCampaignQuery(officeId) {
@@ -484,7 +119,7 @@ test('Campaign: Should get a Campaign', async t => {
   t.is(campaign.office.name, 'Fogon Grill sucursal 1');
 })
 
-test('Campaign: Hunter: Should get all campaigns', async t => {
+test('Campaign: Hunter: allCampaigns > Should get all campaigns', async t => {
   t.plan(9);
   function getAddCampaignQuery(officeId, title) {
     return {
@@ -584,7 +219,7 @@ test('Campaign: Hunter: Should get all campaigns', async t => {
   t.is(allCampaigns.campaigns[1].couponsRedeemedByMe, 1);
 });
 
-test('Campaign: Hunter: Should get all campaigns with the flag canHunt', async t => {
+test('Campaign: Hunter: allCampaigns > Should get all campaigns with the flag canHunt', async t => {
   t.plan(4);
   function getAddCampaignQuery(officeId, title) {
     return {
@@ -663,7 +298,7 @@ test('Campaign: Hunter: Should get all campaigns with the flag canHunt', async t
   const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
   //Campaign 1
   const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 1'), tokenMaker);
-   //Campaign 2
+  //Campaign 2
   await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 2'), tokenMaker);
   //Hunt coupon in Campaign 1
   const { body: { data: { captureCoupon } } } = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
@@ -679,7 +314,7 @@ test('Campaign: Hunter: Should get all campaigns with the flag canHunt', async t
   t.true(allCampaigns2.campaigns[1].canHunt);
 });
 
-test('Campaign: Hunter: Return empty array if there is not coupons', async t => {
+test('Campaign: Hunter: allCampaigns > Return empty array if there is not coupons', async t => {
   t.plan(8);
   function getAddCampaignQuery(officeId, title) {
     return {
@@ -728,7 +363,7 @@ test('Campaign: Hunter: Return empty array if there is not coupons', async t => 
   await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 2'), tokenMaker);
   await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 3'), tokenMaker);
 
-  const { body: { data: { allCampaigns } } }= await utils.callToQraphql(serverRequest, allCampaignsQuery, tokenHunter);
+  const { body: { data: { allCampaigns } } } = await utils.callToQraphql(serverRequest, allCampaignsQuery, tokenHunter);
 
   t.is(allCampaigns.campaigns.length, 3);
   t.is(allCampaigns.totalCount, 3);
@@ -740,7 +375,7 @@ test('Campaign: Hunter: Return empty array if there is not coupons', async t => 
   t.is(allCampaigns.campaigns[2].couponsHuntedByMe, 0);
 });
 
-test('Campaign: Maker: Should get my campaigns', async t => {
+test('Campaign: Maker: myCampaigns > Should get my campaigns', async t => {
   t.plan(4);
 
   function getAddCampaignQuery(officeId, title) {
@@ -798,80 +433,7 @@ test('Campaign: Maker: Should get my campaigns', async t => {
 
 })
 
-test('Campaign: Should create a coupon after the hunter capture one', async t => {
-  t.plan(3);
-
-  function getAddCampaignQuery(officeId) {
-    return {
-      query: `
-        mutation {
-          addCampaign(input: {
-            title: "Campaign test 1"
-            country: "Ecuador"
-            city: "Loja"
-            description: "Description 1"
-            startAt: ${Date.now()}
-            endAt: ${Date.now() + 7200000}
-            couponsNumber: 10
-            initialAgeRange: 18
-            finalAgeRange: 50
-            officeId: "${officeId}"
-          }) {
-            id
-            title
-            deleted
-          }
-        }
-      `
-    }
-  }
-
-  function getHuntedCouponsByCampaignQuery(id) {
-    return {
-      query: `
-        {
-          huntedCouponsByCampaign(campaignId: "${id}") {
-            id
-            code
-            status
-          }
-        }
-      `
-    }
-  }
-
-  function getCaptureCouponQuery(id) {
-    return {
-      query: `
-        mutation {
-          captureCoupon(input: {
-            campaignId: "${id}"
-          }) {
-            id
-            code
-            status
-          }
-        }
-      `
-    }
-  }
-
-  let serverRequest = request(app)
-  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { body: { data: { signIn: { token: tokenHunter } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
-  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
-  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
-  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
-  await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
-  const huntedCouponsByCampaignResponse = await utils.callToQraphql(serverRequest, getHuntedCouponsByCampaignQuery(addCampaign.id), tokenMaker);
-  t.is(huntedCouponsByCampaignResponse.status, 200);
-
-  const { body: { data: { huntedCouponsByCampaign } } } = huntedCouponsByCampaignResponse;
-  t.is(huntedCouponsByCampaign.length, 1);
-  t.truthy(huntedCouponsByCampaign[0].id);
-})
-
-test('Campaign: Should get an empty array if there are no hunted coupons', async t => {
+test('Campaign: huntedCouponsByCampaign > Should get an empty array if there are no hunted coupons', async t => {
   t.plan(2);
 
   function getAddCampaignQuery(officeId) {
@@ -925,83 +487,7 @@ test('Campaign: Should get an empty array if there are no hunted coupons', async
   t.falsy(errors)
 })
 
-test('Campaign: Should validate if there are hunted coupons and prevent delete the campaign', async t => {
-  t.plan(3);
-
-  function getAddCampaignQuery(officeId) {
-    return {
-      query: `
-        mutation {
-          addCampaign(input: {
-            title: "Campaign test 1"
-            country: "Ecuador"
-            city: "Loja"
-            description: "Description 1"
-            startAt: ${Date.now()}
-            endAt: ${Date.now() + 7200000}
-            couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
-            officeId: "${officeId}"
-          }) {
-            id
-            title
-            deleted
-          }
-        }
-      `
-    }
-  }
-
-  function getCaptureCouponQuery(id) {
-    return {
-      query: `
-        mutation {
-          captureCoupon(input: {
-            campaignId: "${id}"
-          }) {
-            id
-            code
-            status
-          }
-        }
-      `
-    }
-  }
-
-  function getDeleteCampaignQuery(id) {
-    return {
-      query: `
-        mutation {
-          deleteCampaign(input: {
-            id: "${id}"
-          }) {
-            id
-            deleted
-          }
-        }
-      `
-    };
-  }
-
-  let serverRequest = request(app)
-
-  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { body: { data: { signIn: { token: tokenHunter } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
-  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
-  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
-  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id), tokenMaker);
-  const captureCouponResponse = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
-  t.is(captureCouponResponse.status, 200);
-
-  const deleteCampaignResponse = await utils.callToQraphql(serverRequest, getDeleteCampaignQuery(addCampaign.id), tokenMaker);
-  t.is(deleteCampaignResponse.status, 200);
-
-  const { body: { errors } } = deleteCampaignResponse;
-  t.is(errors[0].message, 'This campaign can not be deleted because there are coupons hunted.');
-})
-
-test('Campaign > huntersByCampaign: should get the hunter list of a specific campaign', async t => {
+test('Campaign: huntersByCampaign > should get the hunter list of a specific campaign', async t => {
   t.plan(4)
 
   function getHuntersByCampaign(campaignId) {
@@ -1079,7 +565,7 @@ test('Campaign > huntersByCampaign: should get the hunter list of a specific cam
   t.is(h2[0].name, 'Hunter2')
 });
 
-test('Campaign > huntersByCampaign: should get an empty array if there are no hunters in a specific campaign', async t => {
+test('Campaign: huntersByCampaign > should get an empty array if there are no hunters in a specific campaign', async t => {
   t.plan(2)
 
   function getHuntersByCampaign(campaignId) {
@@ -1125,13 +611,13 @@ test('Campaign > huntersByCampaign: should get an empty array if there are no hu
   const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
   const { body: { data: { addCampaign: campaign1 } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 'Campaign 1', 10), tokenMaker);
 
-  const { body: { data, errors} } = await utils.callToQraphql(serverRequest, getHuntersByCampaign(campaign1.id), tokenMaker);
+  const { body: { data, errors } } = await utils.callToQraphql(serverRequest, getHuntersByCampaign(campaign1.id), tokenMaker);
 
   t.deepEqual(data.huntersByCampaign, [])
   t.falsy(errors)
 });
 
-test('Campaign: should have status: unavailable', async t => {
+test('Campaign: addCampaign > should have status: unavailable', async t => {
   function getAddCampaignQuery(officeId) {
     return {
       query: `
@@ -1165,7 +651,7 @@ test('Campaign: should have status: unavailable', async t => {
   t.is(addCampaign.status, 'unavailable')
 });
 
-test('Campaign: should have status: available', async t => {
+test('Campaign: campaign > should have status: available', async t => {
   t.plan(1);
   function getAddCampaignQuery(officeId) {
     return {
@@ -1215,7 +701,7 @@ test('Campaign: should have status: available', async t => {
   t.is(campaign.status, 'available');
 });
 
-test('Campaign: should have status: expired', async t => {
+test('Campaign: campaign > should have status: expired', async t => {
   t.plan(1);
   function getAddCampaignQuery(officeId) {
     return {
@@ -1265,7 +751,7 @@ test('Campaign: should have status: expired', async t => {
   t.is(campaign.status, 'expired');
 });
 
-test('Campaign: should have status: soldout', async t => {
+test('Campaign: campaign > should have status: soldout', async t => {
   t.plan(1);
   function getAddCampaignQuery(officeId) {
     return {
@@ -1340,7 +826,7 @@ test('Campaign: should have status: soldout', async t => {
   t.is(campaign.status, 'soldout');
 });
 
-test('Campaign: Hunter: Should get all campaigns even if there are no coupons hunted', async t => {
+test('Campaign: Hunter: allCampaigns > Should get all campaigns even if there are no coupons hunted', async t => {
   t.plan(6);
   function getAddCampaignQuery(officeId, title) {
     return {
@@ -1399,7 +885,7 @@ test('Campaign: Hunter: Should get all campaigns even if there are no coupons hu
   t.is(allCampaigns.campaigns[1].couponsHuntedByMe, 0);
 });
 
-test('Campaign: Public: Should get public campaigns', async t => {
+test('Campaign: Public: publicCampaigns > Should get public campaigns', async t => {
   t.plan(12);
   function getAddCampaignQuery(officeId, title) {
     return {
@@ -1498,7 +984,7 @@ test('Campaign: Public: Should get public campaigns', async t => {
   t.is(publicCampaigns.campaigns[2].office.company.businessName, 'Fogon Grill');
 });
 
-test('Campaign: Hunter: Should return the campaigns by Maker', async t => {
+test('Campaign: Hunter: campaignsByMakerId > Should return the campaigns by Maker', async t => {
   t.plan(9);
   function getAddCampaignQuery(officeId, title) {
     return {
@@ -1596,73 +1082,4 @@ test('Campaign: Hunter: Should return the campaigns by Maker', async t => {
   t.is(campaignsByMakerId[1].couponsHuntedByMe, 0);
   t.is(campaignsByMakerId[1].couponsRedeemedByMe, 0)
   t.true(campaignsByMakerId[1].canHunt);
-})
-
-test('Campaign: Should add background when the Campaign is created', async t => {
-  t.plan(12)
-
-  function getAddCampaignWithBackgroundQuery(officeId, background) {
-    return {
-      query: `
-        mutation {
-          addCampaign(input: {
-            title: "Campaign 1"
-            country: "Ecuador"
-            city: "Loja"
-            description: "Description 1"
-            customMessage: "a custom message"
-            startAt: 1521178272153
-            endAt: 1522188672153
-            couponsNumber: 20
-            background: "${background}"
-            initialAgeRange: 18
-            finalAgeRange: 50
-            officeId: "${officeId}"
-          }) {
-            id
-            title
-            country
-            city
-            description
-            customMessage
-            startAt
-            endAt
-            totalCoupons
-            huntedCoupons
-            background
-            redeemedCoupons
-            initialAgeRange
-            finalAgeRange
-            createdAt
-            deleted
-          }
-        }
-      `
-    }
-  }
-
-  let serverRequest = request(app)
-  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
-  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
-
-  const { body: { data: { addCampaign: campaignLinearGradient } } } = await utils.callToQraphql(serverRequest, getAddCampaignWithBackgroundQuery(addOffice.id, "linear-gradient(rgb(249, 5, 11), rgb(10, 5, 7) 85%)"), tokenMaker);
-  const { body: { data: { addCampaign: campaignImage } } } = await utils.callToQraphql(serverRequest, getAddCampaignWithBackgroundQuery(addOffice.id, "https://static8.depositphotos.com/1332722/1017/v/950/depositphotos_10178209-stock-illustration-seaml"), tokenMaker);
-  const { body: { data: { addCampaign: campaignRadialGradient } } } = await utils.callToQraphql(serverRequest, getAddCampaignWithBackgroundQuery(addOffice.id, "radial-gradient(at right bottom, rgb(254, 219, 55) 0%, rgb(253, 185, 49) 8%, rgb(159, 121, 40) 30%, rgb(138, 110, 47) 40%, transparent 80%)"), tokenMaker);
-  const { body: { data: { addCampaign: campaignHex} } } = await utils.callToQraphql(serverRequest, getAddCampaignWithBackgroundQuery(addOffice.id, "#f7f7f7"), tokenMaker);
-  const { body: { data: { addCampaign: campaignRgb } } } = await utils.callToQraphql(serverRequest, getAddCampaignWithBackgroundQuery(addOffice.id, "rgb(10, 5, 7)"), tokenMaker);
-  const { body: { data, errors } } = await utils.callToQraphql(serverRequest, getAddCampaignWithBackgroundQuery(addOffice.id, "xdxdxdxdxd"), tokenMaker);
-
-  t.truthy(campaignLinearGradient);
-  t.truthy(campaignLinearGradient.background);
-  t.truthy(campaignImage);
-  t.truthy(campaignImage.background);
-  t.truthy(campaignRadialGradient);
-  t.truthy(campaignRadialGradient.background);
-  t.truthy(campaignHex);
-  t.truthy(campaignHex.background);
-  t.truthy(campaignRgb);
-  t.truthy(campaignRgb.background);
-  t.falsy(data)
-  t.is(errors[0].message, 'Campaign validation failed: background: Invalid Background format.');
 })
