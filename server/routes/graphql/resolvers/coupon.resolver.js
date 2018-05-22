@@ -18,6 +18,10 @@ export const captureCoupon = async (parent, args, { models, params }) => {
     _id: campaignId
   });
 
+  if (campaign.status === config.campaignStatus.SOLDOUT) {
+    throw Error('This campaign is sold out.');
+  }
+
   if (campaign.status === config.campaignStatus.UNAVAILABLE) {
     throw Error('The campaign is unavailable.');
   }
@@ -26,12 +30,8 @@ export const captureCoupon = async (parent, args, { models, params }) => {
     throw Error('The campaign has expired.');
   }
 
-  //TODO: Validar que la campaña tenga cupones disponibles
-  //TODO: Actualizar el estado (status) del cupon acorde a las necesidades
   //TODO: Al momento que se capturan todos los cupones disponibles se debe
   //emitir un evento por sockets para actualizar la campaña en el frontend
-  //TODO: Habilitar a que el hunter pueda cazar un nuevo cupon una vez que
-  // el anterior haya sido canjeado
   try {
 
     const { coupons: hunterCoupons } = await getMyHuntedCoupons(models, campaignId, hunterId);
