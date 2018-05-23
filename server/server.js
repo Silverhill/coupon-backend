@@ -16,6 +16,7 @@ import 'babel-polyfill';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql';
 import { createServer } from 'http';
+import { getCurrentUser } from './services/graphql.service';
 
 /* eslint-disable no-console */
 
@@ -94,7 +95,14 @@ ws.listen(app.get('port'), function (error) {
     new SubscriptionServer({
       execute,
       subscribe,
-      schema: graphql.schema
+      schema: graphql.schema,
+      async onConnect(parsedMessage) {
+        const authentication = parsedMessage ? parsedMessage.authentication : '';
+        const currentUser = await getCurrentUser(authentication);
+        return {
+          currentUser
+        }
+      }
     }, {
       server: ws,
       path: '/subscriptions',

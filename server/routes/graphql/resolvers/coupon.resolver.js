@@ -16,7 +16,12 @@ export const captureCoupon = async (parent, args, { models, params }) => {
 
   const campaign = await models.Campaign.findOne({
     _id: campaignId
-  });
+  })
+  .populate('maker') || {};
+
+  if (_.isEmpty(campaign)) {
+    throw Error('Campaign not found.');
+  }
 
   if (campaign.status === config.campaignStatus.SOLDOUT) {
     throw Error('This campaign is sold out.');
@@ -61,10 +66,11 @@ export const captureCoupon = async (parent, args, { models, params }) => {
     });
 
     const updatedCoupon = await updateCouponStatus(models, newCoupon._id, hunterId);
+    const { maker: makerOfCampaign } = campaign;
 
-    pubsub.publish(config.subscriptionsTopics.HUNTED_COUPON_TOPIC, {
-      huntedCoupon: updatedCoupon
-    });
+    if (makerOfCampaign && makerOfCampaign.id) {
+      notifyHuntedCouponToMaker(pubsub, makerOfCampaign.id, updatedCoupon);
+    }
 
     return updatedCoupon;
 
@@ -105,17 +111,13 @@ export const redeemCoupon = async (parent, args, { models, params }) => {
     throw Error('The campaign has expired.');
   }
 
-  try {
-    await updateRedeemedCouponsCount(models, myCampaign);
-    const couponUpdated = await updateCouponToRedeemed(models, couponData._id);
-    pubsub.publish(config.subscriptionsTopics.REDEEMED_COUPON_TOPIC, {
-      redeemedCoupon: couponUpdated
-    });
-    return couponUpdated;
-  } catch (error) {
-    return error;
+  await updateRedeemedCouponsCount(models, myCampaign);
+  const couponUpdated = await updateCouponToRedeemed(models, couponData._id);
+  if (couponUpdated.hunter && couponUpdated.hunter.id) {
+    notifyRedeemedCouponToHunter(pubsub, couponUpdated.hunter.id, couponUpdated);
   }
 
+  return couponUpdated;
 }
 
 export const getCouponsByHunter = async (parent, {
@@ -230,5 +232,19 @@ function updateCouponToRedeemed(models, couponId) {
     },
     { new: true }
   )
-  .populate('campaign');
+  .populate('campaign')
+  .populate('hunter')
+  .exec();
+}
+
+function notifyRedeemedCouponToHunter(pubsub, hunterId, redeemedCoupon) {
+  pubsub.publish(`${config.subscriptionsTopics.REDEEMED_COUPON_TOPIC}-${hunterId}`, {
+    redeemedCoupon
+  });
+}
+
+function notifyHuntedCouponToMaker(pubsub, makerId, huntedCoupon) {
+  pubsub.publish(`${config.subscriptionsTopics.HUNTED_COUPON_TOPIC}-${makerId}`, {
+    huntedCoupon
+  });
 }

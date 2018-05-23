@@ -17,6 +17,10 @@ export const addOffice = async (parent, args, { models }) => {
 
     makerCompany = maker.company;
 
+    if (!makerCompany) {
+      throw Error;
+    }
+
   } catch (error) {
     throw Error('Invalid Company ID.');
   }
