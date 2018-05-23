@@ -93,7 +93,6 @@ export const myInactiveCampaigns = async (parent, {
   return returnObject;
 };
 
-// TODO: Actualizar el estado (status) de la campaña acorde a las necesidades
 export const addCampaign = async (parent, args, context) => {
   const { models, params } = context;
   const { pubsub } = params;

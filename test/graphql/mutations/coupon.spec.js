@@ -568,3 +568,79 @@ test('Campaign: captureCoupon > Should return a campaign within the coupon after
   t.is(captureCoupon.campaign.title, 'Campaign test 1');
   t.is(captureCoupon.campaign.description, 'Description 1');
 });
+
+test('Campaign: captureCoupon > Should return an error if the Campaing is SOLD-OUT', async t => {
+  t.plan(1)
+
+  function getSmallAddCampaignQuery(officeId) {
+    return {
+      query: `
+        mutation {
+          addCampaign(input: {
+            title: "Campaign test 1"
+            country: "Ecuador"
+            city: "Loja"
+            description: "Description 1"
+            startAt: ${Date.now()}
+            endAt: ${Date.now() + 7200000}
+            couponsNumber: 2
+            initialAgeRange: 18
+            finalAgeRange: 50
+            officeId: "${officeId}"
+          }) {
+            id
+          }
+        }
+      `
+    }
+  }
+
+  function getCaptureCouponQuery(id) {
+    return {
+      query: `
+        mutation {
+          captureCoupon(input: {
+            campaignId: "${id}"
+          }) {
+            code
+          }
+        }
+      `
+    }
+  }
+
+  function getRedeemCouponQuery(couponCode) {
+    return {
+      query: `
+        mutation {
+          redeemCoupon(input: {
+            couponCode: "${couponCode}"
+          }) {
+            id
+          }
+        }
+      `
+    }
+  }
+
+  let serverRequest = request(app);
+  const { body: { data: { signIn: { token: tokenHunter } } } } = await utils.callToQraphql(serverRequest, hunterLoginQuery);
+  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
+
+  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
+  const { body: { data: { addCampaign } } } = await utils.callToQraphql(serverRequest, getSmallAddCampaignQuery(addOffice.id), tokenMaker);
+
+  // capture coupon 1
+  const { body: { data: { captureCoupon: coupon1 } } } = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
+  await utils.callToQraphql(serverRequest, getRedeemCouponQuery(coupon1.code), tokenMaker);
+
+  // capture coupon 2
+  const { body: { data: { captureCoupon: coupon2 } } } = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
+  await utils.callToQraphql(serverRequest, getRedeemCouponQuery(coupon2.code), tokenMaker);
+
+  // capture coupon 3
+  const { body: { errors } } = await utils.callToQraphql(serverRequest, getCaptureCouponQuery(addCampaign.id), tokenHunter);
+
+  t.is(errors[0].message, 'This campaign is sold out.');
+});
