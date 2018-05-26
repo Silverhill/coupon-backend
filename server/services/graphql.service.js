@@ -31,7 +31,7 @@ export const requiresAuth = (resolver, permissionsByRole = [], params) => async 
   return resolver(parent, args, context);
 };
 
-const getCurrentUser = async (token) => {
+export const getCurrentUser = async (token) => {
   const userId = await extractUserIdFromToken(token);
   const user = await User.findOne({ _id: userId }, '-salt -password');
   if(user){

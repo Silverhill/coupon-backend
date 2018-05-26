@@ -148,9 +148,11 @@ export const addCampaign = async (parent, args, context) => {
         },
       },
       { new: true});
-      pubsub.publish(config.subscriptionsTopics.EXPIRED_CAMPAIGN_TOPIC, {
-        expiredCampaign
-      });
+
+      if (makerId) {
+        notifyExpiredCampaignToMaker(pubsub, makerId, expiredCampaign);
+      }
+
       task.cancel();
     });
 
@@ -467,4 +469,10 @@ const getCampaignsSelectedByMe= async (models, myCoupons) => {
 
   return campaigns
 
+}
+
+function notifyExpiredCampaignToMaker(pubsub, makerId, expiredCampaign) {
+  pubsub.publish(`${config.subscriptionsTopics.EXPIRED_CAMPAIGN_TOPIC}-${makerId}`, {
+    expiredCampaign
+  });
 }
