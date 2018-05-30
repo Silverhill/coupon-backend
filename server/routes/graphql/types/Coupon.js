@@ -9,6 +9,7 @@ export default `
     id: ID!
     code: String
     status: String
+    updatedAt: Timestamp!
   }
 
   type CouponHunted implements CouponBase {
