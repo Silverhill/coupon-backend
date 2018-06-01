@@ -18,12 +18,11 @@ export default `
     customMessage: String
     background: String
     deleted: Boolean
-    initialAgeRange: Int
-    finalAgeRange: Int
     createdAt: Timestamp!
     coupons: [Coupon!]
     maker: UserBase
     office: Office
+    rangeAge: [Int]
   }
 
   type CampaignForHunter {
@@ -42,8 +41,6 @@ export default `
     customMessage: String
     background: String
     deleted: Boolean
-    initialAgeRange: Int
-    finalAgeRange: Int
     createdAt: Timestamp!
     couponsHuntedByMe: Int!
     couponsRedeemedByMe: Int!
@@ -52,6 +49,7 @@ export default `
     maker: UserBase
     office: Office
     remainingCoupons: Int!
+    rangeAge: [Int]
   }
 
   type CampaignForMaker {
@@ -70,10 +68,9 @@ export default `
     customMessage: String
     background: String
     deleted: Boolean
-    initialAgeRange: Int
-    finalAgeRange: Int
     createdAt: Timestamp!
     remainingCoupons: Int!
+    rangeAge: [Int]
   }
 
   type PublicCampaigns {
@@ -91,11 +88,10 @@ export default `
     description: String
     customMessage: String
     deleted: Boolean
-    initialAgeRange: Int
-    finalAgeRange: Int
     remainingCoupons: Int!
     createdAt: Timestamp!
     office: PublicOffice
+    rangeAge: [Int]
   }
 
   input AddCampaignInput {
@@ -110,10 +106,9 @@ export default `
     background: String
     description: String
     customMessage: String
-    initialAgeRange: Int
-    finalAgeRange: Int
     officeId: String!
     upload: Upload
+    rangeAge: [Int]
   }
 
   input UpdateCampaignInput {
@@ -128,8 +123,7 @@ export default `
     background: String
     description: String
     customMessage: String
-    initialAgeRange: Int
-    finalAgeRange: Int
+    rangeAge: [Int]
   }
 
   input DeleteCampaignInput {

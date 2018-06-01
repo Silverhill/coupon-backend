@@ -112,8 +112,6 @@ export const addCampaign = async (parent, args, context) => {
   const { couponsNumber } = input;
   const campaign = {
     totalCoupons: couponsNumber,
-    initialAgeRange: 18,
-    finalAgeRange: 60,
     maker: makerId,
     office: office._id,
     ...input

@@ -78,8 +78,7 @@ function getAddCampaignQuery(officeId) {
           startAt: ${Date.now()}
           endAt: ${Date.now() + 7200000}
           couponsNumber: 15
-          initialAgeRange: 18
-          finalAgeRange: 50
+          rangeAge: [1,2]
           officeId: "${officeId}"
         }) {
           id
@@ -173,8 +172,7 @@ test('User: Hunter: myRedeemedCoupons > Should return the list of my redeemed co
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000}
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -278,8 +276,7 @@ test('Coupon: Maker: couponsByHunter > Should return coupons from a specific Hun
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000}
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id

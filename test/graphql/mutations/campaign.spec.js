@@ -72,8 +72,7 @@ test('Campaign: addCampaign > Should get access only maker role', async t => {
             startAt: 1521178272153
             endAt: 1522188672153
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2,3]
             officeId: "${officeId}"
           }) {
             id
@@ -110,7 +109,7 @@ test('Campaign: addCampaign > Should get access only maker role', async t => {
 });
 
 test('Campaign: addCampaign > Should create a Campaign', async t => {
-  t.plan(15)
+  t.plan(14)
 
   function getAddCampaignQuery(officeId) {
     return {
@@ -125,8 +124,7 @@ test('Campaign: addCampaign > Should create a Campaign', async t => {
             startAt: 1521178272153
             endAt: 1522188672153
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2,3]
             officeId: "${officeId}"
           }) {
             id
@@ -140,8 +138,7 @@ test('Campaign: addCampaign > Should create a Campaign', async t => {
             totalCoupons
             huntedCoupons
             redeemedCoupons
-            initialAgeRange
-            finalAgeRange
+            rangeAge
             createdAt
             deleted
           }
@@ -170,101 +167,9 @@ test('Campaign: addCampaign > Should create a Campaign', async t => {
   t.is(addCampaign.totalCoupons, 20);
   t.is(addCampaign.huntedCoupons, 0);
   t.is(addCampaign.redeemedCoupons, 0);
-  t.is(addCampaign.initialAgeRange, 18);
-  t.is(addCampaign.finalAgeRange, 50);
+  t.is(addCampaign.rangeAge.toString(), '1,2,3');
   t.truthy(addCampaign.createdAt);
   t.is(addCampaign.deleted, false);
-});
-
-test('Campaign: addCampaign > age range should be greater or equal to 1 and less than 100', async t => {
-  t.plan(9)
-
-  function getAddCampaignQuery(officeId, initialAgeRange, finalAgeRange) {
-    return {
-      query: `
-        mutation {
-          addCampaign(input: {
-            title: "Campaign 1"
-            country: "Ecuador"
-            city: "Loja"
-            description: "Description 1"
-            customMessage: "a custom message"
-            startAt: 1521178272153
-            endAt: 1522188672153
-            couponsNumber: 20
-            initialAgeRange: ${initialAgeRange}
-            finalAgeRange: ${finalAgeRange}
-            officeId: "${officeId}"
-          }) {
-            id
-            title
-          }
-        }
-      `
-    }
-  }
-
-  let serverRequest = request(app)
-  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
-  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
-
-  const { body: { errors: errorsTest1, data: dataTest1 } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, -18, 50), tokenMaker);
-  t.falsy(dataTest1);
-  t.is(errorsTest1[0].message, 'Campaign validation failed: initialAgeRange: initialAgeRange should be in the range of 1 to 99.');
-  const { body: { errors: errorsTest2, data: dataTest2 } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 18, 101), tokenMaker);
-  t.falsy(dataTest2);
-  t.is(errorsTest2[0].message, 'Campaign validation failed: finalAgeRange: finalAgeRange should be in the range of 2 to 100.');
-  const { body: { errors: errorsTest3, data: dataTest3 } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 0, 50), tokenMaker);
-  t.falsy(dataTest3);
-  t.is(errorsTest3[0].message, 'Campaign validation failed: initialAgeRange: initialAgeRange should be in the range of 1 to 99.');
-  const { body: { data: { addCampaign: addCampaignTest4 } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 1, 100), tokenMaker);
-  t.truthy(addCampaignTest4)
-  t.truthy(addCampaignTest4.id)
-  t.is(addCampaignTest4.title, 'Campaign 1')
-});
-
-test('Campaign: addCampaign > initialAgeRange should be less than finalAgeRange', async t => {
-  t.plan(5)
-
-  function getAddCampaignQuery(officeId, initialAgeRange, finalAgeRange) {
-    return {
-      query: `
-        mutation {
-          addCampaign(input: {
-            title: "Campaign 1"
-            country: "Ecuador"
-            city: "Loja"
-            description: "Description 1"
-            customMessage: "a custom message"
-            startAt: 1521178272153
-            endAt: 1522188672153
-            couponsNumber: 20
-            initialAgeRange: ${initialAgeRange}
-            finalAgeRange: ${finalAgeRange}
-            officeId: "${officeId}"
-          }) {
-            id
-            title
-          }
-        }
-      `
-    }
-  }
-
-  let serverRequest = request(app)
-  const { body: { data: { signIn: { token: tokenMaker } } } } = await utils.callToQraphql(serverRequest, makerLoginQuery);
-  const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
-  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id), tokenMaker);
-
-  const { body: { errors: errorsTest1, data: dataTest1 } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 50, 25), tokenMaker);
-
-  t.falsy(dataTest1);
-  t.is(errorsTest1[0].message, 'Campaign validation failed: initialAgeRange: initialAgeRange should be less than finalAgeRange.');
-  const { body: { data: { addCampaign: addCampaignTest2 } } } = await utils.callToQraphql(serverRequest, getAddCampaignQuery(addOffice.id, 25, 50), tokenMaker);
-  t.truthy(addCampaignTest2)
-  t.truthy(addCampaignTest2.id)
-  t.is(addCampaignTest2.title, 'Campaign 1')
 });
 
 test('Campaign: addCampaign > endAt should be greater than startAt', async t => {
@@ -281,8 +186,7 @@ test('Campaign: addCampaign > endAt should be greater than startAt', async t => 
             startAt: 1522188672153
             endAt: 1521178272153
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2,3]
             officeId: "${officeId}"
           }) {
             id
@@ -319,8 +223,7 @@ test('Campaign: updateCampaign > Should update a Campaign', async t => {
             startAt: 1521178272153
             endAt: 1522188672153
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2,3]
             officeId: "${officeId}"
           }) {
             id
@@ -382,8 +285,7 @@ test('Campaign: deleteCampaign > Should delete a Campaign', async t => {
             startAt: 1521178272153
             endAt: 1522188672153
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2,3]
             officeId: "${officeId}"
           }) {
             id
@@ -436,8 +338,7 @@ test('Campaign: captureCoupon > Should create a coupon after the hunter capture 
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000}
             couponsNumber: 10
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2,3]
             officeId: "${officeId}"
           }) {
             id
@@ -509,8 +410,7 @@ test('Campaign: deleteCampaign > Should validate if there are hunted coupons and
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000}
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2,3]
             officeId: "${officeId}"
           }) {
             id
@@ -587,8 +487,7 @@ test('Campaign: addCampaign > Should add background when the Campaign is created
             endAt: 1522188672153
             couponsNumber: 20
             background: "${background}"
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2,3]
             officeId: "${officeId}"
           }) {
             id
@@ -603,8 +502,7 @@ test('Campaign: addCampaign > Should add background when the Campaign is created
             huntedCoupons
             background
             redeemedCoupons
-            initialAgeRange
-            finalAgeRange
+            rangeAge
             createdAt
             deleted
           }
