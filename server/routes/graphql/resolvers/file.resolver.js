@@ -1,6 +1,7 @@
 
 import cloudinary from 'cloudinary';
 import fs from 'fs';
+import pathLibrary from 'path';
 import config from '../../../config';
 
 export const uploadFile = async (parent, { file }) => {
@@ -29,4 +30,12 @@ export const storeFile = ({ stream, filename }) => {
       .on('error', error => reject(error))
       .on('finish', () => resolve({ path }))
   )
+}
+
+export const validateImage = (filename, path) => {
+  const ext = pathLibrary.extname(filename);
+  if (config.allowedImageFormat.indexOf(ext) === -1) {
+    fs.unlinkSync(path);
+    throw new Error('Only images are allowed');
+  }
 }
