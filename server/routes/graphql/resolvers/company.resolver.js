@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import cloudinary from 'cloudinary';
 import fs from 'fs';
-import { storeFile } from './file.resolver';
+import { storeFile, validateImage } from './file.resolver';
 
 export const addCompany = async (parent, args, { models }) => {
   const { input } = args;
@@ -21,6 +21,7 @@ export const addCompany = async (parent, args, { models }) => {
   if (company.upload) {
     const { stream, filename } = await company.upload;
     const { path } = await storeFile({ stream, filename });
+    validateImage(filename, path);
     await cloudinary.v2.uploader.upload(path, (error, result) => {
       if (result) {
         company.logo = result.url;
@@ -63,6 +64,7 @@ export const addImageToCompany = async (parent, { upload, ...args }, { models })
     .populate('company');
 
   const { path } = await storeFile({ stream, filename });
+  validateImage(filename, path);
   await cloudinary.v2.uploader.upload(path, async (error, result) => {
     if (result) {
       company.logo = result.url;
@@ -139,6 +141,7 @@ export const updateCompany = async (parent, args, context) => {
     if (company.upload) {
       const { stream, filename } = await company.upload;
       const { path } = await storeFile({ stream, filename });
+      validateImage(filename, path);
       await cloudinary.v2.uploader.upload(path, (error, result) => {
         if (result) {
           company.logo = result.url;

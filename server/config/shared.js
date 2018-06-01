@@ -18,5 +18,6 @@ exports = module.exports = {
     EXPIRED_CAMPAIGN_TOPIC: 'newExpiredCampaign',
     HUNTED_COUPON_TOPIC: 'newHuntedCoupon'
   },
-  uploadsFolder: './uploads/'
+  uploadsFolder: './uploads/',
+  allowedImageFormat: ['.png', '.jpg', '.gif', '.jpeg', '.svg']
 };

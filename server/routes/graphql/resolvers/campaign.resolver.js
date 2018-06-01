@@ -2,7 +2,7 @@ import fs from 'fs';
 import cloudinary from 'cloudinary';
 import config from '../../../config';
 import _ from 'lodash'
-import { storeFile } from './file.resolver';
+import { storeFile, validateImage } from './file.resolver';
 import schedule from 'node-schedule'
 
 export const allCampaigns = async (parent, {
@@ -116,6 +116,7 @@ export const addCampaign = async (parent, args, context) => {
   if(campaign.upload){
     const { stream, filename } = await campaign.upload;
     const { path } = await storeFile({ stream, filename });
+    validateImage(filename, path);
     await cloudinary.v2.uploader.upload(path, (error, result) => {
       if (result) {
         campaign.image = result.url;

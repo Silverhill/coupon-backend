@@ -3,7 +3,7 @@ import fs from 'fs';
 import cloudinary from 'cloudinary';
 import config from '../../../config';
 import { roleExist } from '../../../services/graphql.service';
-import { storeFile } from './file.resolver';
+import { storeFile, validateImage } from './file.resolver';
 
 /**
  * QUERY
@@ -275,6 +275,7 @@ export const addImageToUser = async (parent, { upload, ...args } , { models }) =
   let user = await models.User.findOne({ _id: id });
 
   const { path } = await storeFile({ stream, filename });
+  validateImage(filename, path);
   await cloudinary.v2.uploader.upload(path, async (error, result) => {
     if (result) {
       user.image = result.url;
