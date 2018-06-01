@@ -22,7 +22,13 @@ export const allCampaigns = async (parent, {
   const campaignsSelectedByMe = await getCampaignsSelectedByMe(models, myCoupons);
   const campaignsWithCouponsSelected = mapCampaignsWithTotalOfCouponsHuntedByMe(campaignsSelectedByMe, myCoupons);
   const total = await models.Campaign.count({});
-  const getCampaigns = models.Campaign.find({});
+  const getCampaigns = models.Campaign.find({}).populate({
+    path: 'office',
+    populate: {
+      path: 'company',
+      select: '-offices -campaigns',
+    }
+  });
   if(limit) getCampaigns.limit(limit);
   if(skip) getCampaigns.skip(skip);
 
