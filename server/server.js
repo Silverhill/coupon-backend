@@ -47,7 +47,9 @@ mongoose.connect(config.mongoUrl, { useMongoClient: true }, (error) => {
 });
 
 mongoose.connection.once('open', function () {
-  console.log('Mongodb: connection successful!!');
+  if (config.env !== 'test') {
+    console.log('Mongodb: connection successful!!');
+  }
 });
 
 //////////////// API ROUTES ////////////////
@@ -108,7 +110,10 @@ ws.listen(app.get('port'), function (error) {
       path: '/subscriptions',
     });
 
-    console.log('COUPON API is running on port', app.get('port'))
+    if (config.env !== 'test') {
+      console.log('COUPON API is running on port', app.get('port'))
+    }
+
   }
 });
 
