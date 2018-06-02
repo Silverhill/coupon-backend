@@ -65,7 +65,7 @@ const seedDatabase = async () => {
 
   let office = await Office.create({
     company: company._id,
-    ruc: '9999999999',
+    ruc: '2222222222',
     legalRepresentative: 'Carlos Huertas',
     contributorType: 'Persona natural',
     economicActivity: 'Diseño de páginas web',

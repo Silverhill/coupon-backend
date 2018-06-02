@@ -48,7 +48,7 @@ test('Office: myOffices > Should get my Offices', async t => {
       query: `
         mutation {
           addOffice(input: {
-            ruc: "1132569976001"
+            ruc: "2222222222"
             economicActivity: "Comida"
             contributorType: "Natural"
             legalRepresentative: "Juan Perez"
@@ -192,7 +192,7 @@ test('Office: office > Should get access only maker role', async t => {
   const { body: { data: { signIn: { token: tokenHunter } } } } =  await utils.callToQraphql(serverRequest, hunterLoginQuery);
   const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
 
-  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id, 'sucursal 2', '1132569976001'), tokenMaker);
+  const { body: { data: { addOffice } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id, 'sucursal 2', '2222222222'), tokenMaker);
 
   const { body: bodyMaker } = await utils.callToQraphql(serverRequest, getOfficeQuery(addOffice.id), tokenMaker);
   const { body: bodyHunter } = await utils.callToQraphql(serverRequest, getOfficeQuery(addOffice.id), tokenHunter);
@@ -265,16 +265,16 @@ test('Office: office > get an specific office from my offices', async t => {
   const { body: { data: { signIn: { token: tokenMaker } } } } =  await utils.callToQraphql(serverRequest, makerLoginQuery);
   const { body: { data: { addCompany } } } = await utils.callToQraphql(serverRequest, addCompanyQuery, tokenMaker);
 
-  const { body: { data: { addOffice: addOffice2 } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id, 'sucursal 2', '1132569976001'), tokenMaker);
-  const { body: { data: { addOffice: addOffice3 } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id, 'sucursal 3', '1132569976004'), tokenMaker);
+  const { body: { data: { addOffice: addOffice2 } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id, 'sucursal 2', '2222222222'), tokenMaker);
+  const { body: { data: { addOffice: addOffice3 } } } = await utils.callToQraphql(serverRequest, getAddOfficeQuery(addCompany.id, 'sucursal 3', '2222222222'), tokenMaker);
 
   const { body: { data: { office: office1 } } } = await utils.callToQraphql(serverRequest, getOfficeQuery(addOffice2.id), tokenMaker);
   t.truthy(office1.id);
   t.is(office1.name, 'sucursal 2');
-  t.is(office1.ruc, '1132569976001');
+  t.is(office1.ruc, '2222222222');
 
   const { body: { data: { office: office2 } } } = await utils.callToQraphql(serverRequest, getOfficeQuery(addOffice3.id), tokenMaker);
   t.truthy(office2.id);
   t.is(office2.name, 'sucursal 3');
-  t.is(office2.ruc, '1132569976004');
+  t.is(office2.ruc, '2222222222');
 });
