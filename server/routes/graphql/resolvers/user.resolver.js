@@ -112,10 +112,10 @@ export const myCoupons = async (parent, {
   const sortObject = {};
   sortObject[sortField] = sortDirection;
 
-  const {_id: id} = args.currentUser;
-  const { coupons } = await models.Hunter.findOne({ _id: id }) || {};
+  const {_id: hunterId } = args.currentUser;
+
   const myCouponsInfo = await models.Coupon.find({
-    _id: { "$in": coupons || [] },
+    hunter: hunterId,
     status: config.couponStatus.HUNTED,
   })
     .limit(limit)
@@ -128,7 +128,20 @@ export const myCoupons = async (parent, {
         path: 'maker',
         select: '-campaigns'
       }
-    }) || [];
+    })
+    .populate({
+      path: 'campaign',
+      select: '-coupons',
+      populate: {
+        path: 'office',
+        select: '-campaigns',
+        populate: {
+          path: 'company',
+          select: '-maker -offices'
+        }
+      }
+    })
+    .exec() || [];
 
   return myCouponsInfo;
 }
@@ -163,7 +176,11 @@ export const myRedeemedCoupons = async (parent, {
       select: '-coupons',
       populate: {
         path: 'office',
-        select: '-campaigns'
+        select: '-campaigns',
+        populate: {
+          path: 'company',
+          select: '-maker -offices'
+        }
       }
     })
     .exec() || [];

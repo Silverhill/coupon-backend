@@ -24,6 +24,7 @@ export default `
     cellPhone: String
     address: String!
     email: String!
+    company: PublicCompany
   }
 
   type PublicOffice {

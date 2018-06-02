@@ -332,7 +332,15 @@ export const campaignsByMakerId = async(parent, args, { models }) => {
                                   maker: makerId
                                 })
                                 .select('-coupons')
-                                .populate('maker') || [];
+                                .populate('maker')
+                                .populate({
+                                  path: 'office',
+                                  select: '-campaigns',
+                                  populate: {
+                                    path: 'company',
+                                    select: '-offices -maker'
+                                  }
+                                }) || [];
   } catch (error) {
     throw new Error('Maker id not exist');
   }
