@@ -242,7 +242,18 @@ function updateCouponToRedeemed(models, couponId) {
     },
     { new: true }
   )
-  .populate('campaign')
+  .populate({
+    path: 'campaign',
+    select: '-coupons',
+    populate: {
+      path: 'office',
+      select: '-campaigns',
+      populate: {
+        path: 'company',
+        select: '-maker -offices'
+      }
+    }
+  })
   .populate('hunter')
   .exec();
 }
