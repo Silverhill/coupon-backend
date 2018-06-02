@@ -135,8 +135,13 @@ export const getCouponsByHunter = async (parent, {
   sortObject[sortField] = sortDirection;
   const hunterId = args.hunterId;
   const { coupons } = await models.Hunter.findOne({ _id: hunterId }) || {};
+  const makerId = args.currentUser._id;
+  const campaigns = await models.Campaign.find({
+    maker: makerId
+  });
   const myCouponsInfo = await models.Coupon.find({
-    _id: { "$in": coupons || [] }
+    _id: { "$in": coupons || [] },
+    campaign: {"$in": campaigns || {}}
   })
     .limit(limit)
     .skip(skip)
