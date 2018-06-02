@@ -33,7 +33,7 @@ export const storeFile = ({ stream, filename }) => {
 }
 
 export const validateImage = (filename, path) => {
-  const ext = pathLibrary.extname(filename);
+  const ext = pathLibrary.extname(filename).toLowerCase();
   if (config.allowedImageFormat.indexOf(ext) === -1) {
     fs.unlinkSync(path);
     throw new Error('Only images are allowed');
