@@ -2,12 +2,18 @@
 
 mongoose.Promise = require('bluebird');
 import mongoose, {Schema} from 'mongoose';
-import { isValidEmail } from '../services/validation.service';
+import { isValidEmail, isValidRuc } from '../services/validation.service';
 
 var OfficeSchema = new Schema({
   ruc: {
     type: String,
     required: 'Ruc field is required',
+    validate: {
+      validator: function() {
+        return isValidRuc(this.ruc);
+      },
+      message: 'RUC is not valid'
+    }
   },
   economicActivity: {
     type: String,

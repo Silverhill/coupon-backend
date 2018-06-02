@@ -37,7 +37,7 @@ test('Office: addOffice > Should get access only maker role', async t => {
       query: `
         mutation {
           addOffice(input: {
-            ruc: "1132569976001"
+            ruc: "2222222222"
             economicActivity: "Comida"
             contributorType: "Natural"
             legalRepresentative: "Juan Perez"
@@ -107,7 +107,7 @@ test('Office: addOffice > Should create a new Office', async t => {
       query: `
         mutation {
           addOffice(input: {
-            ruc: "1132569976001"
+            ruc: "2222222222"
             economicActivity: "Comida"
             contributorType: "Natural"
             legalRepresentative: "Juan Perez"
@@ -143,7 +143,7 @@ test('Office: addOffice > Should create a new Office', async t => {
   const { body: { data: { addOffice } } } = addOfficeResponse;
 
   t.truthy(addOffice.id);
-  t.is(addOffice.ruc, '1132569976001');
+  t.is(addOffice.ruc, '2222222222');
   t.is(addOffice.legalRepresentative, 'Juan Perez');
   t.is(addOffice.economicActivity, 'Comida');
 
@@ -170,7 +170,7 @@ test('Office: addOffice > should validate the email format', async t => {
       query: `
         mutation {
           addOffice(input: {
-            ruc: "1102224498"
+            ruc: "2222222222"
             economicActivity: "Comida"
             contributorType: "Natural"
             legalRepresentative: "Juan Perez"

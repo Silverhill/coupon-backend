@@ -37,7 +37,7 @@ function getAddOfficeQuery(companyId) {
     query: `
       mutation {
         addOffice(input: {
-          ruc: "1132569976001"
+          ruc: "2222222222"
           economicActivity: "Comida"
           contributorType: "Natural"
           legalRepresentative: "Juan Perez"
