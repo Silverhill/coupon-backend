@@ -219,6 +219,9 @@ export const getCampaign = async (parent, args, context) => {
     const campaign = await models.Campaign.findOne({ _id: id,
                                                     maker:makerId })
                                           .populate('office');
+    if(!campaign){
+      throw new Error('You are not allowed to see this campaign');
+    }
 
     return campaign;
   } catch (error) {
