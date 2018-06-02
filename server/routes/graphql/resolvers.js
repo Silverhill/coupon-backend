@@ -94,6 +94,7 @@ export default {
   Subscription: {
     redeemedCoupon:  subscriptionResolver.redeemedCoupon(params),
     expiredCampaign: subscriptionResolver.expiredCampaign(params),
-    huntedCoupon: subscriptionResolver.huntedCoupon(params)
+    huntedCoupon: subscriptionResolver.huntedCoupon(params),
+    updatedCampaign: subscriptionResolver.updatedCampaign(params)
   }
 }

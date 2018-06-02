@@ -1,6 +1,7 @@
 import config from '../../../config';
 import shorthash from 'shorthash';
 import _ from 'lodash'
+import * as NotificationService from '../../../services/notification.service'
 
 export const getCoupon = async (parent, args, { models }) => {
 
@@ -69,7 +70,8 @@ export const captureCoupon = async (parent, args, { models, params }) => {
     const { maker: makerOfCampaign } = campaign;
 
     if (makerOfCampaign && makerOfCampaign.id) {
-      notifyHuntedCouponToMaker(pubsub, makerOfCampaign.id, updatedCoupon);
+      NotificationService.notifyHuntedCouponToMaker(pubsub, makerOfCampaign.id, updatedCoupon);
+      NotificationService.notifyUpdatedCampaing(pubsub, models, campaignId, hunterId);
     }
 
     return updatedCoupon;
@@ -114,7 +116,8 @@ export const redeemCoupon = async (parent, args, { models, params }) => {
   await updateRedeemedCouponsCount(models, myCampaign);
   const couponUpdated = await updateCouponToRedeemed(models, couponData._id);
   if (couponUpdated.hunter && couponUpdated.hunter.id) {
-    notifyRedeemedCouponToHunter(pubsub, couponUpdated.hunter.id, couponUpdated);
+    NotificationService.notifyRedeemedCouponToHunter(pubsub, couponUpdated.hunter.id, couponUpdated);
+    NotificationService.notifyUpdatedCampaing(pubsub, models, myCampaign.id, couponUpdated.hunter.id);
   }
 
   return couponUpdated;
@@ -235,16 +238,4 @@ function updateCouponToRedeemed(models, couponId) {
   .populate('campaign')
   .populate('hunter')
   .exec();
-}
-
-function notifyRedeemedCouponToHunter(pubsub, hunterId, redeemedCoupon) {
-  pubsub.publish(`${config.subscriptionsTopics.REDEEMED_COUPON_TOPIC}-${hunterId}`, {
-    redeemedCoupon
-  });
-}
-
-function notifyHuntedCouponToMaker(pubsub, makerId, huntedCoupon) {
-  pubsub.publish(`${config.subscriptionsTopics.HUNTED_COUPON_TOPIC}-${makerId}`, {
-    huntedCoupon
-  });
 }
