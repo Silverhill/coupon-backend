@@ -16,7 +16,8 @@ exports = module.exports = {
   subscriptionsTopics: {
     REDEEMED_COUPON_TOPIC: 'newRedeemedCoupon',
     EXPIRED_CAMPAIGN_TOPIC: 'newExpiredCampaign',
-    HUNTED_COUPON_TOPIC: 'newHuntedCoupon'
+    HUNTED_COUPON_TOPIC: 'newHuntedCoupon',
+    UPDATED_CAMPAIGN_TOPIC: 'updatedCampaign'
   },
   uploadsFolder: './uploads/',
   allowedImageFormat: ['.png', '.jpg', '.gif', '.jpeg', '.svg']

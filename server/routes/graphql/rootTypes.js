@@ -124,5 +124,6 @@ export default `
     redeemedCoupon: CouponHunted!
     huntedCoupon: CouponHunted!
     expiredCampaign: Campaign!
+    updatedCampaign(campaignId: String!): CampaignForHunter!
   }
 `;
