@@ -23,7 +23,7 @@ export default `
     createdAt: Timestamp!
     coupons: [Coupon!]
     maker: UserBase
-    office: OfficeSimple
+    office: Office
   }
 
   type CampaignForHunter {
@@ -50,7 +50,7 @@ export default `
     canHunt: Boolean!
     coupons: [Coupon!]
     maker: UserBase
-    office: OfficeSimple
+    office: Office
     remainingCoupons: Int!
   }
 
