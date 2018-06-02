@@ -214,8 +214,10 @@ export const deleteCampaign = async (parent, args, context) => {
 export const getCampaign = async (parent, args, context) => {
   const { id } = args;
   const { models } = context;
+  const makerId = args.currentUser._id;
   try {
-    const campaign = await models.Campaign.findOne({ _id: id })
+    const campaign = await models.Campaign.findOne({ _id: id,
+                                                    maker:makerId })
                                           .populate('office');
 
     return campaign;
