@@ -1,9 +1,10 @@
 import fs from 'fs';
 import cloudinary from 'cloudinary';
 import config from '../../../config';
-import _ from 'lodash'
 import { storeFile, validateImage } from './file.resolver';
 import schedule from 'node-schedule'
+import * as CommonService from '../../../services/common.service'
+import * as NotificationService from '../../../services/notification.service'
 
 export const allCampaigns = async (parent, {
                                             limit = 10,
@@ -18,9 +19,9 @@ export const allCampaigns = async (parent, {
   sortObject[sortField] = sortDirection;
   const {_id: hunterId} = args.currentUser;
 
-  const myCoupons = await getHunterCoupons(models, hunterId);
-  const campaignsSelectedByMe = await getCampaignsSelectedByMe(models, myCoupons);
-  const campaignsWithCouponsSelected = mapCampaignsWithTotalOfCouponsHuntedByMe(campaignsSelectedByMe, myCoupons);
+  const myCoupons = await CommonService.getHunterCoupons(models, hunterId);
+  const campaignsSelectedByMe = await CommonService.getCampaignsSelectedByMe(models, myCoupons);
+  const campaignsWithCouponsSelected = CommonService.mapCampaignsWithTotalOfCouponsHuntedByMe(campaignsSelectedByMe, myCoupons);
   const total = await models.Campaign.count({});
   const getCampaigns = models.Campaign.find({}).populate({
     path: 'office',
@@ -37,7 +38,7 @@ export const allCampaigns = async (parent, {
     .populate('coupons')
     .populate('maker');
 
-  const campaignsWithDetails = addCouponsHuntedByMeToCampaigns(allSortedCampaigns, campaignsSelectedByMe, campaignsWithCouponsSelected)
+  const campaignsWithDetails = CommonService.addCouponsHuntedByMeToCampaigns(allSortedCampaigns, campaignsSelectedByMe, campaignsWithCouponsSelected)
   const returnObject = {
     campaigns: campaignsWithDetails,
     totalCount: total
@@ -157,7 +158,7 @@ export const addCampaign = async (parent, args, context) => {
       { new: true});
 
       if (makerId) {
-        notifyExpiredCampaignToMaker(pubsub, makerId, expiredCampaign);
+        NotificationService.notifyExpiredCampaignToMaker(pubsub, makerId, expiredCampaign);
       }
 
       task.cancel();
@@ -333,10 +334,10 @@ export const campaignsByMakerId = async(parent, args, { models }) => {
     throw new Error('Maker id not exist');
   }
 
-  const myCoupons = await getHunterCoupons(models, hunterId);
-  const campaignsSelectedByMe = await getCampaignsSelectedByMe(models, myCoupons);
-  const campaignsWithCouponsSelected = mapCampaignsWithTotalOfCouponsHuntedByMe(campaignsSelectedByMe, myCoupons);
-  const campaignsWithDetails = addCouponsHuntedByMeToCampaigns(makerCampaigns, campaignsSelectedByMe, campaignsWithCouponsSelected)
+  const myCoupons = await CommonService.getHunterCoupons(models, hunterId);
+  const campaignsSelectedByMe = await CommonService.getCampaignsSelectedByMe(models, myCoupons);
+  const campaignsWithCouponsSelected = CommonService.mapCampaignsWithTotalOfCouponsHuntedByMe(campaignsSelectedByMe, myCoupons);
+  const campaignsWithDetails = CommonService.addCouponsHuntedByMeToCampaigns(makerCampaigns, campaignsSelectedByMe, campaignsWithCouponsSelected)
 
   return campaignsWithDetails;
 }
@@ -401,49 +402,6 @@ function addCampaignsToMaker(makerId, campaignId, models){
   );
 }
 
-function findHuntedCampaign(campaignId, myCampaigns) {
-  return myCampaigns.find(mycampaign => {
-    return mycampaign.id === campaignId;
-  });
-}
-
-function mapCampaignsWithTotalOfCouponsHuntedByMe(campaignsSelectedByMe, myCoupons) {
-  let campaigns = {};
-  const myHuntedCoupons = _.filter(myCoupons, {status: config.couponStatus.HUNTED})
-  const myRedeemedCoupons = _.filter(myCoupons, {status: config.couponStatus.REDEEMED})
-  for(let i = 0; i < campaignsSelectedByMe.length; i++) {
-    const campaign = campaignsSelectedByMe[i];
-    const couponsHuntedInThisCampaign = _.intersectionBy(campaign.coupons, myHuntedCoupons, 'id');
-    const couponsRedeemedInThisCampaign = _.intersectionBy(campaign.coupons, myRedeemedCoupons, 'id');
-    campaigns[campaign.id] = {
-      couponsHunted: couponsRedeemedInThisCampaign.length + couponsHuntedInThisCampaign.length,
-      couponsRedeemed: couponsRedeemedInThisCampaign.length
-    }
-  }
-  return campaigns;
-}
-
-function addCouponsHuntedByMeToCampaigns(allSortedCampaigns, myCampaigns, campaignsWithCouponsSelected) {
-  let campaigns = [];
-  for (let i = 0; i < allSortedCampaigns.length; i++) {
-    let campaign = allSortedCampaigns[i];
-    const isMyCampaign = findHuntedCampaign(campaign.id, myCampaigns);
-    if (isMyCampaign) {
-      campaign.couponsHuntedByMe = campaignsWithCouponsSelected[campaign.id].couponsHunted;
-      campaign.couponsRedeemedByMe = campaignsWithCouponsSelected[campaign.id].couponsRedeemed;
-    } else {
-      campaign.couponsHuntedByMe = 0;
-      campaign.couponsRedeemedByMe = 0;
-    }
-    const couponsWereRedeemed = (campaign.couponsHuntedByMe === campaign.couponsRedeemedByMe);
-    const campaignIsAvailable = campaign.status === config.campaignStatus.AVAILABLE;
-    campaign.canHunt = (couponsWereRedeemed && campaignIsAvailable);
-
-    campaigns.push(campaign);
-  }
-  return campaigns;
-}
-
 function updateRelatedModels(params) {
   const {
     officeId,
@@ -454,32 +412,4 @@ function updateRelatedModels(params) {
   const promiseCampaignToOffice = addCampaignToOffice(officeId, campaignId, models)
   const promiseCampaignsToMaker = addCampaignsToMaker(makerId, campaignId, models)
   return Promise.all([promiseCampaignToOffice, promiseCampaignsToMaker])
-}
-
-
-const getHunterCoupons = async (models, hunterId) => {
-  const hunter = await models.Hunter
-                            .findOne({_id: hunterId})
-                            .populate('coupons') || {}
-
-  return hunter.coupons || [];
-}
-
-const getCampaignsSelectedByMe= async (models, myCoupons) => {
-  const campaigns = await models.Campaign
-                                .find({
-                                  coupons: {
-                                    '$in': myCoupons
-                                  }
-                                })
-                                .populate('coupons');
-
-  return campaigns
-
-}
-
-function notifyExpiredCampaignToMaker(pubsub, makerId, expiredCampaign) {
-  pubsub.publish(`${config.subscriptionsTopics.EXPIRED_CAMPAIGN_TOPIC}-${makerId}`, {
-    expiredCampaign
-  });
 }
