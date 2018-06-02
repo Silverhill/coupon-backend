@@ -16,6 +16,8 @@ export default `
     id: ID!
     code: String
     status: String
+    huntedAt: Timestamp
+    redeemedAt: Timestamp
     campaign: CampaignForHunter
   }
 

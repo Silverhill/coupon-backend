@@ -20,6 +20,14 @@ var CouponSchema = new Schema({
   hunter: {
     type: Schema.ObjectId,
     ref: 'Hunter'
+  },
+  huntedAt: {
+    type: Date,
+    default: null
+  },
+  redeemedAt: {
+    type: Date,
+    default: null
   }
 },
 {

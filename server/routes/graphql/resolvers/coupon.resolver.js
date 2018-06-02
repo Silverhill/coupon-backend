@@ -49,6 +49,7 @@ export const captureCoupon = async (parent, args, { models, params }) => {
     const couponParams = {
       status: config.couponStatus.AVAILABLE,
       campaign: campaignId,
+      huntedAt: new Date(),
       hunter: hunterId
     }
 
@@ -236,7 +237,8 @@ function updateRedeemedCouponsCount(models, myCampaign) {
 function updateCouponToRedeemed(models, couponId) {
   return models.Coupon.findByIdAndUpdate(couponId,
     {
-      status: config.couponStatus.REDEEMED
+      status: config.couponStatus.REDEEMED,
+      redeemedAt: new Date()
     },
     { new: true }
   )
