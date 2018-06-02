@@ -89,7 +89,8 @@ const seedDatabase = async () => {
     office: office._id,
     startAt: Date.now(),
     endAt: new Date().setMonth(new Date().getMonth() + 3),
-    totalCoupons: 100
+    totalCoupons: 100,
+    rangeAge: [1,3,4]
   });
 
   await Office.findByIdAndUpdate(office._id,

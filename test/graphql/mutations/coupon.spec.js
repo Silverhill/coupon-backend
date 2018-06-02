@@ -68,8 +68,7 @@ function getAddCampaignQuery(officeId) {
           startAt: ${Date.now()}
           endAt: ${Date.now() + 7200000}
           couponsNumber: 15
-          initialAgeRange: 18
-          finalAgeRange: 50
+          rangeAge: [1,2,3]
           officeId: "${officeId}"
         }) {
           id
@@ -584,8 +583,7 @@ test('Campaign: captureCoupon > Should return an error if the Campaing is SOLD-O
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000}
             couponsNumber: 2
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,3,4]
             officeId: "${officeId}"
           }) {
             id

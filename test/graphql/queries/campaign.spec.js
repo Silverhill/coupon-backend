@@ -74,8 +74,7 @@ test('Campaign: campaign > Should get a Campaign', async t => {
             startAt: 1521178272153
             endAt: 1522188672153
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -133,8 +132,7 @@ test('Campaign: Hunter: allCampaigns > Should get all campaigns', async t => {
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000}
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -233,8 +231,7 @@ test('Campaign: Hunter: allCampaigns > Should get all campaigns with the flag ca
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000}
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -328,8 +325,7 @@ test('Campaign: Hunter: allCampaigns > Return empty array if there is not coupon
             startAt: 1521178272153
             endAt: 1522188672153
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -390,8 +386,7 @@ test('Campaign: Maker: myCampaigns > Should get my campaigns', async t => {
             startAt: 1521178272153
             endAt: 1522188672153
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -448,8 +443,7 @@ test('Campaign: huntedCouponsByCampaign > Should get an empty array if there are
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000}
             couponsNumber: 10
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -516,8 +510,7 @@ test('Campaign: huntersByCampaign > should get the hunter list of a specific cam
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000}
             couponsNumber: ${couponsNumber}
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -594,8 +587,7 @@ test('Campaign: huntersByCampaign > should get an empty array if there are no hu
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000}
             couponsNumber: ${couponsNumber}
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -631,8 +623,7 @@ test('Campaign: addCampaign > should have status: unavailable', async t => {
             startAt: ${Date.now() + 3600000 /* 1 hour */}
             endAt: ${Date.now() + 7200000 /* 2 hours */}
             couponsNumber: 10
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -666,8 +657,7 @@ test('Campaign: campaign > should have status: available', async t => {
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000 /* 2 hours */}
             couponsNumber: 10
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -716,8 +706,7 @@ test('Campaign: campaign > should have status: expired', async t => {
             startAt: ${Date.now()}
             endAt: ${Date.now() + 1}
             couponsNumber: 10
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -766,8 +755,7 @@ test('Campaign: campaign > should have status: soldout', async t => {
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000}
             couponsNumber: 3
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -840,8 +828,7 @@ test('Campaign: Hunter: allCampaigns > Should get all campaigns even if there ar
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000}
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -899,8 +886,7 @@ test('Campaign: Public: publicCampaigns > Should get public campaigns', async t 
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000}
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -931,8 +917,7 @@ test('Campaign: Public: publicCampaigns > Should get public campaigns', async t 
               description
               customMessage
               deleted
-              initialAgeRange
-              finalAgeRange
+              rangeAge
               remainingCoupons
               createdAt
               office {
@@ -998,8 +983,7 @@ test('Campaign: Hunter: campaignsByMakerId > Should return the campaigns by Make
             startAt: ${Date.now()}
             endAt: ${Date.now() + 7200000}
             couponsNumber: 20
-            initialAgeRange: 18
-            finalAgeRange: 50
+            rangeAge: [1,2]
             officeId: "${officeId}"
           }) {
             id
@@ -1025,8 +1009,7 @@ test('Campaign: Hunter: campaignsByMakerId > Should return the campaigns by Make
             huntedCoupons
             redeemedCoupons
             description
-            initialAgeRange
-            finalAgeRange
+            rangeAge
             couponsHuntedByMe
             couponsRedeemedByMe
             canHunt
