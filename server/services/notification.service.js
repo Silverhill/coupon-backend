@@ -23,7 +23,20 @@ export const notifyUpdatedCampaing = async (pubsub, models, campaignId, hunterId
 
   const updatedCampaign = await models.Campaign.findOne({
     _id: campaignId
-  });
+  })
+  .populate({
+    path: 'maker',
+    elect: '-campaigns -salt -password'
+  })
+  .populate( {
+    path: 'office',
+    select: '-campaigns',
+    populate: {
+      path: 'company',
+      select: '-offices -campaigns',
+    }
+  })
+  .exec();
 
   const myCoupons = await CommonService.getHunterCoupons(models, hunterId);
   const campaignsSelectedByMe = await CommonService.getCampaignsSelectedByMe(models, myCoupons);
