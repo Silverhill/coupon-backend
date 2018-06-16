@@ -13,6 +13,7 @@ const makerLoginQuery = utils.getMakerLoginQuery();
 test.beforeEach('connect with mongodb', async () => {
   await connectDB();
   await utils.createDefaultUsers();
+  await utils.createDefaultSetting();
 });
 
 test.afterEach.always(async () => {

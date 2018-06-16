@@ -7,6 +7,7 @@ import companyTypes from './Company';
 import couponTypes from './Coupon';
 import officeTypes from './Office';
 import uploaderTypes from './Uploader';
+import settingTypes from './Setting';
 
 export default [
   rootTypes,
@@ -17,5 +18,6 @@ export default [
   companyTypes,
   couponTypes,
   officeTypes,
-  uploaderTypes
+  uploaderTypes,
+  settingTypes
 ];
