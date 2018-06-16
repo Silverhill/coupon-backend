@@ -2,6 +2,7 @@ import config from '../../../config';
 import shorthash from 'shorthash';
 import _ from 'lodash'
 import * as NotificationService from '../../../services/notification.service'
+import * as SettingService from '../../../services/setting.service';
 
 export const getCoupon = async (parent, args, { models }) => {
 
@@ -87,6 +88,7 @@ export const redeemCoupon = async (parent, args, { models, params }) => {
   const {input: { couponCode } } = args;
   const {_id: makerId} = args.currentUser;
   const { pubsub } = params;
+  const appSetting = await SettingService.getAppSetting();
   const campaigns = await models.Campaign.where({
     maker: makerId,
   }) || [];
@@ -117,6 +119,7 @@ export const redeemCoupon = async (parent, args, { models, params }) => {
   await updateRedeemedCouponsCount(models, myCampaign);
   const couponUpdated = await updateCouponToRedeemed(models, couponData._id);
   if (couponUpdated.hunter && couponUpdated.hunter.id) {
+    await updateHunterScore(models, couponUpdated.hunter, appSetting);
     NotificationService.notifyRedeemedCouponToHunter(pubsub, couponUpdated.hunter.id, couponUpdated);
     NotificationService.notifyUpdatedCampaing(pubsub, models, myCampaign.id, couponUpdated.hunter.id);
   }
@@ -256,4 +259,17 @@ function updateCouponToRedeemed(models, couponId) {
   })
   .populate('hunter')
   .exec();
+}
+
+
+function updateHunterScore(models, hunter, appSetting) {
+  const currentScore = hunter.score || 0;
+  return models.Hunter.findByIdAndUpdate(hunter.id,
+    {
+      status: config.couponStatus.REDEEMED,
+      score: currentScore + appSetting.scoreRedeemCoupon,
+      redeemedAt: new Date()
+    },
+    { new: true }
+  )
 }

@@ -8,6 +8,7 @@ import Maker from '../models/maker.model';
 import Company from '../models/company.model';
 import Office from '../models/office.model';
 import Campaign from '../models/campaign.model';
+import AppSetting from '../models/appSetting.model';
 import config from './';
 
 mongoose.Promise = global.Promise;
@@ -112,5 +113,9 @@ const seedDatabase = async () => {
     name: 'Hunter',
     email: 'hunter@example.com',
     password: 'hunter'
+  });
+
+  await AppSetting.create({
+    scoreRedeemCoupon: 1
   });
 }

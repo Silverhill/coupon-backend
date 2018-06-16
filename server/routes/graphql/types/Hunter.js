@@ -6,6 +6,7 @@ export default `
     provider: String
     role: UserRole!
     image: String
+    score: Int!
     coupons: [Coupon]
     couponsInCampaign: Int
   }

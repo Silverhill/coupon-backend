@@ -1,4 +1,5 @@
 import User from '../../server/models/user.model';
+import AppSetting from '../../server/models/appSetting.model'
 
 const utils = {
   async callToQraphql(request, query, token) {
@@ -53,6 +54,12 @@ const utils = {
       email: 'maker@example.com',
       password: 'maker'
     })
+  },
+
+  async createDefaultSetting() {
+    await AppSetting.create({
+      scoreRedeemCoupon: 1
+    });
   },
 
   getAdminLoginQuery() {

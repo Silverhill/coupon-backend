@@ -11,6 +11,10 @@ var HunterSchema = User.schema.extend({
     type: String,
     default: 'hunter'
   },
+  score: {
+    type: Number,
+    default: 0
+  },
   coupons: [{
     type: Schema.ObjectId,
     ref: 'Coupon'

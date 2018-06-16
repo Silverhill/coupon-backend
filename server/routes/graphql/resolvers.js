@@ -6,7 +6,8 @@ import * as couponResolver from './resolvers/coupon.resolver';
 import * as companyResolver from './resolvers/company.resolver';
 import * as officeResolver from './resolvers/office.resolver';
 import * as fileResolver from './resolvers/file.resolver';
-import * as subscriptionResolver from './resolvers/subscription.resolver'
+import * as subscriptionResolver from './resolvers/subscription.resolver';
+import * as settingResolver from './resolvers/setting.resolver';
 import { requiresAuth } from '../../services/graphql.service';
 import { timestampScalar } from './scalars/timestamp.scalar';
 import { PubSub } from 'graphql-subscriptions';
@@ -30,6 +31,12 @@ export default {
       if(obj.coupons) return 'Hunter';
       else if(obj.campaigns) return 'Maker';
       return 'User';
+    }
+  },
+
+  SettingBase: {
+    __resolveType(){
+      return 'Setting';
     }
   },
 
@@ -63,7 +70,9 @@ export default {
     myHunters: requiresAuth(companyResolver.myHunters, ['maker']),
     //Office
     myOffices: requiresAuth(officeResolver.myOffices, ['maker']),
-    office: requiresAuth(officeResolver.getOffice, ['maker'])
+    office: requiresAuth(officeResolver.getOffice, ['maker']),
+    //Setting
+    appSetting: requiresAuth(settingResolver.getAppSetting, ['admin', 'maker'])
   },
 
   Mutation: {
@@ -90,6 +99,8 @@ export default {
     singleUpload: requiresAuth(fileResolver.uploadFile, ['admin', 'maker', 'hunter']),
     //Core uploader
     addImageToUser: requiresAuth(userResolver.addImageToUser, ['admin', 'maker', 'hunter']),
+    //Setting
+    updateAppSetting: requiresAuth(settingResolver.updateAppSetting, ['admin'])
   },
   Subscription: {
     redeemedCoupon:  subscriptionResolver.redeemedCoupon(params),

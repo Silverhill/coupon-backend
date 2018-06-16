@@ -10,7 +10,7 @@
     "init:server": "nodemon --exec babel-node server/server.js",
     "lint": "esw server",
     "lint:watch": "npm run lint -- --watch",
-    "test": "cross-env NODE_ENV=test node_modules/.bin/ava --serial --tap | tap-colorize",
+    "test": "cross-env NODE_ENV=test node_modules/.bin/ava --serial",
     "test:watch": "npm test -- --watch",
     "apidoc": "rm -rf apidoc && apidoc -f 'server/routes/.*\\.js$' -i ./server -o apidoc/",
     "seed-database": "babel-node server/config/seed.js",

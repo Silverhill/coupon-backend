@@ -68,6 +68,9 @@ export default `
 
     # Get coupons by Hunter
     couponsByHunter(hunterId: String!, limit: Int, skip: Int, sortField: String, sortDirection: Int): [CouponBase!]
+
+    # Get app setting
+    appSetting: Setting!
   }
 
   type Mutation {
@@ -118,6 +121,8 @@ export default `
     # Update User info. Access: Maker, Hunter
     updateUser(input: UpdateUserInput): UserBase!
 
+    #Update App Setting
+    updateAppSetting(input: UpdateSettingInput): Setting!
   }
 
   type Subscription {
