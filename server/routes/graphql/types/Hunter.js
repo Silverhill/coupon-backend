@@ -22,5 +22,13 @@ export default `
     huntedCoupons: Int
   }
 
+  type HunterSimple implements UserBase {
+    id: String!
+    name: String
+    email: String!
+    provider: String
+    role: UserRole!
+    image: String
+  }
 
 `

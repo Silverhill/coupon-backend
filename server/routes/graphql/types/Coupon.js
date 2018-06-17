@@ -19,6 +19,7 @@ export default `
     huntedAt: Timestamp
     redeemedAt: Timestamp
     campaign: CampaignForHunter
+    hunter: HunterSimple
   }
 
   type CouponForMaker implements CouponBase {
