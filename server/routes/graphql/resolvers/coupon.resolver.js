@@ -187,6 +187,10 @@ function updateCouponStatus(models, couponId, hunterId) {
       path: 'maker',
       select: '-salt -password'
     }
+  })
+  .populate({
+    path: 'hunter',
+    select: '-campaigns -salt -password -coupons'
   });
 }
 
