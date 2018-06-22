@@ -158,6 +158,8 @@ test('User: signUp > Should create a new Hunter', async t => {
           email: "hunternew@example.com"
           password: "12345678"
           role: "hunter"
+          gender: "male",
+          birthDate: 1529679116077
         }) {
           id
           name

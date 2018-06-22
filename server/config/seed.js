@@ -112,7 +112,9 @@ const seedDatabase = async () => {
     provider: 'local',
     name: 'Hunter',
     email: 'hunter@example.com',
-    password: 'hunter'
+    password: 'hunter',
+    gender: 'male',
+    birthDate: new Date(1989, 2, 16)
   });
 
   await AppSetting.create({
