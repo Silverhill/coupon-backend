@@ -20,5 +20,6 @@ exports = module.exports = {
     UPDATED_CAMPAIGN_TOPIC: 'updatedCampaign'
   },
   uploadsFolder: './uploads/',
-  allowedImageFormat: ['.png', '.jpg', '.gif', '.jpeg', '.svg']
+  allowedImageFormat: ['.png', '.jpg', '.gif', '.jpeg', '.svg'],
+  imageSize: 640
 };
