@@ -40,6 +40,8 @@ export default `
     company: String
     name: String!
     role: String!
+    gender: String
+    birthDate: Timestamp
   }
 
   input UpdatePasswordInput {

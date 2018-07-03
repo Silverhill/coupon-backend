@@ -8,6 +8,8 @@ export default `
     image: String
     score: Int!
     coupons: [Coupon]
+    gender: String!
+    birthDate: Timestamp!
     couponsInCampaign: Int
   }
 
@@ -20,6 +22,8 @@ export default `
     image: String
     redeemedCoupons: Int
     huntedCoupons: Int
+    gender: String!
+    birthDate: Timestamp!
   }
 
   type HunterSimple implements UserBase {
@@ -29,6 +33,8 @@ export default `
     provider: String
     role: UserRole!
     image: String
+    gender: String!
+    birthDate: Timestamp!
   }
 
 `

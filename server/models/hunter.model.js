@@ -18,7 +18,16 @@ var HunterSchema = User.schema.extend({
   coupons: [{
     type: Schema.ObjectId,
     ref: 'Coupon'
-  }]
+  }],
+  gender: {
+    type: String,
+    enum: ["male", "female"],
+    required: true
+  },
+  birthDate: {
+    type: Date,
+    required: true
+  }
 });
 
 HunterSchema
